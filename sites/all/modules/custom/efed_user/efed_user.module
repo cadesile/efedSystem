@@ -1,0 +1,25 @@
+<?php
+
+function efed_user_user($op, &$edit, &$account, $category = NULL){
+	switch($op){
+		case 'load':
+			if(in_array(EFED_DEFAULT_ROLE,$account->roles)){
+				$account = efed_user_load_default_user_data($account);
+			}
+		break;
+	}
+}
+/*
+ * Loads data for default role,
+ * Roster user is member of
+ */
+function efed_user_load_default_user_data($account){
+	if(module_exists('efed_character')){
+		$account->profiles = efed_character_load_by_uid($account->uid);
+		$account->default_profile = (count($account->profile)>0)? $account->profile[0]:0;		
+	}
+	
+	return $account;
+}
+
+?>

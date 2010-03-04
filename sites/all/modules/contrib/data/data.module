@@ -1,0 +1,708 @@
+<?php
+// $Id: data.module,v 1.21 2009/07/20 22:29:12 alexb Exp $
+
+// Adjustment modes.
+// Only use existing storage. This is default behavior and defined for consistency.
+define('DATA_UPDATE', 'update');
+// @todo: Expand data store if it differs.
+define('DATA_EXPAND', 'expand'); 
+// @todo: Expand or contract data store if it differs.
+define('DATA_EXPAND_CONTRACT', 'expand_contract');
+
+/**
+ * Implementation of hook_views_api().
+ */
+function data_views_api() {
+  return array(
+    'api' => '2.0',
+    'path' => drupal_get_path('module', 'data'),
+  );
+}
+
+/**
+ * Create a table.
+ * 
+ * Usage:
+ * $table = data_create_table('my_table', $schema, 'My table');
+ * $table->save($data);
+ * 
+ * @param $name
+ *   String that identifies the data table. It is recommended to use 
+ *   data_name() to generate a table name in the data namespace. For
+ *   example: $table = data_get_tabe(data_name('my_table'));
+ * @param $schema
+ *   Schema for the table.
+ * @param $title
+ *   A natural title for the table.
+ * 
+ * @return 
+ *   A DataTable object if init could create one,
+ *   FALSE if not.
+ */
+function data_create_table($name, $schema, $title = NULL) {
+  if (_data_get_table($name)) {
+    return FALSE;
+  }
+  return _data_get_table($name, $schema, $title);
+}
+
+/**
+ * Get a table if it exists.
+ *
+ * @param $name
+ *   Unique name of the table.
+ * 
+ * @return
+ *   A DataTable object if there is a table with this name,
+ *   FALSE if not.
+ */
+function data_get_table($name) {
+  if ($table = _data_get_table($name)) {
+    return $table;
+  }
+  return FALSE;
+}
+
+/**
+ * Drop a table - use this instead of $table->drop().
+ */
+function data_drop_table($name) {
+  if ($table = data_get_table($name)) {
+    $table->drop();
+    _data_get_table($name, NULL, NULL, TRUE);
+  }
+}
+
+/**
+ * Internal singleton/factory function for creating a single instance of a DataTable class.
+ * 
+ * If a schema is given, _data_get_table() creates the table objects DB structure.
+ * 
+ * Don't use this function directly. Call data_create_table() or data_get_table() instead.
+ */
+function _data_get_table($name, $schema = NULL, $title = NULL, $reset = FALSE) {
+  static $tables;
+  $class = variable_get('data_table_class', 'DataTable');
+  if ($reset) {
+    unset($tables[$name]);
+  }
+
+  if (!isset($tables[$table])) {
+    if (db_result(db_query('SELECT name FROM {data_tables} WHERE name = "%s"', $name))) {
+      $tables[$name] = new $class($name);
+    }
+  }
+  if ($schema) {
+    $tables[$name] = new $class($name, $schema, $title);
+  }
+  return isset($tables[$name]) ? $tables[$name] : FALSE;
+}
+
+/**
+ * Get schema info for all data allocated tables.
+ */
+function data_get_schema() {
+  $schema = array();
+  $tables = data_get_all_tables();
+  foreach ($tables as $table) {
+    $schema[$table->get('name')] = $table->get('table_schema');
+  }
+  return $schema;
+}
+
+/**
+ * Load all data tables.
+ */
+function data_get_all_tables() {
+  $tables = array();
+  $result = db_query('SELECT name FROM {data_tables}');
+  while ($row = db_fetch_object($result)) {
+    if ($table = data_get_table($row->name)) {
+      $tables[$row->name] = $table;
+    }
+  }
+  
+  return $tables;
+}
+
+/**
+ * Get a list of available, simplified field types.
+ * 
+ * This list is a sub set of Schema API data types 
+ * http://drupal.org/node/159605
+ * The keys are simplified handles.
+ */
+function data_get_field_types() {
+  return array(
+    'int' => array(
+      'type' => 'int',
+      'not null' => FALSE,
+    ),
+    'unsigned int' => array(
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => FALSE,
+    ),
+    'varchar' => array(
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => FALSE,
+    ),
+    'text' => array(
+      'type' => 'text',
+      'not null' => FALSE,
+    ),
+  );
+}
+
+/**
+ * Translate a simplified handle into a schema API type definition.
+ * 
+ * If no type can be found, FALSE will be returned.
+ */
+function data_translate_field_type($type) {
+  $types = data_get_field_types();
+  if (isset($types[$type])) {
+    return $types[$type];
+  }
+  return FALSE;
+}
+
+/**
+ * Create a table name in the data namespace.
+ * @todo: make overridable.
+ */
+function data_name($table) {
+  return 'data_table_'. $table;
+}
+
+/**
+ * Create a safe name for MySQL field or table names.
+ * 
+ * @todo: IMPROVE.
+ * 
+ * - make sure all unsafe characters are removed.
+ * - filter magic words.
+ * - test pgsql.
+ */
+function data_safe_name($name) {
+  $map = array(
+    '.' => '_', 
+    ':' => '', 
+    '/' => '', 
+    '-' => '_', 
+    ' ' => '_',
+    ',' => '_',
+  );
+  $simple = trim(strtolower(strip_tags($name)));
+  // Limit length to 64 as per http://dev.mysql.com/doc/refman/5.0/en/identifiers.html
+  $simple = substr(strtr($simple, $map), 0, 64);
+
+  if (is_numeric($simple)) {
+    // We need to escape numerics because Drupal's drupal_write_record() 
+    // does not properly escape token MYSQL names.
+    $simple = '__num_'. $simple;
+  }
+  return db_escape_table($simple);
+}
+
+/**
+ * Helper function to create a natural name.
+ * underscored_name -> Underscored name
+ */
+function data_natural_name($name) {
+  return ucfirst(strtolower(str_replace('_', ' ', $name)));
+}
+
+/**
+ * Creates the default path for a data table.
+ */
+function data_get_default_path($name) {
+  return 'admin/content/data/'. $name;
+}
+
+/**
+ * Helper function to generate a schema.
+ * 
+ * Example:
+ * $table->create(data_build_schema($keys));
+ * 
+ * @todo: check for table name collisions
+ * @todo: add type detection
+ * @todo: add meta info handling
+ * @todo: add primary key handling
+ * @todo: may be add option to add a full fledged schema here?
+ */
+function data_build_schema($keys) {
+  $fields = $schema = array();
+  $field_types = data_get_field_types();
+
+  // Build the table definition.
+  // Fall back to varchar if no valid type is given.
+  foreach ($keys as $k => $type) {
+    if ($type = data_translate_field_type($type)) {
+      $fields[data_safe_name($k)] = $type;
+    }
+    else {
+      $fields[data_safe_name($k)] = $field_types['varchar'];
+    }
+  }
+
+  $schema['fields'] = $fields;
+  $schema['indexes'] = array();
+  return $schema;
+}
+
+/**
+ * Build a full schema api field spec.
+ * 
+ * @param $stub
+ *   Array with at least one key 'type'.
+ */
+function data_build_field_spec($stub) {
+  $spec = array();
+  $spec['type'] = $stub['type'];
+  if ($spec['type'] == 'int') {
+    $spec['unsigned'] = empty($stub['unsigned']) ? FALSE : TRUE;
+  }
+  if ($spec['type'] == 'varchar') {
+    $spec['length'] = 255;
+  }
+  return $spec;
+}
+
+/**
+ * Manages data access and manipulation for a single data table.
+ * Use data_allocate_table() or data_get_table() to instantiate an object from this class.
+ * 
+ * Usage:
+ * 
+ * Get an existing table.
+ * 
+ * $table = data_get_table('my_table');
+ * 
+ * If the table does not exist, create one.
+ * if (!$table) {
+ *  $table = data_create_table('my_table', $schema);
+ * }
+ * 
+ * Save some data to it.
+ * $table->save($data);
+ * 
+ * Remove the data from the table.
+ * $table->truncate();
+ * 
+ * Remove the table, but not the meta information about the table.
+ * data_drop_table('my_table');
+ * 
+ */
+class DataTable {
+
+  // Class variables.
+  // @todo: change $table_schema to $schema.
+  // @todo: change $name to $id.
+  // Unfortunately drupal_write_record does not escape field names. $table_schema instead of $schema it is.
+  protected $name, $title, $table_schema, $meta;
+
+  /**
+   * Constructor.
+   */
+  public function __construct($name, $table_schema = NULL, $title = NULL) {
+    if ($table_schema) {      
+      $table = array(
+        'name' => $name,
+        'title' => empty($title) ? data_natural_name($name) : $title,
+        'table_schema' => array(),
+        'meta' => array(),
+      );
+      drupal_write_record('data_tables', $table);
+
+      $this->init($name);
+      $this->create($table_schema);
+    }
+    else {
+      $this->init($name);
+    }
+  }
+
+  /**
+   * Load DataTable data from DB.
+   */
+  protected function init($name) {
+    if ($table = db_fetch_object(db_query('SELECT * FROM {data_tables} WHERE name = "%s"', $name))) {
+      foreach (array('title', 'name') as $key) {
+        $this->$key = $table->$key;
+      }
+      foreach (array('table_schema', 'meta') as $key) {
+        $this->$key = unserialize($table->$key);
+      }
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
+   * Create a table.
+   */
+  protected function create($table_schema) {
+    // Create table.
+    db_create_table($ret, $this->name, $table_schema);
+    if ($ret[0]['success'] != 1) {
+      drupal_set_message(t('Error creating table.'), 'error');
+      return FALSE;
+    }
+
+    // Update table_schema information.
+    $this->update(array('table_schema' => $table_schema));
+
+    // Clear cache.
+    drupal_get_schema($this->name, TRUE);
+
+    return TRUE;
+  }
+
+  /**
+   * Get a property of the DataTable object.
+   * 
+   * @param $property
+   *   One of 'name', 'title', 'table_schema', 'meta', 'links'.
+   * @return 
+   *   The unserialized value of the property.
+   */
+  public function get($property) {
+    if (in_array($property, array('name', 'title', 'table_schema', 'meta'))) {
+      return $this->$property;
+    }
+    // Links aren't loaded automatically.
+    if ($property == 'links') {
+      $result = db_query('SELECT * FROM {data_join} WHERE right_table = "%s"', $this->name);
+      $links = array();
+      while ($link = db_fetch_array($result)) {
+        $links[$link->left_table] = $link;
+      }
+      return count($links) ? $links : FALSE;
+    }
+  }
+
+  /**
+   * Update table properties.
+   * 
+   * @param $properties 
+   *   Array where the key designates a property (one of 'name', 'title', 'table_schema', 'meta') 
+   *   and the value is the unserialized value that this property should attain.
+   */
+  public function update($properties) {
+    $properties['name'] = $this->name;
+    if (drupal_write_record('data_tables', $properties, 'name')) {
+      foreach ($properties as $key => $value) {
+        $this->$key = $value;
+      }
+    }
+  }
+ 
+  /**
+   * Determine whether a table exists for this DataTable or not.
+   * 
+   * @return 
+   *   TRUE if there is a table for this DataTable, FALSE if not.
+   */
+  public function exists() {
+    if (empty($this->table_schema)) {
+      return FALSE;
+    }
+    return TRUE;
+  }
+
+  /**
+   * Adjust table.
+   * 
+   * Only adds new columns at the moment: no removal, no indexes.
+   * 
+   * @todo: should be adjust() protected and users call update(array('table_schema' =>)) instead?
+   */
+  public function adjust($new_schema) {
+    if ($schema = drupal_get_schema($this->name)) {
+      if (isset($new_schema['fields'])) {
+
+        foreach ($new_schema['fields'] as $field => $spec) {
+          if (!isset($new_schema['fields'])) {
+            $this->addField($field, $spec);
+          }
+        }
+        if (count($ret)) {
+          drupal_get_schema($this->name, TRUE);
+        }
+        return;
+      }
+    }
+    $this->create($new_schema);
+  }
+
+  /**
+   * Add a field.
+   * 
+   * @todo: Check wether field name is available, otherwise change.
+   * @todo: Return false if not successful.
+   */
+  public function addField($field, $spec) {
+
+    $ret = array();
+    db_add_field($ret, $this->name, $field, $spec);
+
+    if ($ret[0]['success']) {
+      $schema = $this->table_schema;
+      $schema['fields'][$field] = $spec;
+      $this->update(array('table_schema' => $schema));
+  
+      // @todo: maybe move these cache clearing functions to their own method
+      // and let take API users take care of caching.
+      drupal_get_schema($this->name, TRUE);
+      return $field;
+    }
+    return FALSE;
+  }
+
+  /**
+   * Add an index to table.
+   * 
+   * @todo: support more than one field.
+   */
+  public function addIndex($field) {
+    $schema = $this->table_schema;
+    if ($schema['fields'][$field]) {
+      if ($schema['fields'][$field]['type'] == 'text') {
+        $index = array(array($field, 255));
+      }
+      else {
+        $index = array($field);
+      }
+      db_add_index($ret, $this->name, $field, $index);
+      if ($ret[0]['success']) {
+        $schema['indexes'][$field] = array($field);
+        $this->update(array('table_schema' => $schema));
+        drupal_get_schema($this->name, TRUE);
+      }
+    }
+  }
+
+  /**
+   * Drop an index from a table.
+   */
+  public function dropIndex($field) {
+    $ret = array();
+    db_drop_index($ret, $this->name, $field);
+    if ($ret[0]['success']) {
+      $schema = $this->table_schema;
+      if (isset($schema['indexes'][$field])) {
+        unset($schema['indexes'][$field]);
+      }
+      $this->update(array('table_schema' => $schema));
+      drupal_get_schema($this->name, TRUE);
+    }
+  }
+
+  /**
+   * Change indexes of a table.
+   */
+  public function changeIndex($fields) {
+    $schema = $this->table_schema;
+
+    // @TODO: This array_keys() reduces indexes to single field indexes.
+    // Will need adjustment when multi-field indexes are implemented.
+    $indexes = isset($schema['indexes']) ? array_keys($schema['indexes']) : array();
+
+    $add = array_diff($fields, $indexes);
+    $drop = array_diff($indexes, $fields);
+
+    foreach ($add as $field) {
+      $this->addIndex($field);
+    }
+    foreach ($drop as $field) {
+      $this->dropIndex($field);
+    }
+  }
+
+  /**
+   * Add a primary key to table.
+   */
+  public function addPrimaryKey($fields) {
+    $ret = array();
+    db_add_primary_key($ret, $this->name, $fields);
+    if ($ret[0]['success']) {
+      $schema = $this->table_schema;
+      $schema['primary key'] = $fields;
+      $this->update(array('table_schema' => $schema));
+      drupal_get_schema($this->name, TRUE);
+    }
+  }
+
+  /**
+   * Drop all primary keys from a table.
+   */
+  public function dropPrimaryKey() {
+    $ret = array();
+    db_drop_primary_key($ret, $this->name);
+    if ($ret[0]['success']) {
+      $schema = $this->table_schema;
+      $schema['primary key'] = array();
+      $this->update(array('table_schema' => $schema));
+      drupal_get_schema($this->name, TRUE);
+    }
+  }
+
+  /**
+   * Change the primary keys of a table.
+   */
+  public function changePrimaryKey($fields) {
+    $schema = $this->table_schema;
+    if (!empty($schema['primary key'])) {
+      $this->dropPrimarykey();
+    }
+    if (!empty($fields)) {
+      $this->addPrimaryKey($fields);
+    }
+  }
+
+  /**
+   * Change a field.
+   */
+  public function changeField($field, $spec) {
+    $ret = array();
+    db_change_field($ret, $this->name, $field, $field, $spec);
+
+    if ($ret[0]['success']) {
+      $schema = $this->table_schema;
+      $schema['fields'][$field] = $spec;
+      $this->update(array('table_schema' => $schema));
+  
+      drupal_get_schema($this->name, TRUE);
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
+   * Delete a field.
+   */
+  public function dropField($field) {
+    $ret = array();
+    db_drop_field($ret, $this->name, $field);
+
+    if ($ret[0]['success']) {
+      $schema = $this->table_schema;
+      unset($schema['fields'][$field]);
+      $meta = $this->meta;
+      unset($meta['fields'][$field]);
+      $this->update(array('table_schema' => $schema), array('meta' => $meta));
+  
+      drupal_get_schema($this->name, TRUE);
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
+   * Drop a table. Don't call this function directly, but
+   * use data_drop_table() instead.
+   */
+  public function drop() {
+    db_drop_table($ret, $this->name);
+    $this->update(array('table_schema' => array()));
+    drupal_get_schema($this->name, TRUE);
+
+    db_query('DELETE FROM {data_tables} WHERE name = "%s"', $this->name);
+    $this->title = '';
+    $this->table_schema = $this->meta = array();
+  }
+
+  /**
+   * Link this table to another table.
+   */
+  public function link($foreignTable, $foreignField, $field = NULL, $inner = TRUE) {
+    if ($field == NULL) {
+      $field = $foreignField;
+    }
+    $this->unlink($foreignTable);
+    $join_info = array(
+      'left_table' => $foreignTable,
+      'right_table' => $this->name,
+      'left_field' => $foreignField,
+      'right_field' => $field,
+      'inner_join' => $inner ? 1 : 0,
+    );
+    drupal_write_record('data_join', $join_info);
+  }
+
+  /**
+   * Unlink this table from another table.
+   */
+  public function unlink($foreignTable) {
+    db_query('DELETE FROM {data_join} WHERE left_table = "%s" AND right_table = "%s"', $foreignTable, $this->name);
+  }
+
+  /**
+   * Load a record.
+   */
+  public function load($keys) {
+    $where = $values = array();
+    $fields = $this->table_schema['fields'];
+    foreach ($keys as $key => $value) {
+      // Return if a key does not exist.
+      if (!isset($fields[$key]['type'])) {
+        return FALSE;
+      }
+      $where[] = db_escape_string($key) ." = ". db_type_placeholder($fields[$key]['type']);
+      $values[] = $value;
+    }
+
+    if (!empty($where)) {
+      $result = db_query('SELECT * FROM {'. db_escape_table($this->name) .'} WHERE '. implode(' AND ', $where), $values);
+      $results = array();
+      while ($row = db_fetch_array($result)) {
+        $results[] = $row;
+      }
+      return count($results) ? $results : FALSE;
+    }
+    return FALSE;
+  }
+
+  /**
+   * Save to data table.
+   */
+  public function save($record, $update = array()) {
+    if (count($update)) {
+      $keys = array();
+      foreach ($update as $key) {
+        $keys[$key] = $record[$key];
+      }
+      // Update if available.
+      if ($this->load($keys)) {
+        return drupal_write_record($this->name, $record, $update);
+      }
+    }
+
+    // Otherwise insert.
+    return drupal_write_record($this->name, $record);
+  }
+
+  /**
+   * Delete from data table.
+   */
+  public function delete($keys) {
+    $where = $values = array();
+    foreach ($keys as $key => $value) {
+      $where[] = db_escape_string($key) ." = ". db_type_placeholder($fields[$key]['type']);
+      $values[] = $value;
+    }
+    if (!empty($where)) {
+      db_query('DELETE FROM {'. db_escape_table($this->name) .'} WHERE '. implode(' AND ', $where), $values);
+    }
+  }
+
+  /**
+   * Empty data table.
+   */
+  public function truncate() {
+    db_query('TRUNCATE TABLE {'. db_escape_table($this->name) .'}');
+  }
+}

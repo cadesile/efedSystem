@@ -1,0 +1,52 @@
+div.Card{
+	margin: 0px 0px 10px 0px;
+}
+
+div.card div.banner {
+	position: relative;
+	margin: 0px 0px 4px 0px;
+}
+
+div.card div.banner a{
+	text-decoration: none;
+	color: #fff;
+}
+
+div.card div.banner .info {
+	font-size: 10px;
+	position: absolute;
+	bottom: 2px;
+	left: 0px;
+	background-color:#000;
+	color:#fff;
+	width:491px;
+	opacity:0.8; 
+	padding: 10px 10px;
+}
+
+div.card div.match {
+	margin-top: 10px;
+	padding-top: 10px;
+	border-top: #e3e3e3 solid 1px;
+}
+
+div.card div.match > div div.team,
+div.card div.match > div div.competitor{
+	margin-top: 5px;
+	margin-left: 20px;
+}
+
+#efed-belt-admin-create-form #edit-cid-wrapper,
+#efed-belt-admin-create-form #edit-start-wrapper,
+#efed-belt-admin-create-form #edit-end-wrapper{
+	float: left;
+	margin-right: 15px;
+}
+
+#efed-belt-admin-create-form #edit-end-wrapper{
+	clear: right;
+}
+
+#efed-belt-admin-create-form #edit-current-champion-wrapper{
+	clear: both;
+}

@@ -1,0 +1,7 @@
+; $Id$
+name = "Belt"
+description = "custom menu callbacks for creating and managing belts."
+package = "E-Fed"
+dependencies[] = "efed_base"
+dependencies[] = "efed_roster"
+core = 6.x

@@ -1,0 +1,91 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+
+function efed_shop_install() {
+  // Create tables.
+  drupal_install_schema('efed_shop');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function efed_shop_schema() {
+
+	$schema['efed_shop'] = array(
+	    'fields' => array(
+			'shop_id' => array(
+			 	'type' => 'serial',
+	  			'unsigned' => TRUE,
+	        	'not null' => TRUE,
+			),
+			'price' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '110'
+			),
+	        'nid' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+		),
+	    'primary key' => array('shop_id'),
+	);
+
+	$schema['efed_purchase'] = array(
+	    'fields' => array(
+			'purchase_id' => array(
+			 	'type' => 'serial',
+	  			'unsigned' => TRUE,
+	        	'not null' => TRUE,
+			),
+	        'shop_id' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+	        'completed' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+	        'cid' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+	        'created' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+	        'updated' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+		),
+	    'primary key' => array('purchase_id'),
+	);
+
+  	return $schema;
+
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function efed_shop_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('efed_shop');
+}

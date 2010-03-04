@@ -1,0 +1,201 @@
+<?php
+
+function smbc_hli_menu() {
+	
+	$items['find-healthy-living-initiatives'] = array(
+    	'page callback' => 'smbc_hli_view',
+    	'access arguments' => array('access content'),
+		'page arguments' => array(1),
+		'type' => MENU_CALLBACK,
+  	);  
+	
+	$items['wellbeing-portfolio/project-profiles'] = array(
+    	'page callback' => 'smbc_hli_view_porfolio',
+		'page arguments' => array(2),
+    	'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK,
+  	);  	
+	
+	return $items;	
+}
+
+function smbc_hli_view() {
+	
+	$ouptut = '';
+				
+	$terms = taxonomy_get_tree(3);
+	
+	$output .= '<h1 class="network">Find Healthy Living Initiatives</h1>';
+	
+	$path = base_path() . path_to_theme() . '/images';
+		
+	$output .= '<img src="' . $path . '/map.gif" align="right">';
+		
+	foreach($terms as $term)
+	{
+		$child_terms = array();
+		$child_terms_2 = array();
+		
+		if($term->depth == 0)
+		{		
+			$output .= '<ul class="hli county">';
+			
+			$child_terms = taxonomy_get_children($term->tid);
+			
+			if(count($child_terms) > 0)
+			{
+				$output .= "<li class=\"title\"><span onclick=\"toggle('city_".$term->tid ."')\" style=\"cursor: pointer\">" . $term->name . "</span>";
+				$output .= '<ul class="city" id="city_' . $term->tid . '" style="display: none;">';
+				
+				foreach($child_terms as $child_term)
+				{				
+					
+					$child_terms_2 = taxonomy_get_children($child_term->tid);	
+																	
+					if(count($child_terms_2) > 0)
+					{	
+						$output .= "<li class=\"name\"><span onclick=\"toggle('town_".$child_term->tid ."')\" style=\"cursor: pointer\">" . $child_term->name . "</span>";
+						$output .= '<ul class="town" id="town_' . $child_term->tid . '" style="display: none;">';
+							
+						foreach($child_terms_2 as $child_term_2)
+						{					
+							$output .= '<li class="name"><span>' . $child_term_2->name . '</span>';						
+							$nodes = smbc_load_nodes_by_term($child_term_2->tid);
+														
+							if(count($nodes) > 0)
+							{
+								foreach($nodes as $node) $output .= smbc_hli_location($node);														
+							}
+													
+						}
+						$output .= '</li>';		
+						$output .= '</ul>';						
+						$output .= '</li>';
+						
+					}
+					else
+					{
+						$output .= "<li class=\"name\"><span>" . $child_term->name . "</span></li>";
+					}
+					
+				}			
+				
+				$output .= '</ul>';
+				$output .= '</li>';				
+			}
+			else
+			{
+				$output .= "<li class=\"title\"><span>" . $term->name . "</span></li>";
+			}
+			
+			$output .= '</ul>';		
+		}
+	}	
+			
+	return $output;	
+}
+
+function smbc_hli_view_porfolio() {
+	
+	$ouptut = '';
+				
+	$terms = taxonomy_get_tree(4);
+	
+	$output .= '<h1 class="network">Project Profiles</h1>';
+	
+	$path = base_path() . path_to_theme() . '/images';
+		
+	$output .= '<img src="' . $path . '/map.gif" align="right">';
+			
+	foreach($terms as $term)
+	{
+		$child_terms = array();
+		$child_terms_2 = array();
+		
+		if($term->depth == 0)
+		{		
+			$output .= '<ul class="hli county">';
+			
+			$child_terms = taxonomy_get_children($term->tid);
+			
+			if(count($child_terms) > 0)
+			{
+				$output .= "<li class=\"title\"><span onclick=\"toggle('city_".$term->tid ."')\" style=\"cursor: pointer\">" . $term->name . "</span>";
+				$output .= '<ul class="city" id="city_' . $term->tid . '" style="display: none;">';
+				
+				foreach($child_terms as $child_term)
+				{				
+					
+					$child_terms_2 = taxonomy_get_children($child_term->tid);	
+																	
+					if(count($child_terms_2) > 0)
+					{	
+						$output .= "<li class=\"name\"><span onclick=\"toggle('town_".$child_term->tid ."')\" style=\"cursor: pointer\">" . $child_term->name . "</span>";
+						$output .= '<ul class="town" id="town_' . $child_term->tid . '" style="display: none;">';
+							
+						foreach($child_terms_2 as $child_term_2)
+						{					
+							$output .= '<li class="name"><span>' . $child_term_2->name . '</span>';						
+							$nodes = smbc_load_nodes_by_term($child_term_2->tid);
+														
+							if(count($nodes) > 0)
+							{
+								foreach($nodes as $node) $output .= smbc_hli_location($node);														
+							}
+													
+						}
+						$output .= '</li>';		
+						$output .= '</ul>';						
+						$output .= '</li>';
+						
+					}
+					else
+					{
+						$output .= "<li class=\"name\"><span>" . $child_term->name . "</span></li>";
+					}
+					
+				}			
+				
+				$output .= '</ul>';
+				$output .= '</li>';				
+			}
+			else
+			{
+				$output .= "<li class=\"title\"><span>" . $term->name . "</span></li>";
+			}
+			
+			$output .= '</ul>';		
+		}
+	}		
+			
+	return $output;	
+}
+
+function smbc_hli_location($node)
+{
+	$output = '';
+	
+	$output .= '<ul class="location">';
+	$output .= '<li class="location-name"><b>' .$node->title . '</b></li>';
+	if(!empty($node->field_address_1[0]['value'])) $output .= '<li class="address1">' .$node->field_address_1[0]['value'] . '</li>';
+	if(!empty($node->field_address_2[0]['value'])) $output .= '<li class="address2">' .$node->field_address_2[0]['value'] . '</li>';
+	if(!empty($node->field_address_3[0]['value'])) $output .= '<li class="address3">' .$node->field_address_3[0]['value'] . '</li>';
+	if(!empty($node->field_post_code[0]['value'])) $output .= '<li class="post_code">' .$node->field_post_code[0]['value'] . '</li>';
+	if(!empty($node->field_number[0]['value'])) $output .= '<li class="number">' .$node->field_number[0]['value'] . '</li>';
+	if(!empty($node->field_email[0]['value'])) $output .= '<li class="email"><br/><b>Email Address:</b> ' .l($node->field_email[0]['value'],'mailto:' . $node->field_email[0]['value']). '</li>';
+	if(!empty($node->field_website[0]['value'])) $output .= '<li class="website"><b>Website:</b> ' . l($node->field_website[0]['value'],$node->field_website[0]['value']) . '</li>';
+	if(!empty($node->field_terms[0]['value'])) $output .= '<li class="terms"><b>Key Themes:</b><br/>' .$node->field_terms[0]['value'] . '</li>';
+	if(!empty($node->field_targets[0]['value'])) $output .= '<li class="targets"><b>Target Beneficiaries:</b><br/>' .$node->field_targets[0]['value'] . '</li>';
+	if(!empty($node->field_aims[0]['value'])) $output .= '<li class="aims"><b>Aims:</b><br/>' .$node->field_aims[0]['value'] . '</li>';
+	$output .= '<li class="link"><br/>' . smbc_hli_google_map_link($node->field_location[0]['value']) . '</li>';
+	$output .= '</ul>';
+	
+	return $output;	
+}
+
+function smbc_hli_google_map_link($location)
+{
+	return '<a href="http://maps.google.co.uk/maps?q=' . $location . '" target="_blank">Find on google maps</a>';	
+}
+
+?>

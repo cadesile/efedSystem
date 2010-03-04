@@ -1,0 +1,64 @@
+<?php
+/**
+ * 
+ * Custom function, to define role names
+ * @return 
+ */
+
+require_once('efed_base.inc');
+
+function _efed_base_get_roles_by_name() {
+  // Return role information
+  return array (
+    EFED_DEFAULT_ROLE,
+	'Wrestler',
+    'Manager',
+    'General Manager',
+    'Interviewer',
+    'Owner',
+  );
+}
+
+/**
+ * Implementation of hook_install().
+ */
+
+
+function efed_base_install() {
+  // Create query parameters
+  $params = _efed_base_get_roles_by_name ();
+  array_unshift ($params, 'INSERT INTO {role} (name) VALUES (\'%s\')' . str_repeat (', (\'%s\')', count ($params) - 1));
+ 
+  // add roles to system
+  call_user_func_array('db_query',$params);
+}
+
+/**
+* Implementation of efed_base_uninstall().
+*/
+function efed_base_uninstall() {
+  // Create query parameters
+  $roles = _efed_base_get_roles_by_id ();
+	 
+	foreach($roles as $role){	 	
+	    db_query('DELETE FROM {role} WHERE rid = %d',$role);
+	    db_query('DELETE FROM {permission} WHERE rid = %d',$role);
+	    db_query('DELETE FROM {users_roles} WHERE rid = %d',$role);
+	}
+}
+
+function _efed_base_get_roles_by_id () {
+    // Create query parameters
+    $params = _efed_base_get_roles_by_name ();
+    array_unshift ($params, 'SELECT rid FROM {role} WHERE name = \'%s\'' . str_repeat (' || name = \'%s\'', count ($params) - 1));
+   
+    // retrieve roles from system
+    $result = call_user_func_array ('db_query', $params);
+    $role = array ();
+   
+    while ($row = db_fetch_array ($result)) {
+      $role[] = $row ['rid'];
+    }
+   
+    return $role;
+}

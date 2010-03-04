@@ -1,0 +1,4 @@
+name = "Base"
+description = "E-Fed package base module, required by all E-Fed modules, contains custom functions, site roles and menu callbacks."
+package = "E-Fed"
+core = 6.x

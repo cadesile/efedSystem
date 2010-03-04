@@ -1,0 +1,89 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+
+function efed_roster_install() {
+  // Create tables.
+  drupal_install_schema('efed_roster');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function efed_roster_schema() {
+
+	$schema['efed_roster'] = array(
+	    'fields' => array(
+			'roster_id' => array(
+			 	'type' => 'serial',
+	  			'unsigned' => TRUE,
+	        	'not null' => TRUE,
+			),	
+	        'name' => array(
+				'type' => 'text', 
+				'size' => 'medium', 
+				'default' => ''
+			),		
+			'balance' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+	        'gm_id' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+	        'timestamp' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+	        'description' => array(
+				'type' => 'text', 
+				'size' => 'medium', 
+				'default' => ''
+			)
+		),
+	    'primary key' => array('roster_id'),
+	);
+	
+	$schema['efed_roster_member'] = array(
+	    'fields' => array(
+			'roster_member_id' => array(
+			 	'type' => 'serial',
+	  			'unsigned' => TRUE,
+	        	'not null' => TRUE,
+			),	
+			'roster_id' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),	
+			'uid' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			)
+		),
+	    'primary key' => array('roster_member_id'),
+	);
+
+  return $schema;
+
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function efed_roster_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('efed_roster');
+}

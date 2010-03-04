@@ -1,0 +1,1201 @@
+<?php
+efed_base();
+
+define('EFED_CARD_ADMIN_TITLE','Card');
+define('EFED_CARD_TITLE','Card');
+
+function efed_card_init(){
+	drupal_add_js(drupal_get_path('module','efed_card') . '/efed_card.js');	
+	drupal_add_css(drupal_get_path('module','efed_card') . '/efed_card.css');	
+}
+
+function efed_card_theme() {
+  return array(
+    'efed_match' => array(
+      'arguments' => array(
+		'match' => NULL,
+		'title' => NULL,
+		'type' => NULL,
+		),
+      'template' => 'match'
+    ),
+  );
+}
+
+function efed_card_perm() {
+  return array('administer efed card');
+}
+
+function efed_card_block($op = 'list', $delta = 0, $edit = array()) {
+
+	if ($op == 'list') {
+
+		$blocks[0] = array(
+			'info' => t('Next Card'),
+			'weight' => 0, 
+			'status' => 1, 
+			'region' => 'right',
+		);
+
+		return $blocks;
+		
+	}
+	else if ($op == 'configure') {
+		switch($delta){
+			case 0:
+				for($i = 1; $i <=100;$i++){
+					$options[] = $i;
+				}
+				
+				$form['efed_card_block_0_amount'] = array(
+				  '#type' => 'select',
+				  '#title' => t('Number of cards displayed'),
+				  '#default_value' => variable_get('efed_card_block_0_amount', 1),
+				  '#options' => $options,
+				);
+			
+			break;
+		}
+	  
+		return $form;
+	}
+	else if ($op == 'save') {
+		switch($delta) {
+		  case 0:
+				variable_set('efed_card_block_0_amount', $edit['efed_card_block_0_amount']);
+			break;
+		}
+	}
+	else if ($op == 'view') {
+		$block = array();
+		
+		switch($delta){
+			case 0:
+				$block = array(
+					'subject' => t('Next Card'),
+					'content' => efed_card_block_0(variable_get('efed_card_block_0_amount', 1)),
+				);
+		
+			break;
+		}
+		
+		return $block;
+	}
+}
+
+/*
+ * CARD BLOCK
+ */
+ 
+function efed_card_block_0($amount){
+	$cards = efed_card_load_next($amount);
+		
+	foreach($cards as $card){	
+		if(!$card->card_info->result_exist){
+			$item .= l($card->card_info->show->title,'node/'.$card->nid);
+			$item .= '<br/>'.format_date($card->card_info->card_date,'medium');	
+			$items[] .= $item;
+			unset($item);
+		}
+	}
+
+	if(count($items)>0){
+		return theme('item_list',$items);
+	}else{
+		return '<em>Coming soon.</em>';
+	}
+}
+
+function efed_card_block_render_card($card){
+	//TODO: image upload for each card, make it the background of div
+	$output .= '<div class="Card">';
+	$output .= '<div class="Title">' . l($card->show->title,'node/'.$card->nid) . '</div>';
+	$output .= '<div><b>Date</b>: ' . format_date($card->card_date,'custom','m/d/Y') . '</div>';
+	$output .= '<div><b>Time</b>: ' . format_date($card->card_date,'custom','H:i') . '</div>';
+	$output .= '<div><b>Location</b>: ' . $card->location . '</div>';
+	$output .= '</div>';
+	
+	return $output;
+}
+
+/*
+ * CARD NODE
+ */
+
+function efed_card_node_info() {
+  return array(
+    'efed_card' => array(
+	    'name' => t('E-Fed Card'), // Human readable name. Required.
+	    'module' => 'efed_card',  // Machine readable name. (alphanueric, '_' only) Required.
+	    'description' => t('Show card created by the site administrator.'), // Required.
+	    'has_title' => TRUE,
+	    'title_label' => t('Title'),
+	    'has_body' => TRUE,
+	    'body_label' => t('Content'),
+	    'min_word_count' => 0,
+	    'locked' => TRUE
+    )
+  );
+}
+
+function efed_card_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+	if($node->type=='efed_card'){
+		switch ($op) {
+			case 'load':
+				$node->card_info = efed_card_load_by_nid($node->nid);
+			  break;
+			case 'prepare':
+				drupal_goto('admin/efed/card/store/'.$node->card_info->card_id);
+			break;
+			case 'delete':
+				efed_card_delete_by_nid($node->nid);
+			  break;
+		}
+	}
+}
+
+function efed_card_menu() {
+	
+	/*
+	 * Adminstration menu callbacks
+	 */  
+	$items[EFED_ADMIN_AREA .'/card'] = array(
+    	'title' => EFED_CARD_ADMIN_TITLE.'s',
+    	'page callback' => 'efed_card_admin_view_all',
+    	'weight' => 10,
+    	'access arguments' => array('administer efed'), 	
+  	);   
+	
+	$items[EFED_ADMIN_AREA .'/card/store'] = array(
+    	'title' => EFED_CARD_ADMIN_TITLE . ' Store',
+	    'page callback'    => 'drupal_get_form',
+	    'page arguments'   => array('efed_card_admin_manage_form'),
+    	'access arguments' => array('administer efed card'), 
+		'type' => MENU_CALLBACK,
+  	);  
+	
+	$items[EFED_ADMIN_AREA .'/card/match/store'] = array(
+    	'title' => EFED_CARD_ADMIN_TITLE . ' Match Store',
+	    'page callback'    => 'drupal_get_form',
+	    'page arguments'   => array('efed_card_admin_match_manage_form'),
+    	'access arguments' => array('administer efed card'), 
+		'type' => MENU_CALLBACK,
+  	);  
+	
+	$items[EFED_ADMIN_AREA .'/card/match/custom'] = array(
+    	'title' => EFED_CARD_ADMIN_TITLE . ' Create Team',
+	    'page callback'    => 'drupal_get_form',
+	    'page arguments'   => array('efed_card_admin_custom_form'),
+    	'access arguments' => array('administer efed card'), 
+		'type' => MENU_CALLBACK,
+  	);  
+	
+	$items[EFED_ADMIN_AREA .'/card/match/delete/comp'] = array(
+	    'page callback'   => 'efed_card_admin_match_delete_comp',
+    	'access arguments' => array('administer efed card'), 
+		'type' => MENU_CALLBACK,
+  	);  
+	
+	$items[EFED_ADMIN_AREA .'/card/match/delete/team'] = array(
+	    'page callback'   => 'efed_card_admin_match_delete_team',
+    	'access arguments' => array('administer efed card'), 
+		'type' => MENU_CALLBACK,
+  	);  	
+	
+	/*
+	$items['card'] = array(
+    	'page callback' => 'efed_card_view',
+    	'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK,
+  	);  
+	*/
+	return $items;	
+}
+
+function efed_card_admin_view_all(){	
+	$limit = 10;
+	
+	$header = array(
+		array('data' => t('Show')),
+		array('data' => t('Location')),
+		array('data' => t('Live')),
+		array('data' => t('Card Date')),
+		array('data' => ''),
+	);
+
+	$cards = array();
+	$results = pager_query("SELECT card_id FROM {efed_card} ORDER BY card_date DESC",$limit);
+	while($data = db_fetch_object($results)){
+		$card = efed_card_load($data->card_id);
+		
+		if($card->result_exist){
+			$link = '*<em>locked</em>';
+		}else{
+			$link =  l('Edit',EFED_ADMIN_AREA . '/card/store/' . $card->card_id);
+		}
+		
+				
+		$rows[] = array(
+			array('data' => t($card->show->title)),
+			array('data' => t($card->location)),
+			array('data' => t(($card->live)? 'Yes' : 'No')),
+			array('data' => t(format_date($card->card_date,'medium'))),
+			array('data' => $link),
+		);
+	}	
+	
+	$output .= theme('table', $header, $rows);
+	$output .= theme('pager', NULL, $limit, 0);
+	$output .= '<p>*result exist for this card, card can\'t be edited.</p>';
+	
+	$output .= l('Create Card',EFED_ADMIN_AREA . '/card/store');
+	
+	
+	return $output;
+}
+
+/*
+ * CARD FORM
+ */
+ 
+function efed_card_admin_manage_form($form_state){
+	$form = array();
+	
+	$card = efed_card_load(arg(4));
+		
+	$exists = ($card->card_id)? TRUE : FALSE;
+	
+	$form['info'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Card Details'),
+		'#collapsible' => TRUE,
+		'#collapsed' => FALSE,
+	);
+	
+	if($exists) $form['info']['#collapsed'] = TRUE;
+	if(!$exists) $form['info']['#description'] = t('Once you have created the initial card, you will be able to begin adding matches.');
+	
+	$form['info']['card_id'] = array(
+	  	'#type' => 'hidden',
+		'#value' => $card->card_id,
+	);
+	$form['info']['nid'] = array(
+	  	'#type' => 'hidden',
+		'#value' => $card->nid,
+	);
+	
+	$shows = efed_show_load_all();
+	
+	foreach($shows as $show){
+		$opt_shows[$show->show_id] = $show->title;
+	}
+	
+	$form['info']['show_id'] = array(
+	  	'#type' => 'select',
+		'#default_value' => $card->show_id,
+		'#options' => $opt_shows,
+  		'#required' => TRUE,
+	  	'#title' => t('Show'),
+	);
+	
+	$form['info']['location'] = array(
+	  	'#type' => 'textfield',
+		'#default_value' => $card->location,
+		'#size' => 60,
+		'#maxlength' => 128,
+  		'#required' => TRUE,
+	  	'#title' => t('Location'),
+	);
+	
+	$form['info']['live'] = array(
+	  	'#type' => 'checkbox',
+		'#default_value' => $card->live,
+		'#description' => 'Once checked, the card will be visible to all viewers of the site.',
+		'#return_value' => TRUE,
+	  	'#title' => t('Live'),
+	);
+	
+	$form['info']['description'] = array(
+	  	'#type' => 'textarea',
+		'#default_value' => $card->description,
+  		'#required' => TRUE,
+	  	'#title' => t('Description'),
+	);
+	
+	$form['info']['roleplay_limit'] = array(
+	  	'#type' => 'select',
+		'#default_value' => ($card->roleplay_limit)? $card->roleplay_limit : variable_get('default_roleplay_limit',4),
+		'#options' => efed_base_roleplay_limit(),
+  		'#required' => TRUE,
+	  	'#title' => t('Roleplay Limit'),
+	);
+	
+	$card_date = ($card->card_date )? $card->card_date : time();
+	
+	$form['info']['card_date'] = array(
+		'#type' => 'datetime',
+		'#title' => t('Card Date'),
+		'#default_value' => efed_base_date_array($card_date),
+		'#description' => format_date($card->card_date,'medium'),
+	);
+	
+	$card_deadline = ($card->card_deadline )? $card->card_deadline : time();
+	
+	$form['info']['card_deadline'] = array(
+		'#type' => 'datetime',
+		'#title' => t('Card Deadline'),
+		'#default_value' => efed_base_date_array($card_deadline),
+		'#description' => 'Card deadline represents the <em>roleplay deadline</em>, which is the date and time the competitors have to submit there roleplay(s).',
+	);
+	
+	if($exists){	
+		$form = efed_card_admin_manage_form_matches($form,$card);
+	}
+	
+	$form['store'] = array(
+		'#type' => 'submit', 
+		'#value' => t('Store')
+	);
+		
+	$form['cancel'] = array(
+		'#type' => 'submit', 
+		'#value' => t('Cancel')
+	);
+	
+	if($exists){				
+		$form['create'] = array(
+			'#type' => 'submit', 
+			'#value' => t('Create Match')
+		);
+	
+		$form['delete'] = array(
+			'#type' => 'submit', 
+			'#value' => t('Delete')
+		);	
+	}
+	
+	return $form;
+}
+
+function efed_card_admin_manage_form_matches($form,$card){
+	
+	$form['matches'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Matches'),
+		'#description' => t('The heavier the weight, the further down the card the match will appear.'),
+		'#collapsible' => TRUE,
+		'#collapsed' => FALSE,
+	);
+	
+	$header = array(
+		array('data' => t('Competitors')),
+		array('data' => t('Title')),
+		array('data' => t('Type')),
+		array('data' => t('Options')),
+		array('data' => t('Weight')),
+	);
+			
+	foreach($card->matches as $match){	
+	
+		$title = ($match->title>0)? efed_belt_load($match->title)->name : 'None Title';
+		
+		$comps = '';
+		
+		foreach($match->comps as $comp){
+			$p = efed_character_load($comp->id);
+			$comps .= '<div style="font-size:80%">' . $p->name . '</div>';
+		}
+		
+		$rows[] = array(
+			array('data' => t($comps)),
+			array('data' => t($title)),
+			array('data' => t(($match->type=='singles')? 'Singles' : 'Tag Team')),
+			array('data' => l('edit',EFED_ADMIN_AREA . '/card/match/store/'. $match->card_id . '/' . $match->match_id)),
+			array('data' => t($match->weight)),
+		);
+	}	
+	
+	$output .= theme('table', $header, $rows);
+
+	$form['matches']['list'] = array(
+		'#value' => $output,
+	);	
+	
+	return $form;
+}
+
+function efed_card_admin_manage_form_submit($form, &$form_state){
+	$card = (object)$form_state['values'];
+	
+	switch($card->op){
+		case 'Create Match':
+				drupal_goto('admin/efed/card/match/store/'.$card->card_id);
+			break;
+		case 'Store':
+				$card = efed_card_store($card);
+				$card = efed_card_load($card->card_id);
+				drupal_set_message('Card <em>'.$card->show->title . ' ' . format_date($card->card_date,'custom','d/m/Y - H:i').'</em> stored','status');
+				drupal_goto('admin/efed/card/store/'.$card->card_id);
+			break;
+		case 'Cancel':
+				drupal_goto('admin/efed/card');
+			break;	
+		case 'Delete':
+				efed_card_delete($card->card_id);
+				drupal_goto('admin/efed/card');
+			break;	
+	}
+}
+
+/*
+ * MATCH FORM
+ */
+
+function efed_card_admin_match_manage_form($form_state){
+	$form = array();
+	
+	$card = efed_card_load(arg(5));
+	$show = efed_show_load($card->show_id);
+	$match = efed_match_load(arg(6));
+	
+	$exists = ($match->match_id)? TRUE : FALSE;
+	
+	$info = t('The match is for <b>'.$card->show->title.'</b> on the <em>'.format_date($card->card_date,'medium').'</em>.');
+	
+	if(!$exists){
+		$info = t('The match is for <b>'.$card->show->title.'</b> on the <em>'.format_date($card->card_date,'medium').'</em>, once the general match details have been confirmed you will be able <b>add competitors</b>.');
+	}
+	
+	$form['info'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Match Details'),
+		'#collapsible' => TRUE,
+		'#collapsed' => $exists,
+		'#description' => $info,
+	);
+	
+	$form['info']['card_id'] = array(
+	  	'#type' => 'hidden',
+		'#value' => $card->card_id,
+	);
+	
+	$form['info']['match_id'] = array(
+	  	'#type' => 'hidden',
+		'#value' => $match->match_id,
+	);
+	
+	if(!$exists){	
+		$form['info']['type'] = array(
+		  	'#type' => 'select',
+			'#default_value' => $match->type,
+			'#options' => efed_base_match_types(),
+	  		'#required' => TRUE,
+		  	'#title' => t('Type'),
+			'#description' => t('Once you have selected the <em>type</em> of match you want to create, it cannot be changed.'),
+		);	
+	}else{		
+		$form['info']['type'] = array(
+		  	'#type' => 'hidden',
+			'#value' => $match->type,
+		);		
+	}
+	
+	$form['info']['weight'] = array(
+	  	'#type' => 'select',
+		'#default_value' => ($match->weight)? $match->weight : 0,
+		'#options' => efed_base_weight(),
+  		'#required' => TRUE,
+	  	'#title' => t('Weight'),
+	);
+	
+	$form['info']['rules'] = array(
+	  	'#type' => 'select',
+		'#default_value' => ($match->rules)? $match->rules : variable_get('rules_default',0),
+		'#options' => efed_base_load_category(variable_get('rules_category',0)),
+  		'#required' => TRUE,
+	  	'#title' => t('Rules'),
+	);	
+	
+	$form['info']['referee'] = array(
+	  	'#type' => 'select',
+		'#default_value' => $match->referee,
+		'#options' => efed_base_load_category(variable_get('referee_category',0)),
+  		'#required' => TRUE,
+	  	'#title' => t('Referee'),
+	);	
+	
+	$titles = $show->belts;
+	$titles[-1] = 'None Title';
+	
+	$form['info']['title'] = array(
+	  	'#type' => 'select',
+		'#default_value' => ($match->title)? $match->title : -1,
+		'#options' => $titles,
+  		'#required' => TRUE,
+	  	'#title' => t('Title'),
+	);	
+	
+	if($exists){
+		$form = efed_card_admin_match_competitors($form,$card,$match);
+	}
+	
+	$form['store'] = array(
+		'#type' => 'submit', 
+		'#value' => t('Store')
+	);
+		
+	$form['cancel'] = array(
+		'#type' => 'submit', 
+		'#value' => t('Cancel')
+	);
+	
+	if($exists){
+		$form['delete'] = array(
+			'#type' => 'submit', 
+			'#value' => t('Delete')
+		);
+	}
+	
+	return $form;
+}
+
+function efed_card_admin_match_competitors($form,$card,$match){
+
+	$show = efed_show_load($card->show_id);		
+	$type = ($match->type=='singles')? 'Singles' : 'Tag Team';
+	$rules = taxonomy_get_term($match->rules)->name;
+	$referee = taxonomy_get_term($match->referee)->name;
+	$title = ($match->title>0)? efed_belt_load($match->title)->name : 'None Title';
+	
+	$description = 'Match Information:
+					<ul>
+					<li><b>Card:</b> ' . $show->title . ' ' . format_date($card->card_date,'custom','m/d/Y') . '</li>
+					<li><b>Type:</b> ' . $type . '</li>
+					<li><b>Rules:</b> ' . $rules . '</li>
+					<li><b>Referee:</b> ' . $referee . '</li>
+					<li><b>Title:</b> ' . $title . '</li>
+					</ul>';
+	
+	$form['comps_info'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Competitors'),
+		'#collapsible' => TRUE,
+		'#collapsed' => FALSE,
+		'#description' => $description,
+	);
+
+	$output = '';
+	
+	switch($match->type){
+		case 'singles':
+			$output = efed_card_admin_match_singles($match->comps);
+			
+			$form['comps_info']['list'] = array(
+				'#value' => $output,
+			);		
+	
+			foreach($match->comps as $key=>$value){
+				unset($show->roster[$key]);
+			}	
+							
+			if(count($show->roster)>0){	
+				$form['comp_info'] = array(
+					'#type' => 'fieldset',
+					'#title' => t('Add Competitor'),
+					'#collapsible' => TRUE,
+					'#collapsed' => FALSE,
+				);
+		
+				$form['comp_info']['id'] = array(
+					'#type' => 'select',
+					'#options' => $show->roster,
+				);	
+		
+				$form['comp_info']['create'] = array(
+					'#type' => 'submit', 
+					'#value' => t('Add Competitor')
+				);
+			}
+		break;
+		
+		case 'tag-team':
+			$output = efed_card_admin_match_tagteams($match->teams,$match->match_id);
+						
+			$form['comps_info']['list'] = array(
+				'#value' => $output,
+			);
+			
+			foreach($match->comps as $key=>$value){
+				unset($show->stables[$key]);
+			}
+			
+			if(count($show->roster)>0){	
+				$form['comp_info'] = array(
+					'#type' => 'fieldset',
+					'#title' => t('Add Tag-Team/Stable'),
+					'#collapsible' => TRUE,
+					'#collapsed' => FALSE,
+				);
+				
+				$tagteams = $show->stables;
+				$tagteams['null'] = '-- create custom --';
+				
+				foreach($match->teams as $key=>$val){
+					unset($tagteams[$key]);
+				}
+		
+				$form['comp_info']['id'] = array(
+					'#type' => 'select',
+					'#default_value' => 'null',
+					'#options' => $tagteams,
+					'#description' => 'You can create a <b>custom</b> tag-team/stable just for this my selecting <em>create custom</em>.',
+				);	
+								
+				foreach($show->stables as $key => $name){
+					$stable = efed_stable_load($key);
+					
+					$stable_members = array();
+					
+					foreach($stable->members as $cid){
+						$account = efed_character_load($cid);
+						$stable_members[$account->character_id] = $account->name;
+					}
+					
+					$form['comp_info']['stable_'.$stable->stable_id.'_members'] = array(
+						'#prefix' => '<div id="stable_'.$stable->stable_id.'" class="stable_members">',
+						'#title' => t($stable->name.' Members'),
+						'#type' => 'checkboxes',
+						'#options' => $stable_members,
+						'#suffix' => '</div>',
+					);					
+				}
+						
+				$form['comp_info']['create'] = array(
+					'#type' => 'submit', 
+					'#value' => t('Add Tag-Team/Stable')
+				);
+			}
+		break;
+	}
+	
+	return $form;
+}
+
+function efed_card_admin_match_singles($comps){
+	$output = '';			
+
+	$header = array(
+		array('data' => t('Competitor')),
+		array('data' => t('Options')),
+	);
+	
+	foreach($comps as $comp){
+		$p = efed_character_load($comp->id);
+		$rows[] = array(
+			array('data' => $p->name),
+			array('data' => l('Remove',EFED_ADMIN_AREA .'/card/match/delete/comp/'.$comp->comp_id)),
+		);
+	}
+		
+	$output .= theme('table', $header, $rows);
+	
+	return $output;
+}
+
+function efed_card_admin_match_tagteams($teams,$match_id){
+	$output = '';			
+
+	$header = array(
+		array('data' => t('Team/Stable')),
+		array('data' => t('Members')),
+		array('data' => t('Options')),
+	);
+	
+	foreach($teams as $stable_id => $members){
+		$stable = efed_stable_load($stable_id);		
+		
+		$m = '<div style="font-size: 80%">';		
+		foreach($members as $member){
+			$account = efed_character_load($member);
+			$m .= $account->name.'<br/>';
+		}
+		$m .= '</div>';
+		
+		$rows[] = array(
+			array('data' => $stable->name),
+			array('data' => $m),
+			array('data' => l('Remove',EFED_ADMIN_AREA .'/card/match/delete/team/'.$stable_id .'/'.$match_id)),
+		);
+	}
+		
+	$output .= theme('table', $header, $rows);
+	
+	return $output;
+}
+
+function efed_card_admin_match_manage_form_submit($form, &$form_state){
+	$match = (object)$form_state['values'];
+	
+	switch($match->op){
+		case 'Store':
+				drupal_set_message('Match stored','status');
+				$match = efed_match_store($match);
+				drupal_goto('admin/efed/card/match/store/'.$match->card_id.'/'.$match->match_id);				
+			break;
+		case 'Cancel':
+				drupal_goto('admin/efed/card/store/'.$match->card_id);
+			break;		
+		case 'Add Competitor':
+				$match_current = efed_match_load($match->match_id);
+				$match_current->comps[$match->id] = (object)array('id'=>$match->id);				
+				efed_comp_store($match_current);
+				drupal_set_message('Competitor added','status');
+				drupal_goto('admin/efed/card/match/store/'.$match->card_id.'/'.$match->match_id);
+			break;	
+		case 'Add Tag-Team/Stable':
+
+				if($match->id=='null'){
+					drupal_goto('admin/efed/card/match/custom/'.$match->card_id.'/'.$match->match_id);					
+				}else{		
+					$team = (array)$match;
+					
+					foreach($team['stable_'.$match->id.'_members'] as $uid){						
+						$sql = "INSERT INTO {efed_comp} (match_id, id,team_id) VALUES(%d,%d,%d)";
+						db_query($sql,$match->match_id,$uid,$match->id);
+					}					
+						
+					drupal_goto('admin/efed/card/match/store/'.$match->card_id.'/'.$match->match_id);
+				}
+			break;
+		case 'Delete':
+				efed_match_delete($match->match_id);
+				drupal_goto('admin/efed/card/store/'.$match->card_id);
+			break;
+	}
+}
+
+function efed_card_admin_custom_form($form_state){
+	$form = array();
+	
+	$card = efed_card_load(arg(5));
+	$match = efed_match_load(arg(6));
+	$show = efed_show_load($card->show_id);		
+	
+	$form['roster'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Custom Team'),
+		'#description' => t('Select the roster members you want to add to the team'),
+		'#collapsible' => TRUE,
+		'#collapsed' => FALSE,
+	);
+	
+	$form['roster']['card_id'] = array(
+		'#type' => 'hidden',
+		'#value' => $card->card_id,
+	);
+	
+	$form['roster']['match_id'] = array(
+		'#type' => 'hidden',
+		'#value' => $match->match_id,
+	);
+	
+	$form['roster']['members'] = array(
+		'#type' => 'checkboxes',
+		'#title' => t('Roster'),
+		'#options' => $show->roster,
+	);
+	
+	$form['submit'] = array(
+		'#type'=>'submit',
+		'#value'=>'Create Team',
+	);
+	
+	
+	return $form;
+}
+
+function efed_card_admin_custom_form_submit($form, &$form_state){
+	$stable = (object)$form_state['values'];
+	
+	$stable->name ='Custom Team';
+	$stable->owner = -1;
+	
+	$card = efed_card_load($stable->card_id);
+	$show = efed_show_load($card->show_id);
+		
+	$members = array();
+	
+	foreach($stable->members as $member){
+		if($member>0){ 
+			$members[] = $member;
+		}
+	}
+	
+	$obj = efed_stable_create_team($stable,$members);
+	
+	foreach($members as $uid){
+		$sql = "INSERT INTO {efed_comp} (match_id,id,team_id) VALUES(%d,%d,%d)";
+		db_query($sql,$stable->match_id,$uid,$obj->stable_id);
+	}
+	
+	drupal_goto('admin/efed/card/match/store/'.$stable->card_id.'/'.$stable->match_id);
+}
+
+function efed_card_admin_match_delete_comp(){
+	$comp = efed_comp_load(arg(6));
+	$match = efed_match_load($comp->match_id);
+	drupal_set_message('<em>Competitor</em> removed from match.','status');	
+	efed_comp_delete($comp->comp_id);
+	drupal_goto('admin/efed/card/match/store/'.$match->card_id.'/'.$match->match_id);
+}
+
+function efed_card_admin_match_delete_team(){
+	$team_id = arg(6);
+	$match_id = arg(7);
+	$match = efed_match_load($match_id);
+	drupal_set_message('<em>Team</em> removed from match.','status');
+		
+	$sql = "DELETE FROM {efed_comp} WHERE team_id = %d AND match_id = %d";			
+	db_query($sql,$team_id,$match_id);	
+	
+	$stable = efed_stable_load($team_id);
+	
+	if(empty($stable->roster_id)){
+		efed_stable_delete($stable->stable_id);
+	}
+	
+	drupal_goto('admin/efed/card/match/store/'.$match->card_id.'/'.$match->match_id);
+}
+
+
+/*
+ * 
+ * BASE STORE(CREATE/UPDATE), READ & DELETE FUNCTIONS 
+ * 
+ */
+ 
+ /*
+  * CARD FUNCTIONS
+  */  
+  
+function efed_card_load_next_by_show_id($show_id){		
+	$sql = "SELECT nid FROM efed_card WHERE show_id = %d ORDER BY card_date LIMIT 0,1";	
+	$results = db_query($sql,$show_id);
+	$data = db_fetch_object($results);
+	$node = node_load($data->nid);
+	return $node;
+}
+ 
+function efed_card_load_next($amount){		
+	$cards = array();
+	
+	$sql = "SELECT nid FROM 
+			efed_card ORDER BY 
+			card_date DESC LIMIT 0,".$amount;
+	
+	$results = db_query($sql);
+	
+	while($data = db_fetch_object($results)){	
+		$cards[] = node_load($data->nid);
+	}
+	return $cards;
+}
+ 
+function efed_card_load_all(){		
+	$cards = array();
+	$results = db_query("SELECT card_id FROM {efed_card}");
+	while($data = db_fetch_object($results)) $cards[] = efed_card_load($data->card_id);
+	return $cards;
+}
+
+function efed_card_load_for_select(){
+	$cards = array();
+
+	foreach(efed_card_load_all() as $card){
+		if(!$card->result_exist) $cards[$card->card_id] = $card->card_title;
+	}
+	
+	if(count($cards)==0){
+		$cards = null;
+	}
+	
+	return $cards;
+}
+
+function efed_card_load($card_id){		
+	$sql = "SELECT * FROM {efed_card} WHERE card_id = %d";	
+	$result = db_query($sql,$card_id);		
+	$data = db_fetch_object($result);
+	$data->matches = efed_match_load_card($card_id);
+	$data->show = efed_card_load_show($data->show_id);
+	$data->result = efed_card_load_result($card_id);
+	$data->result_exist = ($data->result->result_id>0)? TRUE : FALSE;
+	$data->card_title = $data->show->title.' - '.format_date($data->card_date,'medium');
+	return $data;
+}
+
+function efed_card_load_result($card_id){		
+	$sql = "SELECT result_id FROM {efed_result} WHERE card_id = %d";	
+	$result = db_query($sql,$card_id);		
+	$data = db_fetch_object($result);	
+	return efed_result_load($data->result_id);
+}
+
+function efed_card_load_show($show_id){		
+	$sql = "SELECT * FROM {efed_show} WHERE show_id = %d";	
+	$result = db_query($sql,$show_id);		
+	$data = db_fetch_object($result);
+	return $data;
+}
+
+function efed_card_load_by_nid($nid){
+	$sql = "SELECT card_id FROM {efed_card} WHERE nid = %d";	
+	$result = db_query($sql,$nid);		
+	$data = db_fetch_object($result);
+	return efed_card_load($data->card_id);
+}
+
+function efed_card_store($object){	
+	
+	$object->card_deadline = efed_base_date_timestamp($object->card_deadline);
+	$object->card_date = efed_base_date_timestamp($object->card_date);
+
+	$node = array(
+		'nid'     => ($object->nid)? $object->nid : 0,
+		'title'   => $object->show->title,
+		'body' 	  => $object->description,
+		'changed' => $object->card_date,
+		'created' => $object->card_date,
+	);
+	
+	$node = efed_base_create_node('efed_card',$node);
+	
+	$object->nid = $node->nid;
+	
+	if($object->card_id > 0){	
+		drupal_write_record('efed_card',$object,'card_id');
+	}else{		
+		drupal_write_record('efed_card',$object);
+	}
+	
+	return $object;
+}
+
+
+function efed_card_output_competitors($match){
+	switch($match->type){
+		case 'singles':		
+			$output .= '<b>Competitors:</b>';
+			foreach($match->comps as $comp){
+				$competitor = user_load($comp->id);				
+				$output .= '<div class="competitor">';
+				$output .= $competitor->name;
+				$output .= '</div>';
+			}
+			
+			break;
+		
+		case 'tag-team':		
+			$output .= '<b>Teams:</b>';
+			foreach($match->teams as $team_id => $members){
+				$stable = efed_stable_load($team_id);				
+				$output .= '<div class="team">';
+				$output .= $stable->name;
+				$output .= '</div>';
+			}
+			
+			break;
+	}
+	return $output;
+}
+
+function efed_card_delete_by_nid($nid){		
+	$sql = "DELETE FROM {efed_card} WHERE nid = %d";				
+	db_query($sql,$nid);	
+}
+
+function efed_card_delete($card_id){
+	$card = efed_card_load($card_id);
+	node_delete($card->nid);
+	foreach($card->matches as $match){
+		efed_match_delete($match->match_id);
+	}
+
+	$sql = "DELETE FROM {efed_card} WHERE card_id = %d";				
+	db_query($sql,$card_id);	
+}
+
+ /*
+  * MATCH FUNCTIONS
+  */  
+ 
+ 
+function efed_match_load_all(){		
+	$matches = array();
+	$results = db_query("SELECT match_id FROM {efed_match}");
+	while($data = db_fetch_object($results)) $matches[] = efed_match_load($data->match_id);
+	return $matches;
+}
+
+function efed_match_load_card_by_nid($nid){
+	$matches = array();
+	$results = db_query("SELECT match_id FROM {efed_match} WHERE nid = %d ORDER BY weight",$nid);
+	while($data = db_fetch_object($results)) $matches[] = efed_match_load($data->match_id);
+	return $matches;
+}
+
+function efed_match_load_card($card_id){
+	$matches = array();
+	$results = db_query("SELECT match_id FROM {efed_match} WHERE card_id = %d ORDER BY weight",$card_id);
+	while($data = db_fetch_object($results)) $matches[] = efed_match_load($data->match_id);
+	return $matches;
+}
+
+function efed_match_load($match_id){		
+	$sql = "SELECT * FROM {efed_match} WHERE match_id = %d";	
+	$result = db_query($sql,$match_id);		
+	$data = db_fetch_object($result);
+	$data->display_rules = ($data->rules==variable_get('rules_default',0))? FALSE : TRUE;
+	$data->teams = efed_comp_load_match_team($match_id);
+	$data->comps = efed_comp_load_match($match_id);
+	$data->match_title = efed_match_title($data);
+	
+	return $data;
+}
+
+function efed_match_title($match){
+	$start = TRUE;
+	
+	switch($match->type){
+		case 'singles':
+	
+			foreach($match->comps as $comp){
+				$c = efed_character_load($comp->id);
+				
+				if($start){
+					$title .= $c->name;		
+					$start = FALSE;
+				}else{
+					$title .= ' vs ' . $c->name;		
+				}
+			}
+		
+		break;
+		
+		case 'tag-team':
+			
+			foreach($match->teams as $stable_id => $team){
+				$s = efed_stable_load($stable_id);
+				
+				if($start){
+					$title .= $s->name;		
+					$start = FALSE;
+				}else{
+					$title .= ' vs ' . $s->name;		
+				}
+			}
+			
+		break;
+	}	
+	
+	return $title;
+}
+
+function efed_match_store($object){	
+	if($object->match_id > 0){	
+		drupal_write_record('efed_match',$object,'match_id');
+	}else{		
+		drupal_write_record('efed_match',$object);
+	}
+	
+	return $object;
+}
+
+function efed_match_delete($match_id){	
+	$m = efed_match_load($match_id);
+	
+	switch($m->type){
+		case 'singles':
+			foreach($m->comps as $comp){
+				efed_comp_delete($comp->id);
+			}
+		
+		break;
+		
+		case 'tag-team':
+			foreach($m->teams as $stable_id => $comps){
+			
+				$stable = efed_stable_load($stable_id);
+				if($stable->name=='Custom Team'){
+					efed_stable_delete($stable_id);
+				}
+								
+				efed_comp_delete($comp->id);			
+			}
+		
+		break;
+	}
+		
+	$sql = "DELETE FROM {efed_match} WHERE match_id = %d";			
+	db_query($sql,$match_id);	
+}
+
+ /*
+  * COMP FUNCTIONS
+  */  
+
+function efed_comp_load_all(){		
+	$comps = array();
+	$results = db_query("SELECT comp_id FROM {efed_comp}");
+	while($data = db_fetch_object($results)) $comps[] = efed_comp_load($data->comp_id);
+	return $comps;
+}
+
+function efed_comp_load_match($match_id){
+	$comps = array();
+	$results = db_query("SELECT * FROM {efed_comp} WHERE match_id = %d",$match_id);
+	while($data = db_fetch_object($results)) $comps[$data->id] = efed_comp_load($data->comp_id);
+	return $comps;
+}
+
+function efed_comp_load_match_team($match_id){
+	$teams = array();
+	$results = db_query("SELECT DISTINCT(team_id) FROM {efed_comp} WHERE match_id = %d",$match_id);
+	while($data = db_fetch_object($results)){
+		 $teams[$data->team_id] = efed_comp_load_match_team_members($match_id,$data->team_id);
+	}
+	return $teams;
+}
+
+function efed_comp_load_match_team_members($match_id,$team_id){		
+	$members = array();
+	
+	$sql = "SELECT id FROM {efed_comp} WHERE match_id = %d AND team_id = %d";	
+	$results = db_query($sql,$match_id,$team_id);		
+	while($data = db_fetch_object($results)){
+		 $members[$data->id] = $data->id;
+	}
+	
+	return $members;
+}
+
+function efed_comp_load($comp_id){		
+	$sql = "SELECT * FROM {efed_comp} WHERE comp_id = %d";	
+	$result = db_query($sql,$comp_id);		
+	$data = db_fetch_object($result);
+	return $data;
+}
+
+function efed_comp_store($match){						
+	db_query("DELETE FROM {efed_comp} WHERE match_id = %d",$match->match_id);	
+	
+	foreach($match->comps as $key=>$value){
+		$sql = "INSERT INTO {efed_comp} (match_id, id) VALUES(%d,%d)";
+		db_query($sql,$match->match_id,$key);
+	}
+}
+
+function efed_comp_delete($comp_id){		
+	$sql = "DELETE FROM {efed_comp} WHERE comp_id = %d";			
+	db_query($sql,$comp_id);	
+}

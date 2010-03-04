@@ -1,0 +1,6 @@
+; $Id$
+name = "Breadcrumb"
+description = "custom breadcrumb module for efed pages."
+package = "E-Fed"
+dependencies[] = "efed_roster"
+core = 6.x

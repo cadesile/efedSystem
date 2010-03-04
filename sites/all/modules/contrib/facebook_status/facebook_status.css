@@ -1,0 +1,46 @@
+/* $Id$ */
+
+#-facebook_status-status, #-facebook-status-status #edit-status-wrapper {
+  margin: 0;
+}
+
+#-facebook-status-status .field-prefix {
+  float: left;
+  margin-top: 0.25em;
+}
+
+#-facebook-status-status #edit-status {
+  float: left;
+  margin: 0.25em 0.5em 0 0;
+}
+
+#-facebook-status-status #edit-fbss-submit {
+  margin: 0.25em 0 0 0;
+}
+
+#-facebook-status-status #edit-twitter-wrapper {
+  clear: none;
+  margin: 0;
+}
+
+#-facebook-status-status .facebook_status_negative {
+  color: #800000;
+}
+
+#-facebook-status-status #facebook_status_chars {
+  margin-left: 0.25em;
+}
+
+.facebook_status-profile-category .profile {
+  clear: none;
+}
+
+#facebook_status_edit_delete, #facebook_status_conversation_link {
+  font-size: 90%;
+  margin-left: 0.5em;
+}
+
+#-facebook-status-status .view {
+  clear: both;
+  float: left;
+}

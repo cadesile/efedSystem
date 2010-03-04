@@ -1,0 +1,7 @@
+; $Id$
+name = "Character"
+description = "custom menu callbacks for creating and managing characters."
+package = "E-Fed"
+dependencies[] = "efed_base"
+dependencies[] = "efed_character"
+core = 6.x

@@ -1,0 +1,487 @@
+<?php
+
+efed_base();
+
+function efed_stable_perm() {
+  return array('administer efed stable');
+}
+
+function efed_stable_menu() {
+		
+	/*
+	 * Adminstration menu callbacks
+	 */ 
+	
+	$items[EFED_ADMIN_AREA .'/stable'] = array(
+    	'title' => 'Stables',
+	    'page callback'    => 'efed_stable_admin_view_all',
+    	'access arguments' => array('administer efed stable'),
+  	); 
+	$items[EFED_ADMIN_AREA .'/stable/store'] = array(
+    	'title' => 'Create Stable',
+	    'page callback'    => 'drupal_get_form',
+	    'page arguments'   => array('efed_stable_admin_create_form'),
+    	'access arguments' => array('administer efed stable'),
+		'type' => MENU_CALLBACK,
+  	); 
+	
+	$items[EFED_ADMIN_AREA .'/stable/delete/member'] = array(
+	    'page callback'    => 'efed_stable_remove_member',
+    	'access arguments' => array('administer efed stable'),
+		'type' => MENU_CALLBACK,
+  	);  
+	
+	$items['stables/%'] = array(
+    	'title' => 'Stables',
+	    'page callback' => 'efed_stable_view',
+    	'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK,
+  	);  
+	
+	$items['stables'] = array(
+    	'title' => 'Stables',
+	    'page callback'    => 'efed_stable_view_all',
+    	'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK,
+  	);  
+		
+	/*
+	 * User callback menu callbacks
+	 * EFED_DEFAULT_ROLE user can access
+	 */
+	
+	return $items;	
+}
+
+function efed_stable_theme() {
+  return array(
+    'stable_template' => array(
+      'arguments' => array('stable' => NULL),
+      'template' => 'stable'
+    ),
+  );
+}
+
+function efed_stable_view_all(){	
+	$limit = 20;
+	
+	$header = array(
+		array('data' => t('Name')),
+		array('data' => t('Leader')),
+		array('data' => t('Roster')),
+	);
+
+	$rosters = array();
+	$results = pager_query("SELECT stable_id FROM {efed_stable} WHERE owner > 0",$limit);
+	while($data = db_fetch_object($results)){		
+		$stable = efed_stable_load($data->stable_id);
+		$owner = efed_character_load($stable->owner);
+		$roster = efed_roster_load($stable->roster_id);
+				
+		$rows[] = array(
+			array('data' => l($stable->name,'stables/' . $stable->stable_id)),
+			array('data' => t($owner->name)),
+			array('data' => t($roster->name)),
+		);
+	}	
+	
+	$output .= theme('table', $header, $rows);
+	$output .= theme('pager', NULL, $limit, 0);
+	
+	return $output;
+}
+
+function efed_stable_view(){	
+	$stable = efed_stable_load(arg(1));	
+	return theme('stable_template',$stable);
+}
+
+function efed_stable_node_info() {
+  return array(
+    'efed_stable' => array(
+	    'name' => t('E-Fed Stable'),
+	    'module' => 'node',
+	    'description' => t('Roster stable, assigned by site administrator.'),
+	    'has_title' => TRUE,
+	    'title_label' => t('Name'),
+	    'has_body' => TRUE,
+	    'body_label' => t('Notes'),
+	    'min_word_count' => 0,
+	    'locked' => TRUE
+    )
+  );
+}
+
+function efed_stable_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+	if($node->type=='efed_stable'){
+		switch ($op) {
+			case 'load':
+				$node->stable_info = efed_stable_load_by_nid($node->nid);
+			break;
+			case 'prepare':
+				drupal_goto('admin/efed/stable/store/'.$node->stable_info->stable_id);
+			break;
+			case 'delete':
+				efed_stable_delete_by_nid($node->nid);
+			break;
+		}
+	}
+}
+
+
+function efed_stable_admin_view_all(){	
+	$limit = 10;
+	
+	$header = array(
+		array('data' => t('Name')),
+		array('data' => t('Leader')),
+		array('data' => t('Members')),
+		array('data' => t('Roster')),
+		array('data' => t('Created')),
+		array('data' => '')
+	);
+
+	$rosters = array();
+	$results = pager_query("SELECT stable_id FROM {efed_stable} WHERE owner > 0",$limit);
+	while($data = db_fetch_object($results)){		
+		$stable = efed_stable_load($data->stable_id);
+		$owner = efed_character_load($stable->owner);
+		$roster = efed_roster_load($stable->roster_id);
+		$rows[] = array(
+			array('data' => $stable->name),
+			array('data' => t($owner->name)),
+			array('data' => t(count($stable->members))),
+			array('data' => t($roster->name)),
+			array('data' => t(format_date($stable->updated,'small'))),
+			array('data' => l('Edit',EFED_ADMIN_AREA . '/stable/store/' . $stable->stable_id)),
+		);
+	}	
+	
+	$output .= theme('table', $header, $rows);
+	$output .= theme('pager', NULL, $limit, 0);
+	
+	$output .= l('Create Stable',EFED_ADMIN_AREA . '/stable/store');
+	
+	return $output;
+}
+
+function efed_stable_remove_member(){
+	
+	$stable = efed_stable_load(arg(5));
+	$p = efed_character_load(arg(6));
+	
+	efed_stable_delete_roster_membership($stable->stable_id,$p->character_id);
+	
+	drupal_set_message('<em>'.$p->name.'</em> removed from '.$stable->name,'status');	
+	
+	drupal_goto('admin/efed/stable/store/'.$stable->stable_id);	
+	
+}
+
+function efed_stable_admin_create_form($form_state){
+	$form = array();
+	
+	$stable = efed_stable_load(arg(4));	
+	$rosters = efed_roster_load_all();
+	
+	$exists = ($stable->stable_id)? TRUE : FALSE;
+		
+	foreach($rosters as $roster){
+		$options[$roster->roster_id] = $roster->name;
+	}
+	
+	$gm = efed_character_load_all();
+	
+	$description = 'Once you have created the initial stable info, you’ll be able to add members.';
+	
+	if($exists) $description = "Manage <b>" . $stable->name . "</b> stable.";
+				
+	$form['info'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Stable Details'),
+		'#description' => t($description),
+		'#collapsible' => TRUE,
+		'#collapsed' => $exists,
+	);	
+	
+	$form['info']['nid'] = array(
+	  	'#type' => 'hidden',
+		'#default_value' => $stable->nid,
+	);
+	
+	$form['info']['stable_id'] = array(
+	  	'#type' => 'hidden',
+		'#default_value' => $stable->stable_id,
+	);
+			
+	$form['info']['name'] = array(
+	  	'#title' => t('Name'),
+	  	'#type' => 'textfield',
+		'#default_value' => $stable->name,
+		'#size' => 60,
+		'#maxlength' => 128,
+  		'#required' => TRUE,
+	);	
+	
+	$form['info']['owner'] = array(
+	  	'#type' => 'select',
+		'#default_value' => $stable->owner,
+		'#options'=>$gm,
+	  	'#title' => t('Leader'),
+  		'#required' => TRUE,
+	);
+	
+	$selected = array();
+	
+	$form['info']['roster_id'] = array(
+	  	'#type' => 'select',
+		'#default_value' => $stable->roster_id,
+		'#options'=>$options,
+	  	'#title' => t('Roster'),
+  		'#required' => TRUE,
+		'#description'=>t('The roster selected will determine which card(s) the stable will be able to appear on.'),
+	);
+	
+	$form['info']['notes'] = array(
+	  	'#type' => 'textarea',
+		'#default_value' => $stable->notes,
+	  	'#title' => t('Notes'),
+  		'#required' => TRUE,
+	);
+	
+	if($exists){
+		$form = efed_stable_admin_create_members($form,$stable);
+	}
+	
+	$form['store'] = array(
+		'#type' => 'submit', 
+		'#value' => t('Store'),
+	);
+		
+	$form['cancel'] = array(
+		'#type' => 'submit', 
+		'#value' => t('Cancel'),
+	);
+		
+	$form['delete'] = array(
+		'#type' => 'submit', 
+		'#value' => t('Delete'),
+	);
+				
+	return $form;
+}
+
+function efed_stable_admin_create_members($form,$stable){
+	
+	$roster = efed_roster_load($stable->roster_id);
+	$owner = efed_character_load($stable->owner);
+	
+	$description = 'Stable Information:
+				<ul>
+					<li>Name: ' . $stable->name . '</li>
+					<li>Roster: ' . $roster->name . '</li>
+					<li>Owner: ' . $owner->name . '</li>
+				</ul>';
+		
+	$form['members'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Stable Members'),
+		'#description' => t($description),
+		'#collapsible' => TRUE,
+		'#collapsed' => FALSE,
+	);	
+	
+	$header = array(
+		array('data' => t('Name')),
+		array('data' => t('Option'))
+	);
+	
+	foreach($stable->members as $p){
+		
+		$rows[] = array(
+			array('data' => t($p->name)),
+			array('data' => l('Remove',EFED_ADMIN_AREA . '/stable/delete/member/' .$stable->stable_id .'/'. $p->character_id)),
+		);
+	}	
+	
+	$output .= theme('table', $header, $rows);
+	
+	
+	$form['members']['list'] = array(
+		'#value'=>$output,
+	);
+	$members = array();
+	
+	foreach($roster->members as $cid => $value){
+		$p = efed_character_load($cid);
+		if(is_null($stable->members[$p->character_id]))$members[$p->character_id] = $p->name;
+	}
+	
+	if(count($members)>0){
+	
+		$form['member'] = array(
+			'#type' => 'fieldset',
+			'#title' => t('Add Member'),
+			'#collapsible' => TRUE,
+			'#collapsed' => FALSE,
+		);	
+		
+		$form['member']['cid'] = array(
+		  	'#type' => 'select',
+			'#options'=>$members,
+		);
+		
+		$form['member']['add'] = array(
+			'#type' => 'submit', 
+			'#value' => t('Add Member'),
+		);
+	
+	}
+	return $form;
+}
+
+function efed_stable_admin_create_form_submit($form, &$form_state){	
+	$stable = (object)$form_state['values'];
+		
+	switch($stable->op){
+		case 'Store':	
+				$stable = efed_stable_store($stable);
+									
+				if($stable->stable_id){
+					drupal_set_message($stable->name . ' details stored.','status');		
+				}else{
+					drupal_set_message($stable->name . ' details could not be stored.','error');
+				}		
+				drupal_goto('admin/efed/stable/store/'.$stable->stable_id);
+			break;
+		case 'Add Member':
+				efed_stable_store_roster_membership($stable->stable_id,$stable->cid);
+				$p = efed_character_load($stable->cid);
+				drupal_set_message('<em>'.$p->name.'</em> added to '.$stable->name,'status');
+				drupal_goto('admin/efed/stable/store/'.$stable->stable_id);
+			break;	
+		case 'Cancel':
+				drupal_goto('admin/efed/stable/');
+			break;	
+		case 'Delete':
+				drupal_set_message('Stable <em>'.$stable->name.'</em> deleted.','status');
+				efed_stable_delete($stable->stable_id);
+				drupal_goto('admin/efed/stable/store/'.$stable->stable_id);
+			break;		
+	}
+}
+
+/*
+ * 
+ * BASE STORE(CREATE/UPDATE), READ & DELETE FUNCTION,  * 
+ * 
+ */
+
+function efed_stable_load($stable_id){		
+	$sql = "SELECT * FROM {efed_stable} WHERE stable_id = %d";	
+	$result = db_query($sql,$stable_id);		
+	$data = db_fetch_object($result);	
+	$data->members = efed_stable_load_members($stable_id);
+	$data->name = efed_stable_name($data);
+	return $data;
+}
+
+function efed_stable_name($stable){
+			
+	if(strtolower($stable->name)=='custom team'){	
+		$start = TRUE;
+		
+		foreach($stable->members as $c){
+			if($start){
+				$title .= $c->name;
+				$start = FALSE;
+			}else{
+				$title .= ', '.$c->name;
+			}
+		}		
+	}else{
+		$title = $stable->name;
+	}
+	
+	return $title;
+}
+
+function efed_stable_load_by_nid($nid){		
+	$sql = "SELECT stable_id FROM {efed_stable} WHERE nid = %d";	
+	$result = db_query($sql,$nid);		
+	$data = db_fetch_object($result);		
+	return efed_stable_load($data->stable_id);
+}
+
+function efed_stable_load_by_roster_id($roster_id){		
+	$sql = "SELECT stable_id, name FROM {efed_stable} WHERE roster_id = %d";	
+	$result = db_query($sql,$roster_id);		
+	while($data = db_fetch_object($result)){
+		$members[$data->stable_id] = $data->name;
+	}	
+	return $members;
+}
+
+function efed_stable_load_members($stable_id){		
+	$members = array();
+	$sql = "SELECT * FROM {efed_stable_member} WHERE stable_id = %d";	
+	$result = db_query($sql,$stable_id);		
+	while($data = db_fetch_object($result)){
+		$p = efed_character_load($data->cid);
+		$members[$data->cid] = $p;
+	}	
+	return $members;
+}
+
+function efed_stable_create_team($stable,$members){
+	$stable = efed_stable_store($stable);
+	
+	foreach($members as $cid){
+		efed_stable_store_roster_membership($stable->stable_id,$cid);
+	}
+	
+	return efed_stable_load($stable->stable_id);
+}
+
+function efed_stable_store($object){
+	
+	$node = array(
+		'nid'     => ($object->nid)? $object->nid : 0,
+		'title'   => $object->name,
+		'body' 	  => $object->notes,
+		'changed' => time(),
+		'created' => time(),
+	);
+	
+	$node = efed_base_create_node('efed_stable',$node);	
+		
+	if($object->stable_id>0){
+		$object->nid = $node->nid;
+		$object->updated = time();	
+		drupal_write_record('efed_stable',$object,'stable_id');
+	}else{		
+		$object->nid = $node->nid;
+		$object->created = time();
+		$object->updated = time();
+		drupal_write_record('efed_stable',$object);
+	}
+	
+	return $object;
+}
+
+function efed_stable_delete_by_nid($nid){		
+	$sql = "DELETE FROM {efed_stable} WHERE nid = %d";			
+	db_query($sql,$nid);	
+}
+function efed_stable_delete($stable_id){				
+	db_query("DELETE FROM {efed_stable} WHERE stable_id = %d",$stable_id);	
+	db_query("DELETE FROM {efed_stable_member} WHERE stable_id = %d",$stable_id);
+}
+
+function efed_stable_store_roster_membership($stable_id,$cid){		
+	db_query("INSERT INTO {efed_stable_member} (stable_id,cid) VALUES(%d,%d)",$stable_id,$cid);
+}
+
+function efed_stable_delete_roster_membership($stable_id,$cid){		
+	db_query("DELETE FROM {efed_stable_member} WHERE stable_id = %d AND cid = %d",$stable_id,$cid);
+}

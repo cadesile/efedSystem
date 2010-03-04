@@ -1,0 +1,10 @@
+.character_item{
+	border-bottom: solid 1px #e3e3e3;
+	clear: both;
+}
+
+.character_item .thumb{
+	float: left;
+	margin-right: 10px;
+}
+

@@ -1,0 +1,465 @@
+<?php
+
+efed_base();
+
+function efed_belt_init() {
+	drupal_add_css(drupal_get_path('module','efed_belt').'/efed_belt.css');
+	drupal_add_js(drupal_get_path('module','efed_belt').'/efed_belt.js');
+}
+
+function efed_belt_perm() {
+	return array(
+		'administer efed roster',
+	);
+}
+
+function efed_belt_theme() {
+  return array(
+    'efed_belt' => array(
+      'arguments' => array('belt' => NULL),
+      'template' => 'belt'
+    ),
+    'efed_belt_item' => array(
+      'arguments' => array('belt' => NULL),
+      'template' => 'belt_item'
+    ),
+  );
+}
+
+function efed_belt_menu() {
+		
+	/*
+	 * Adminstration menu callbacks
+	 */ 
+	
+	$items[EFED_ADMIN_AREA .'/roster/store/%/belt'] = array(
+    	'title' => 'Manage Belt',
+	    'page callback'    => 'drupal_get_form',
+	    'page arguments'   => array('efed_belt_admin_create_form'),
+    	'access arguments' => array('administer efed stable'),
+		'type' => MENU_CALLBACK,
+  	); 
+	
+	$items[EFED_ADMIN_AREA .'/roster/store/belt/delete/%'] = array(
+	    'page callback'    => 'efed_belt_reign_process_delete',
+    	'access arguments' => array('administer efed stable'),
+		'type' => MENU_CALLBACK,
+  	); 
+	
+	$items[EFED_ADMIN_AREA .'/roster/store/belt/vacate/%'] = array(
+	    'page callback'    => 'efed_belt_reign_process_vacate',
+    	'access arguments' => array('administer efed stable'),
+		'type' => MENU_CALLBACK,
+  	); 
+	
+	return $items;	
+}
+
+function efed_belt_reign_process_delete(){
+	$reign = efed_belt_reign_load(arg(6));
+	$belt = efed_belt_load($reign->belt_id);
+
+	drupal_set_message($belt->name.' history delete.','error');
+				
+	efed_belt_reign_delete($reign->reign_id);
+	drupal_goto(EFED_ADMIN_AREA .'/roster/store/'.$belt->roster_id.'/belt/'.$reign->belt_id);	
+}
+
+function efed_belt_reign_process_vacate(){
+	$reign = efed_belt_reign_load(arg(6));
+	$belt = efed_belt_load($reign->belt_id);
+
+	drupal_set_message($belt->name.' history vacated.','status');
+				
+	$reign->end = time();
+	efed_belt_reign_store($reign);
+	drupal_goto(EFED_ADMIN_AREA .'/roster/store/'.$belt->roster_id.'/belt/'.$reign->belt_id);	
+}
+
+function efed_belt_type(){
+	return array(
+		1 => 'Singles',
+		2 => 'Stable',
+	);
+}
+
+function efed_belt_admin_create_form($form_state){
+	$form = array();
+	
+	global $user;
+	
+	$form['#attributes'] = array(
+		'enctype' => "multipart/form-data"
+	);
+	
+	for($i=-50;$i<51;$i++){
+		$options[$i] = $i;
+	}
+	
+	$roster = efed_roster_load(arg(4));
+	
+	$belt_desc = t('Manage belt for '.$roster->name.' roster.');
+	
+	$belt = efed_belt_load(arg(6));
+	
+	$exists = (isset($belt->belt_id))? TRUE : FALSE;
+	
+	$form['details'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Belt Info'),
+		'#collapsible' => TRUE,
+		'#collapsed' => $exists,
+		'#description' => $belt_desc,
+	);	
+	
+	$form['details']['belt_id'] = array(
+	  	'#type' => 'hidden',
+		'#default_value' => $belt->belt_id,
+	);
+	
+	$form['details']['roster_id'] = array(
+	  	'#type' => 'hidden',
+		'#default_value' => arg(4),
+	);
+			
+	$form['details']['name'] = array(
+	  	'#title' => t('Name'),
+	  	'#type' => 'textfield',
+		'#default_value' => $belt->name,
+		'#size' => 60,
+		'#maxlength' => 128,
+  		'#required' => TRUE,
+	);	
+			
+	$match_type = efed_base_match_types();
+			
+	$form['details']['type'] = array(
+	  	'#title' => t('Type'),
+	  	'#type' => 'select',
+		'#default_value' => $belt->type,
+		'#options' => $match_type,
+	);	
+			
+	$form['details']['weight'] = array(
+	  	'#title' => t('Weight'),
+	  	'#type' => 'select',
+		'#default_value' => $belt->weight,
+		'#options' => efed_base_weight(),
+	);	
+	
+	$form['details']['image_new'] = array(
+		'#type' => 'file',
+		'#size' => 30,
+		'#title' => t('Image'),
+	);
+	
+	$form['details']['image'] = array(
+		'#type' => 'hidden',
+		'#value' => $belt->image,
+	);
+	
+	
+	$form['details']['description'] = array(
+		'#type' => 'textarea',
+		'#default_value' => $c->info->biography,
+	);	
+
+	if($exists){
+		
+		$desc = '<ul>
+					<li>Name: '.$belt->name.'</li>
+					<li>Type: '.$match_type[$belt->type].'</li>
+					<li>Roster: '.$roster->name.'</li>
+				</ul>';
+		
+		$form['history'] = array(
+			'#type' => 'fieldset',
+			'#title' => t('History'),
+			'#collapsible' => TRUE,
+			'#description' => $desc,
+		);	
+		
+		if(count($belt->history)>0){
+			$form['history']['list'] = array(
+				'#value' => efed_belt_admin_create_history($belt),
+			);				
+		}
+		
+		
+		switch($belt->type){
+			case 'singles':
+				$options = array();
+		
+				foreach($roster->members as $member){
+					$c = efed_character_load($member->cid);		
+					$options[$member->cid] = $c->name;
+				}
+						
+				$form['history']['cid'] = array(
+					'#type' => 'select',
+					'#title' => t('Title Holder'),
+					'#options' => $options,
+				);
+			
+			break;
+			
+			case 'tag-team':
+							
+				$stables = efed_stable_load_by_roster_id($roster->roster_id);
+						
+				$form['history']['cid'] = array(
+					'#type' => 'select',
+					'#title' => t('Title Holders'),
+					'#options' => $stables,
+				);
+			
+			break;
+		}
+				
+		$form['history']['start'] = array(
+			'#type' => 'date',
+			'#title' => t('Start'),
+			'#default_value' => efed_base_date_array(time()),
+		);
+		
+		$form['history']['end'] = array(
+			'#type' => 'date',
+			'#title' => t('End'),
+			'#default_value' => efed_base_date_array(time()),
+		);	
+		
+		$form['history']['current_champion'] = array(
+			'#type' => 'checkbox',
+			'#title' => t('Current Champion'),
+		);
+		
+		$form['history']['add'] = array(
+			'#type' => 'submit', 
+			'#value' => t('Add'),
+		);
+
+		$form['delete'] = array(
+			'#type' => 'submit', 
+			'#value' => t('Delete'),
+		);
+		
+	}
+	
+	$form['cancel'] = array(
+		'#type' => 'submit', 
+		'#value' => t('Cancel'),
+	);
+	
+	$form['store'] = array(
+		'#type' => 'submit', 
+		'#value' => t('Store'),
+	);
+					
+	return $form;
+}
+
+function efed_belt_admin_create_history($belt){	
+	
+	$header = array(
+		array('data' => t('ID')),
+		array('data' => t('Name')),
+		array('data' => t('Start')),
+		array('data' => t('Finish')),
+		array('data' => ''),
+	);
+
+	foreach($belt->history as $reign){
+		switch($belt->type){
+			case 'singles':
+				$c = efed_character_load($reign->cid);
+				$name = $c->name;
+			break;
+			
+			case 'tag-team':
+				$s = efed_stable_load($reign->cid);
+				$name = $s->name;
+			break;
+		}
+	
+	
+		if($reign->end==-1){
+			$end = '-----';		
+			$link = l('Vacate Title',EFED_ADMIN_AREA .'/roster/store/belt/vacate/'.$reign->reign_id);
+		}else{
+			$end = format_date($reign->end,'custom','m/d/Y');
+			$link = l('Delete',EFED_ADMIN_AREA .'/roster/store/belt/delete/'.$reign->reign_id);
+		}
+	
+		$rows[] = array(
+			array('data' => $reign->reign_id),
+			array('data' => $name),
+			array('data' => format_date($reign->start,'custom','m/d/Y')),
+			array('data' => $end),
+			array('data' => $link),
+		);
+	}	
+	
+	$output .= theme('table', $header, $rows);
+	
+	return $output;
+}
+
+function efed_belt_admin_create_form_submit($form, &$form_state){	
+	$object = (object)$form_state['values'];
+		
+	switch($object->op){
+		case 'Add':	
+				drupal_set_message($object->name.' history added.','status');
+				$object->start = efed_base_date_timestamp($object->start);
+				$object->end = efed_base_date_timestamp($object->end);
+				
+				if($object->current_champion){
+					// is current champion, end date = -1
+					$object->end = -1;
+					
+					// remove current champion
+					$reign = efed_belt_reign_load_current($object->belt_id);
+					$reign->end = time();
+					efed_belt_reign_store($reign);
+				}
+				
+				$object = efed_belt_reign_store($object);
+				drupal_goto(EFED_ADMIN_AREA .'/roster/store/'.$object->roster_id.'/belt/'.$object->belt_id);
+			break;
+		case 'Store':		
+		
+				if($_FILES['files']['name']['image_new']!=''){
+					$img = file_save_upload('image_new',NULL,file_directory_path());	
+					$object->image = $img->filepath;
+					$uploaded = TRUE;
+				}
+				
+				$object = efed_belt_store($object);
+				drupal_set_message($object->name.' stored.','status');
+				drupal_goto(EFED_ADMIN_AREA .'/roster/store/'.$object->roster_id);
+			break;	
+		case 'Cancel':		
+				drupal_goto(EFED_ADMIN_AREA .'/roster/store/'.$object->roster_id);
+			break;	
+		case 'Delete':		
+				drupal_set_message($object->name.' deleted.','error');
+				efed_belt_delete($object->belt_id);
+				drupal_goto(EFED_ADMIN_AREA .'/roster/store/'.$object->roster_id);
+			break;	
+	}
+}
+
+
+/*
+ * 
+ * BASE STORE(CREATE/UPDATE), READ & DELETE FUNCTION,  * 
+ * 
+ */
+ 
+function efed_belt_load_all(){		
+	$items = NULL;
+	
+	$sql = "SELECT * FROM {efed_belt}";	
+	$result = db_query($sql);	
+
+	while($data = db_fetch_object($result)){
+		$items[$data->belt_id] = $data->name;
+	}
+
+	return $items;
+}	
+
+function efed_belt_load_by_roster_id($roster_id){		
+	$items = array();
+	
+	$sql = "SELECT belt_id FROM {efed_belt} WHERE roster_id = %d ORDER BY weight";	
+	$result = db_query($sql,$roster_id);	
+
+	while($data = db_fetch_object($result)){
+		$items[$data->belt_id] = efed_belt_load($data->belt_id);
+	}
+
+	return $items;
+}	
+
+function efed_belt_load($belt_id){		
+	$sql = "SELECT * FROM {efed_belt} WHERE belt_id = %d";	
+	$result = db_query($sql,$belt_id);		
+	$data = db_fetch_object($result);	
+	$data->history = efed_belt_load_history($belt_id);	
+	$reign = efed_belt_reign_load_current($data->belt_id);
+	$data->current_champion = $reign;
+	
+	if($data->image){
+		$data->image_render = '<div class="belt_image">'.theme('imagecache','efed_belt_main',$data->image).'</div>';
+	}
+	
+	return $data;
+}
+
+function efed_belt_load_history($belt_id){		
+	$items = array();
+	
+	
+	$sql = "SELECT reign_id FROM {efed_belt_reign} WHERE belt_id = %d AND end = -1 ORDER BY end AND reign_id DESC";	
+	$result = db_query($sql,$belt_id);	
+
+	while($data = db_fetch_object($result)){
+		$items[] = efed_belt_reign_load($data->reign_id);
+	}
+	
+	$sql = "SELECT reign_id FROM {efed_belt_reign} WHERE belt_id = %d AND end > -1 ORDER BY end AND reign_id DESC";	
+	$result = db_query($sql,$belt_id);	
+
+	while($data = db_fetch_object($result)){
+		$items[] = efed_belt_reign_load($data->reign_id);
+	}
+
+	return $items;
+}
+
+function efed_belt_store($object){	
+	if($object->belt_id > 0){	
+		drupal_write_record('efed_belt',$object,'belt_id');
+	}else{		
+		drupal_write_record('efed_belt',$object);
+	}
+	
+	return $object;
+}
+
+function efed_belt_delete($belt_id){		
+	$sql = "DELETE FROM {efed_belt} WHERE belt_id = %d";			
+	db_query($sql,$belt_id);	
+}
+
+function efed_belt_reign_load_current($belt_id){	
+	$sql = "SELECT reign_id FROM {efed_belt_reign} WHERE belt_id = %d AND end = -1";	
+	$result = db_query($sql,$belt_id);		
+	$data = db_fetch_object($result);		
+	return efed_belt_reign_load($data->reign_id);
+}
+
+function efed_belt_reign_load($reign_id){		
+	$sql = "SELECT * FROM {efed_belt_reign} WHERE reign_id = %d";	
+	$result = db_query($sql,$reign_id);		
+	$data = db_fetch_object($result);	
+	
+	return $data;
+}
+
+function efed_belt_reign_store($object){	
+	if($object->reign_id > 0){	
+		drupal_write_record('efed_belt_reign',$object,'reign_id');
+	}else{		
+		drupal_write_record('efed_belt_reign',$object);
+	}
+	
+	return $object;
+}
+
+function efed_belt_reign_delete($reign_id){		
+	$sql = "DELETE FROM {efed_belt_reign} WHERE reign_id = %d";			
+	db_query($sql,$reign_id);	
+}
+

@@ -1,0 +1,6 @@
+; $Id$
+name = "Shop"
+description = "Shop module provides products which users can purchase using there character's balance."
+package = "E-Fed"
+dependencies[] = "efed_character"
+core = 6.x

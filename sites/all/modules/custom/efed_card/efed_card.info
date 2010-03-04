@@ -1,0 +1,6 @@
+; $Id$
+name = "Card"
+description = "custom menu callbacks, and custom forms for managing and editing card(s)."
+package = "E-Fed"
+dependencies[] = "efed_roster"
+core = 6.x

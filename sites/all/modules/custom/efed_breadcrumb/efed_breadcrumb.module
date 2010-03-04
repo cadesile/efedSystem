@@ -1,0 +1,199 @@
+<?php
+
+define('BC_SEP','&rsaquo;');
+
+function efed_breadcrumb_display($breadcrumb){
+
+	$wrap = FALSE;
+	
+	switch(arg(0)){
+		case 'node':
+			$breadcrumb = '';
+		
+			$node = node_load(arg(1));
+			
+			$arg = explode('/',$node->path);
+			$arg = efed_breadcrumb_clean($arg);
+			
+			switch($arg[0]){
+				case 'roleplay':
+					$breadcrumb .= efed_breadcrumb_roleplay($arg);					
+				break;
+				case 'shows':
+					$show = efed_show_load($node->card_info->show_id);
+					$arg['nid'] = $show->nid;		
+					$breadcrumb .= efed_breadcrumb_show($arg);	
+				break;
+				case 'results':
+					$card = efed_card_load($node->card_id);
+					$show = efed_show_load($card->show_id);
+					$arg['nid'] = $show->nid;		
+					$breadcrumb .= efed_breadcrumb_result($arg);	
+				break;
+				case 'news':
+					$breadcrumb .= efed_breadcrumb_news($arg);					
+				break;
+			}
+			
+			$wrap = TRUE;
+			
+		break;
+		case 'roleplay':
+			$breadcrumb = '';
+			$breadcrumb .= efed_breadcrumb_roleplay(arg());
+			$wrap = TRUE;
+		break;
+		case 'shows':
+			$breadcrumb = '';
+			$breadcrumb .= efed_breadcrumb_show(arg());
+			$wrap = TRUE;
+		break;
+		case 'results':
+			$breadcrumb = '';
+			$breadcrumb .= efed_breadcrumb_result(arg());
+			$wrap = TRUE;
+		break;
+		case 'news':
+			$breadcrumb = '';
+			$breadcrumb .= efed_breadcrumb_news(arg());
+			$wrap = TRUE;
+		break;	
+		case 'stables':
+			$breadcrumb = '';
+			$breadcrumb .= efed_breadcrumb_stables(arg());
+			$wrap = TRUE;
+		break;		
+		case 'roster':
+			$breadcrumb = '';
+			$breadcrumb .= efed_breadcrumb_roster(arg());
+			$wrap = TRUE;
+		break;			
+	}
+	
+	if(empty($breadcrumb)){	
+		$breadcrumb = 'Home';
+		$wrap = TRUE;
+	}
+	
+	if($wrap){
+		$breadcrumb = '<div class="breadcrumb">'.$breadcrumb.'</div>';		
+	}
+
+	return $breadcrumb;
+}
+
+function efed_breadcrumb_clean($arg){
+	$clean = array();
+		
+	foreach($arg as $a) $clean[] = str_replace('-',' ',$a);
+	
+	return $clean;
+}
+
+function efed_breadcrumb_append($links){
+	return l(t('home'),'<front>').' &rsaquo; '.$links ;
+}
+
+function efed_breadcrumb_roster($arg){
+	
+	if(!is_null($arg[0])){
+		$links .= $arg[0];
+	}
+	
+	if(!is_null($arg[1])){
+		$obj = efed_roster_load($arg[1]);
+	
+		$links = '';
+		$links .= l($arg[0],$arg[0]);
+		$links .= ' '.BC_SEP.' '.$obj->name;
+	}
+	
+	return efed_breadcrumb_append($links);
+}
+
+function efed_breadcrumb_stables($arg){
+	
+	if(!is_null($arg[0])){
+		$links .= $arg[0];
+	}
+	
+	if(!is_null($arg[1])){
+		$stable = efed_stable_load($arg[1]);
+	
+		$links = '';
+		$links .= l($arg[0],$arg[0]);
+		$links .= ' '.BC_SEP.' '.$stable->name;
+	}
+	
+	return efed_breadcrumb_append($links);
+}
+
+function efed_breadcrumb_news($arg){
+	
+	if(!is_null($arg[0])){
+		$links .= l($arg[0],$arg[0]);
+	}
+	
+	if(!is_null($arg[1])){
+		$links .= ' '.BC_SEP.' '.$arg[1].' '.$arg[4].'/'.$arg[3].'/'.$arg[2];
+	}
+	
+	return efed_breadcrumb_append($links);
+}
+
+function efed_breadcrumb_show($arg){
+	
+	if(!is_null($arg[0])){
+		$links .= l($arg[0],$arg[0]);
+	}
+	
+	if(!is_null($arg[1])&&!is_null($arg[2])){
+		$links .= ' '.BC_SEP.' '.l($arg[1],'node/'.$arg['nid']);
+	}elseif(!is_null($arg[1])){
+		$links .= ' '.BC_SEP.' '.$arg[1];	
+	}
+	
+	if(!is_null($arg[2])){
+		$links .= ' '.BC_SEP.' '.$arg[4].'/'.$arg[3].'/'.$arg[2];
+	}
+	
+	return efed_breadcrumb_append($links);
+}
+
+function efed_breadcrumb_result($arg){
+	
+	if(!is_null($arg[0])){
+		$links .= l($arg[0],$arg[0]);
+	}
+	
+	if(!is_null($arg[1])&&!is_null($arg[2])){
+		$links .= ' '.BC_SEP.' '.l($arg[1],'results/'.$arg[1]);
+	}elseif(!is_null($arg[1])){
+		$links .= ' '.BC_SEP.' '.$arg[1];	
+	}
+	
+	if(!is_null($arg[2])){
+		$links .= ' '.BC_SEP.' '.$arg[4].'/'.$arg[3].'/'.$arg[2];
+	}
+	
+	return efed_breadcrumb_append($links);
+}
+
+function efed_breadcrumb_roleplay($arg){
+
+	if(!is_null($arg[0])){
+		$links .= l($arg[0],$arg[0]);
+	}
+
+	if(!is_null($arg[1])){
+		$links .= ' '.BC_SEP.' '.l($arg[1],$arg[0].'/'.$arg[1]);
+	}
+	
+	if(!is_null($arg[2])){
+		$links .= ' '.BC_SEP.' '.$arg[2];
+	}
+	
+	return efed_breadcrumb_append($links);
+}
+
+?>

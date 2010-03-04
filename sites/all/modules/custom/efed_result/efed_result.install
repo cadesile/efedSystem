@@ -1,0 +1,103 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+
+function efed_result_install() {
+	// Create tables.
+	drupal_install_schema('efed_result');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function efed_result_schema() {
+
+	$schema['efed_result'] = array(
+	    'fields' => array(
+			'result_id' => array(
+			 	'type' => 'serial',
+	  			'unsigned' => TRUE,
+	        	'not null' => TRUE,
+			),
+	        'card_id' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+	        'live' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+	        'nid' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+		),
+	    'primary key' => array('result_id'),
+	);
+
+	$schema['efed_result_part'] = array(
+	    'fields' => array(
+			'part_id' => array(
+			 	'type' => 'serial',
+	  			'unsigned' => TRUE,
+	        	'not null' => TRUE,
+			),
+			'result_id' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+			'match_id' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+	        'nid' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+	        'weight' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+	        'winner' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+	        'time' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+		),
+	    'primary key' => array('part_id'),
+	);
+
+  	return $schema;
+
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function efed_result_uninstall() {
+	// Remove tables.
+	drupal_uninstall_schema('efed_result');
+}

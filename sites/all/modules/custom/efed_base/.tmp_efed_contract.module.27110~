@@ -1,0 +1,244 @@
+<?php
+
+function smbc_download_theme(){
+	return array(
+		'smbc_download_link' => array(
+			'arguments' => array('title' => NULL, 'path' => NULL),
+		),
+	);
+}
+
+function smbc_download_menu() {
+		  
+	$items['resources'] = array(
+    	'title' => 'Resources',
+    	'page callback' => 'smbc_downloads_view_stats',
+    	'access arguments' => array('access content'),
+		//'type' => MENU_CALLBACK,
+  	); 
+	
+	$items['resource'] = array(
+    	'page callback' => 'smbc_downloads_get_file',
+    	'access arguments' => array('access content'),
+		//'type' => MENU_CALLBACK,
+  	);  	
+	
+	return $items;	
+}
+
+function smbc_downloads_view_stats() {
+	
+	$ouptut = '';
+				
+	$terms = taxonomy_get_tree(1);
+				
+	foreach($terms as $term)
+	{
+		$child_terms = array();
+		
+		if($term->depth == 0)
+		{					
+			$nodes = smbc_load_nodes_by_term($term->tid);
+			$output .= '<ul class="resource category">';
+												
+			if(count($nodes) > 0)
+			{
+				$output .= "<li class=\"category\"><span onclick=\"toggle('category_".$term->tid ."')\" style=\"cursor: pointer\">" . $term->name . "</span>";
+				$output .= '<ul class="download" id="category_' . $term->tid . '" style="display:none">';											
+				
+				foreach($nodes as $node) $output .= smbc_downloads_render_node($node,$term->tid);
+						
+				$output .= '</ul>';
+				$output .= '</li>';
+			}
+			else
+			{
+				$output .= "<li class=\"category\"><span>" . $term->name . "</span></li>";
+			}
+			
+			$output .= '</ul>';		
+		}
+	}	
+			
+	return $output;	
+}
+
+function smbc_downloads_render_node($node,$tid)
+{
+	$stats = smbc_downloads_get_file_stats($node->nid);
+	
+	$output .= '<li class="title"><b>' . theme('smbc_download_link', $node->title, $node->nid) . '</b></li>';
+	$output .= '<li class="description">' . $node->teaser . '</li>';
+	$output .= '<li class="link">' . theme('smbc_download_link', 'Click here to download', $node->nid) . '</li>';
+	
+	return $output;
+}
+
+function smbc_downloads_view_stats_old() {
+	
+	$ouptut = '';
+				
+	$terms = taxonomy_get_tree(1);
+		
+	$output .= '<h1 class="network">Resources</h1>';
+	
+	print_r($terms);
+		
+	foreach($terms as $term)
+	{
+		$child_terms = array();
+		
+		if($term->depth == 0)
+		{		
+			$output .= '<ul class="resource category">';
+			$output .= '<li>' . $term->name;
+			
+			$child_terms = taxonomy_get_children($term->tid);
+			
+			if(count($child_terms) > 0)
+			{
+				$output .= '<ul class="resource childcategory">';
+				
+				foreach($child_terms as $child_term)
+				{				
+					$output .= '<li>' . $child_term->name;	
+					
+					$nodes = smbc_load_nodes_by_term($child_term->tid);
+												
+					if(count($nodes) > 0)
+					{
+						$output .= '<ul class="downloads">';
+											
+						foreach($nodes as $node)
+						{
+							$stats = smbc_downloads_get_file_stats($node->nid);
+							
+							$output .=  '<li class="title">' . theme('smbc_download_link', $node->title, $node->nid) . '</li>';
+							$output .=  '<li class="description">' . $node->teaser . '</li>';
+							$output .=  '<li class="link">' . theme('smbc_download_link', 'Click here to download', $node->nid) . '</li>';
+					  	}
+						
+						$output .= '</ul>';
+					}
+					
+					$output .= '</li>';
+				}			
+				
+				$output .= '</ul>';
+			}
+			
+			$output .= '</li>';
+			$output .= '</ul>';		
+		}
+	}	
+			
+	return $output;	
+}
+
+
+function theme_smbc_download_link($title, $fid) {
+	return l($title, 'resource/' . $fid);
+}
+
+function smbc_downloads_get_file(){
+	$node = node_load(arg(1));
+	
+	foreach($node->files as $files) $file = (array)$files;
+			
+	$file_name =  $file['filename'];
+	$file_path = $file['filepath'];
+
+	$file = $file['filepath'];
+	global $user;
+		
+	//Increment counter
+	db_query("INSERT INTO {download_counter} (nid, timestamp, user) VALUES ('%d' , '%d', '%d')",  $node->nid, time(), $user->uid);
+	$id = db_last_insert_id('download_counter', 'id');
+	
+	//Return file
+	// Make sure program execution doesn't time out
+	// Set maximum script execution time in seconds (0 means no limit)
+	set_time_limit(0);
+	
+	$allowed_ext = array (	
+	  // archives
+	  'zip' => 'application/zip',
+	
+	  // documents
+	  'pdf' => 'application/pdf',
+	  'doc' => 'application/msword',
+	  'xls' => 'application/vnd.ms-excel',
+	  'ppt' => 'application/vnd.ms-powerpoint',
+	  
+	  // executables
+	  'exe' => 'application/octet-stream',
+	
+	  // images
+	  'gif' => 'image/gif',
+	  'png' => 'image/png',
+	  'jpg' => 'image/jpeg',
+	  'jpeg' => 'image/jpeg',
+	
+	  // audio
+	  'mp3' => 'audio/mpeg',
+	  'wav' => 'audio/x-wav',
+	
+	  // video
+	  'mpeg' => 'video/mpeg',
+	  'mpg' => 'video/mpeg',
+	  'mpe' => 'video/mpeg',
+	  'mov' => 'video/quicktime',
+	  'avi' => 'video/x-msvideo'
+	);	
+	
+	$fext = strtolower(substr(strrchr($file_name,"."),1));
+  	$mtype = $allowed_ext[$fext];
+	$fsize = filesize($file_path); 
+  	  	
+  	// set headers
+	header("Pragma: public");
+	header("Expires: 0");
+	header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+	header("Cache-Control: public");
+	header("Content-Description: File Transfer");
+	header("Content-Type: " . $mtype);
+	header('Content-Disposition: attachment; filename=' . $file_name);
+	header("Content-Transfer-Encoding: binary");
+	header("Content-Length: " . $fsize);
+	
+	// download
+	// @readfile($file_path);
+	$file = @fopen($file_path,"rb");
+	if ($file) {
+	  while(!feof($file)) {
+	    print(fread($file, 1024*8));
+	    flush();
+	    if (connection_status()!=0) {
+	      @fclose($file);
+	      die();
+	    }
+	  }
+	  @fclose($file);
+	}	
+}
+
+function smbc_downloads_get_file_stats($nid){
+		
+	$sql = "SELECT COUNT(id) FROM download_counter WHERE nid = " . $nid;
+	$sql2 ="SELECT * FROM download_counter WHERE nid = " . $nid . " ORDER BY timestamp";
+	
+	$result = db_query(db_rewrite_sql($sql2));
+	
+	$stats = array();
+	$stats['downloads'] = db_result(db_query(db_rewrite_sql($sql)));
+	
+	while($data = db_fetch_object($result))
+	{
+		$stats['last_download'] = $data->timestamp;
+		$stats['user'] = $data->user;
+	}		
+
+	return $stats;
+}
+
+?>

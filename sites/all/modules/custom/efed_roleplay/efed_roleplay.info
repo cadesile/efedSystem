@@ -1,0 +1,6 @@
+; $Id$
+name = "Roleplay"
+description = "custom menu callbacks, and custom forms for managing and editing roleplays relating to a card."
+package = "E-Fed"
+dependencies[] = "efed_roster"
+core = 6.x

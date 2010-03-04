@@ -1,0 +1,8 @@
+; $Id$
+name = "Result"
+description = "custom menu callbacks, and custom forms for managing and editing results relating to a roster."
+package = "E-Fed"
+dependencies[] = "efed_show"
+dependencies[] = "efed_card"
+dependencies[] = "efed_roster"
+core = 6.x

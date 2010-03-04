@@ -1,0 +1,106 @@
+<?php
+// $Id: forum_access.install,v 1.11 2009/03/18 22:21:29 salvis Exp $
+
+/**
+ * Implementation of hook_install().
+ */
+function forum_access_install() {
+  drupal_install_schema('forum_access');
+  db_query("UPDATE {system} SET weight = 2 WHERE name = 'forum_access'");
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function forum_access_schema() {
+  $schema['forum_access'] = array(
+    'description'     => t('The base Forum Access Control table.'),
+    'fields'          => array(
+      'tid'           => array(
+        'description' => t('The {term_data}.tid to which this {forum_access} entry applies.'),
+        'type'        => 'int',
+        'not null'    => TRUE,
+        'default'     => 0),
+      'rid'           => array(
+        'description' => t('The {role}.rid to which this {forum_access} entry applies.'),
+        'type'        => 'int',
+        'not null'    => TRUE,
+        'default'     => 0),
+      'grant_view'    => array(
+        'description' => t('Whether to grant "view" permission.'),
+        'type'        => 'int',
+        'size'        => 'tiny',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+        'default'     => 0),
+      'grant_update'  => array(
+        'description' => t('Whether to grant "update" permission.'),
+        'type'        => 'int',
+        'size'        => 'tiny',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+        'default'     => 0),
+      'grant_delete'  => array(
+        'description' => t('Whether to grant "delete" permission.'),
+        'type'        => 'int',
+        'size'        => 'tiny',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+        'default'     => 0),
+      'grant_create'  => array(
+        'description' => t('Whether to grant "create" permission.'),
+        'type'        => 'int',
+        'size'        => 'tiny',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+        'default'     => 0),
+      'priority'  => array(
+        'description' => t('The priority of this grant.'),
+        'type'        => 'int',
+        'size'        => 'small',
+        'not null'    => TRUE,
+        'default'     => 0)),
+    'indexes'         => array(
+      'tid'           => array('tid'),
+      'rid'           => array('rid')),
+  );
+  return $schema;
+}
+
+
+/*
+ * Implementation of hook_uninstall
+ */
+function forum_access_uninstall() {
+  drupal_uninstall_schema('forum_access');
+  variable_del('forum_access_allowed_node_edit_elements');
+  variable_del('forum_access_allowed_node_edit_options');
+  variable_del('forum_access_batch_threshold');
+  variable_del('forum_access_default_template_tid');
+  variable_del('forum_access_new_template_tid');
+  variable_del('forum_access_provide_moderators_template_variable');
+}
+
+/**
+ * Purge orphaned grants that were left behind when deleting roles.
+ */
+function forum_access_update_1() {
+  $ret = array();
+  db_query("DELETE FROM {forum_access} WHERE rid NOT IN (SELECT rid from {role})");
+  db_query("DELETE FROM {node_access} WHERE realm = 'forum_access' AND gid NOT IN (SELECT rid from {role})");
+  return $ret;
+}
+
+/**
+ * Add a priority column (will probably not be used until D6).
+ */
+function forum_access_update_2() {
+  $ret = array();
+  db_add_field($ret, 'forum_access', 'priority', array(
+    'description' => t('The priority of this grant.'),
+    'type'        => 'int',
+    'size'        => 'small',
+    'not null'    => TRUE,
+    'default'     => 0));
+  return $ret;
+}

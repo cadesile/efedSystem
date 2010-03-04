@@ -1,0 +1,90 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+
+function efed_contract_install() {
+  // Create tables.
+  drupal_install_schema('efed_contract');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function efed_contract_schema() {
+
+	$schema['efed_contract'] = array(
+	    'fields' => array(
+			'contract_id' => array(
+			 	'type' => 'serial',
+	  			'unsigned' => TRUE,
+	        	'not null' => TRUE,
+			),
+			'roster_id' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),			
+	        'uid' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+	        'created' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+	        'updated' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+	        'date_start' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+	        'date_end' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+	        'wage' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+	        'signed' => array(
+				'type' => 'int', 
+				'size' => 'tiny', 
+				'default' => 0,
+			),
+	        'notes' => array(
+				'type' => 'text', 
+				'size' => 'medium', 
+				'default' => ''
+			)
+		),
+	    'primary key' => array('contract_id'),
+	);
+
+  	return $schema;
+
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function efed_contract_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('efed_contract');
+}

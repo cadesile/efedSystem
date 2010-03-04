@@ -1,0 +1,105 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+
+function efed_belt_install() {
+  // Create tables.
+  drupal_install_schema('efed_belt');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function efed_belt_schema() {
+
+	$schema['efed_belt'] = array(
+	    'fields' => array(
+			'belt_id' => array(
+			 	'type' => 'serial',
+	  			'unsigned' => TRUE,
+	        	'not null' => TRUE,
+			),
+			'roster_id' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+			'weight' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+			'type' => array(
+				'type' => 'text', 
+				'size' => 'medium', 
+				'default' => ''
+			),
+	        'image' => array(
+				'type' => 'text', 
+				'size' => 'medium', 
+				'default' => ''
+			),
+	        'name' => array(
+				'type' => 'text', 
+				'size' => 'medium', 
+				'default' => ''
+			),
+	        'description' => array(
+				'type' => 'text', 
+				'size' => 'medium', 
+				'default' => ''
+			),
+		),
+	    'primary key' => array('belt_id'),
+	);
+	
+	$schema['efed_belt_reign'] = array(
+	    'fields' => array(
+			'reign_id' => array(
+			 	'type' => 'serial',
+	  			'unsigned' => TRUE,
+	        	'not null' => TRUE,
+			),
+			'belt_id' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+			'cid' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+			'start' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+			'end' => array(
+				'type' => 'int', 
+				'not null' => 1, 
+				'default' => 0, 
+				'disp-width' => '11'
+			),
+		),
+	    'primary key' => array('reign_id'),
+	);
+
+  	return $schema;
+
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function efed_belt_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('efed_belt');
+}

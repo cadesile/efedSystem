@@ -1,0 +1,6 @@
+; $Id$
+name = "Roster"
+description = "custom menu callbacks, and custom forms for managing and editing roster(s) and assigning General Managers, also allows for roster splits."
+package = "E-Fed"
+dependencies[] = "efed_base"
+core = 6.x

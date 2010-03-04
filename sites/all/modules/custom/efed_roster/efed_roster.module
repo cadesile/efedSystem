@@ -1,0 +1,435 @@
+<?php
+efed_base();
+
+define('EFED_ROSTER_ADMIN_TITLE','Rosters');
+define('EFED_ROSTER_TITLE','Rosters');
+
+
+function efed_roster_perm() {
+  return array('administer efed roster');
+}
+
+function efed_roster_menu() {
+	
+	/*
+	 * Adminstration menu callbacks
+	 */  
+	$items[EFED_ADMIN_AREA .'/roster'] = array(
+    	'title' => EFED_ROSTER_ADMIN_TITLE,
+    	'page callback' => 'efed_roster_admin_view_all',
+    	'weight' => -28,
+    	'access arguments' => array('administer efed'), 	
+  	);   
+	
+	$items[EFED_ADMIN_AREA .'/roster/store'] = array(
+    	'title' => EFED_ROSTER_ADMIN_TITLE . ' Store',
+	    'page callback'    => 'drupal_get_form',
+	    'page arguments'   => array('efed_roster_admin_manage_form'),
+    	'access arguments' => array('administer efed roster'), 
+		'type' => MENU_CALLBACK,
+  	);  
+	
+	$items['roster'] = array(
+		'title' => 'Rosters',
+    	'page callback' => 'efed_roster_view_all',
+    	'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK,
+  	);  
+	
+	$items['roster/%'] = array(
+		'title' => 'Rosters',
+    	'page callback' => 'efed_roster_view',
+    	'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK,
+  	); 
+	
+	return $items;	
+}
+
+function efed_roster_theme() {
+  return array(
+    'efed_roster' => array(
+      'arguments' => array('roster' => NULL),
+      'template' => 'roster'
+    ),
+    'efed_roster_item' => array(
+      'arguments' => array('roster' => NULL),
+      'template' => 'roster_item'
+    ),
+  );
+}
+
+function efed_roster_view(){
+	$roster = efed_roster_load(arg(1));
+
+	$output .= theme('efed_roster',$roster);
+	
+	return $output;
+}
+
+function efed_roster_view_all(){
+	$limit = 20;
+	
+	$results = pager_query("SELECT roster_id FROM {efed_roster}",$limit);
+	
+	while($data = db_fetch_object($results)){
+		$show = efed_roster_load($data->roster_id);			
+		$output .= theme('efed_roster_item',$show);
+	}	
+
+	$output .= theme('pager', NULL, $limit, 0);
+	
+	return $output;
+}
+
+function efed_roster_admin_view_all(){	
+	$limit = 10;
+	
+	$header = array(
+		array('data' => t('Name')),
+		array('data' => t('General Manager')),
+		array('data' => t('Balance')),
+		array('data' => t('Members')),
+		array('data' => ''),
+	);
+
+	$rosters = array();
+	$results = pager_query("SELECT roster_id FROM {efed_roster}",$limit);
+	while($data = db_fetch_object($results)){
+		$roster = efed_roster_load($data->roster_id);
+		$gm = efed_character_load($roster->gm_id);
+		
+		$rows[] = array(
+			array('data' => $roster->name),
+			array('data' => $gm->name),
+			array('data' => efed_price($roster->balance)),
+			array('data' => t(count($roster->members))),
+			array('data' => l('Edit',EFED_ADMIN_AREA . '/roster/store/' . $roster->roster_id)),
+		);
+	}	
+	
+	$output .= theme('table', $header, $rows);
+	$output .= theme('pager', NULL, $limit, 0);
+	
+	$output .= l('Create Roster',EFED_ADMIN_AREA . '/roster/store');
+	
+	return $output;
+}
+
+function efed_roster_admin_manage_form($form_state){
+	$form = array();					
+	
+	$roster = efed_roster_load(arg(4));
+	
+	$exists = ($roster->roster_id)? TRUE : FALSE;
+	
+	$form['info'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Roster Details'),
+		'#collapsible' => TRUE,
+		'#collapsed' => $exists,
+	);
+	
+	$form['info']['roster_id'] = array(
+	  	'#type' => 'hidden',
+		'#value' => $roster->roster_id,
+	);
+	
+	$form['info']['name'] = array(
+	  	'#type' => 'textfield',
+		'#default_value' => $roster->name,
+		'#size' => 60,
+		'#maxlength' => 128,
+  		'#required' => TRUE,
+	  	'#title' => t('Name'),
+	);
+	
+	$form['info']['balance'] = array(
+	  	'#type' => 'textfield',
+		'#default_value' => $roster->balance,
+		'#size' => 20,
+		'#maxlength' => 128,
+  		'#required' => TRUE,
+	  	'#title' => t('Balance'),
+	);
+	
+	$ops = efed_character_load_all();
+	
+	$form['info']['gm_id'] = array(
+	  	'#type' => 'select',
+	  	'#title' => t('General Manager'),
+		'#default_value' => $roster->gm_id,
+	  	'#options' =>$ops,
+	  	'#description' => t('General manager will be able to control members of the roster and assign contracts.'),
+	);
+	
+	$form['info']['desc'] = array(
+	  	'#type' => 'textarea',
+		'#default_value' => $roster->desc,
+  		'#required' => TRUE,
+	  	'#title' => t('Description'),
+	);	
+	
+	$form['info']['roster_id'] = array(
+		'#type' => 'hidden',			
+		'#default_value' => $roster->roster_id,
+	);
+	
+	if($exists){
+		
+		$description = t('Click '.l('here',EFED_ADMIN_AREA .'/roster/store/'.$roster->roster_id.'/belt').' to create belt.');
+	
+		$form['belt_fieldset'] = array(
+			'#type' => 'fieldset',
+			'#title' => t('Belts'),
+			'#description' => $description,
+			'#collapsible' => TRUE,
+			'#collapsed' => (count($roster->members)>15)? TRUE : FALSE,
+		);
+		
+		$form['belt_fieldset']['belts'] = array(
+			'#value' => efed_roster_admin_belt_list($roster),
+		);	
+	
+		$gm = efed_character_load($roster->gm_id);
+	
+		$description = t('
+		<div>
+		<b>General Manager</b>: '.$gm->name.'<br/>
+		<b>Roster Name</b>: '.$roster->name .'<br/>
+		<b>Balance</b>: $'.number_format($roster->balance,2) .'
+		</div>
+		');
+	
+		$form['members_fieldset'] = array(
+			'#type' => 'fieldset',
+			'#title' => t('Roster'),
+			'#description' => $description,
+			'#collapsible' => TRUE,
+			'#collapsed' => FALSE,
+		);
+		
+		$form['members_fieldset']['list'] = array(
+			'#value' => efed_roster_admin_roster_list($roster),
+		);
+				
+	}
+		
+	$form['store'] = array(
+		'#type' => 'submit', 
+		'#value' => t('Store')
+	);
+		
+	$form['cancel'] = array(
+		'#type' => 'submit', 
+		'#value' => t('Cancel')
+	);
+	
+	if($exists){		
+		$form['delete'] = array(
+			'#type' => 'submit', 
+			'#value' => t('Delete')
+		);	
+	}
+	
+	return $form;
+}
+
+function efed_roster_admin_roster_list($roster){	
+	$limit = 10;
+	
+	$header = array(
+		array('data' => t('Name')),
+		array('data' => t('Wage')),
+		array('data' => t('Status')),
+		array('data' => t('Contract Ends')),
+		array('data' => t('')),
+		array('data' => t('')),
+	);
+
+	$sql = db_rewrite_sql("SELECT character_id AS cid FROM {efed_character}");
+	$results = pager_query($sql,$limit);	
+	
+	while($data = db_fetch_object($results)){
+		$p = efed_character_load($data->cid);
+						
+		$on_roster = ($p->roster->roster_id==$roster->roster_id)? TRUE : FALSE;
+		$has_contract = ($p->contract->contract_id) ? TRUE : FALSE;
+		$add_row = TRUE;
+		
+		$status = '----';
+		
+		if($on_roster){
+			$wage = '$'.number_format($p->contract->wage,2);
+			$date = format_date($p->contract->date_end,'custom','M d Y');	
+			
+			if($p->contract->signed){
+				$status = '<span style="color: green">Yes</span>';
+			}else{
+				$status = '<span style="color: red">No</span>';
+			}
+			
+		}elseif(!$on_roster&&!$has_contract){
+			$wage = '<span style="color: red">Out of contract.</span>';
+			$date = '----';
+		}else{
+			$add_row = FALSE;
+		}
+		
+		$html = array('html'=>TRUE);
+		
+		if($roster->members[$p->character_id]){
+			$options = l('Manage',EFED_ADMIN_AREA .'/contract/'.$roster->roster_id.'/store/'.$p->character_id,$html);
+			$terminate = l('Terminate',EFED_ADMIN_AREA .'/contract/'.$roster->roster_id.'/terminate/'.$p->character_id,$html);
+		}else{			
+			$options = l('Offer',EFED_ADMIN_AREA .'/contract/'.$roster->roster_id.'/store/'.$p->character_id,$html);
+			$terminate = '';
+		}
+		if($add_row){
+			$rows[] = array(
+				array('data' => $p->name),
+				array('data' => $wage),
+				array('data' => $status),
+				array('data' => $date),
+				array('data' => $options),
+				array('data' => $terminate),
+			);
+		
+		}
+	}	
+	
+	$output .= theme('table', $header, $rows);
+	$output .= theme('pager', NULL, $limit, 0);
+	
+	return $output;
+}
+
+function efed_roster_admin_belt_list($roster){	
+	$limit = 10;
+	
+	$type = efed_base_match_types();
+	
+	$header = array(
+		array('data' => t('Name')),
+		array('data' => t('Type')),
+		array('data' => t('Holder')),
+		array('data' => t('')),
+	);
+
+	foreach($roster->belts as $belt){		
+		switch($belt->type){
+			case 'singles':
+				$c = efed_character_load($belt->current_champion->cid);
+				$name = $c->name;
+			break;
+			
+			case 'tag-team':
+				$s = efed_stable_load($belt->current_champion->cid);
+				$name = $s->name;
+			break;
+		}
+	
+		$rows[] = array(
+			array('data' => $belt->name),
+			array('data' => $type[$belt->type]),
+			array('data' => $name),
+			array('data' => l('Edit',EFED_ADMIN_AREA .'/roster/store/'.$roster->roster_id.'/belt/'.$belt->belt_id)),
+		);
+	}	
+	
+	$output .= theme('table', $header, $rows);
+	
+	return $output;
+}
+
+function efed_roster_admin_manage_form_submit($form, &$form_state){
+	$roster = (object)$form_state['values'];
+	
+	switch($roster->op){
+		case 'Store':				
+				$roster = efed_roster_store($roster);
+				
+				if($roster->roster_id){
+					drupal_set_message('Roster details for <em>'.$roster->name.'</em> stored.','status');		
+				}else{
+					drupal_set_message('Roster details for <em>'.$roster->name.'</em> could not be stored.','error');
+				}
+			break;
+		case 'Cancel':
+				drupal_goto('admin/efed/roster');
+			break;	
+		case 'Delete':
+				efed_roster_delete($roster->roster_id);
+				drupal_goto('admin/efed/roster');
+			break;		
+	}
+}
+
+/*
+ * 
+ * BASE STORE(CREATE/UPDATE), READ & DELETE FUNCTIONS 
+ * 
+ */
+function efed_roster_load_roster_member($uid,$roster_id){		
+
+	return $result = db_query("SELECT COUNT(*) FROM {efed_roster_member} WHERE roster_id = %d AND uid = %d",$roster_id,$uid);
+}
+
+function efed_roster_load_roster_members($roster_id){		
+	$members = array();
+	$result = db_query("SELECT * FROM {efed_roster_member} WHERE roster_id = %d",$roster_id);
+	while($data = db_fetch_object($result)){ 
+		$members[$data->cid] = $data;
+	}
+	return $members;
+}
+
+function efed_roster_load($roster_id){		
+	$sql = "SELECT * FROM {efed_roster} WHERE roster_id = %d";	
+	$result = db_query($sql,$roster_id);		
+	$data = db_fetch_object($result);
+	$data->desc = $data->description;
+	$data->belts = efed_belt_load_by_roster_id($data->roster_id);
+	$data->members = efed_roster_load_roster_members($data->roster_id);	
+	return $data;
+}
+
+function efed_roster_load_show($roster_id){		
+	$shows = array();
+	$result = db_query("SELECT DISTINCT(show_id) FROM {efed_show_roster} WHERE roster_id = %d",$roster_id);
+	while($data = db_fetch_object($result)){ 
+		$show = efed_show_load($data->show_id);
+		$shows[$show->show_id] = $show;
+	}
+	return $shows;
+}
+
+function efed_roster_load_all(){		
+	$rosters = array();
+	$results = db_query("SELECT roster_id FROM {efed_roster}");
+	while($data = db_fetch_object($results)) $rosters[] = efed_roster_load($data->roster_id);
+	return $rosters;
+}
+
+function efed_roster_store($object){	
+	
+	if($object->roster_id > 0){	
+		drupal_write_record('efed_roster',$object,'roster_id');
+	}else{		
+		drupal_write_record('efed_roster',$object);
+	}
+	
+	return $object;
+}
+
+function efed_roster_delete($roster_id){		
+	$sql = "DELETE FROM {efed_roster} WHERE roster_id = %d";			
+	db_query($sql,$roster_id);			
+	$sql = "DELETE FROM {efed_roster_member} WHERE roster_id = %d";			
+	db_query($sql,$roster_id);	
+}
+
+function efed_roster_member_delete($roster_member_id){		
+	$sql = "DELETE FROM {efed_roster_member} WHERE roster_member_id = %d";			
+	db_query($sql,$roster_member_id);	
+}

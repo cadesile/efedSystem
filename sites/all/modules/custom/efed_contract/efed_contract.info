@@ -1,0 +1,7 @@
+; $Id$
+name = "Contract"
+description = "custom menu callbacks, and custom forms for managing and editing contracts relating to a roster."
+package = "E-Fed"
+dependencies[] = "efed_roster"
+dependencies[] = "efed_character"
+core = 6.x

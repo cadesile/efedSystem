@@ -1,0 +1,6 @@
+; $Id$
+name = "Show"
+description = "custom menu callbacks, and custom forms for managing and editing shows relating to a roster."
+package = "E-Fed"
+dependencies[] = "efed_roster"
+core = 6.x

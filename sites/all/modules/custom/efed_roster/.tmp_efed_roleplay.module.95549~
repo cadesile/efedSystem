@@ -1,0 +1,114 @@
+<?php
+
+function efed_roleplay_menu() {
+	/*
+	$items['find-healthy-living-initiatives'] = array(
+    	'page callback' => 'efed_roleplay_view',
+    	'access arguments' => array('access content'),
+		'page arguments' => array(1),
+		'type' => MENU_CALLBACK,
+  	);  
+	
+	$items['wellbeing-portfolio/project-profiles'] = array(
+    	'page callback' => 'efed_roleplay_view_porfolio',
+		'page arguments' => array(2),
+    	'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK,
+  	);  	
+	*/
+	return $items;	
+}
+
+function efed_roleplay_block($op = 'list', $delta = 0, $edit = array()) {
+  if ($op == 'list') {
+    $blocks[0] = array(
+		'info' => t('Next Match')
+	);
+    $blocks[1] = array(
+		'info' => t('Next Card')
+	);
+
+    return $blocks;
+  }
+  else if ($op == 'configure' && $delta == 0) {
+    $form['items'] = array(
+      '#type' => 'select',
+      '#title' => t('Number of items'),
+      '#default_value' => variable_get('efed_roleplay_block_items', 0),
+      '#options' => array('1', '2', '3'),
+    );
+    return $form;
+  }
+  else if ($op == 'save' && $delta == 0) {
+    variable_set('efed_roleplay_block_items', $edit['items']);
+  }
+  else if ($op == 'view') {
+    switch($delta) {
+      case 0:
+        $block = array('subject' => t('Next Match'),
+          'content' => efed_roleplay_wrestler_next_card_block());
+        break;
+      case 1:
+        $block = array('subject' => t('Next Card'),
+          //'content' => mymodule_display_block_2()
+		  );
+        break;
+    }
+    return $block;
+  }
+
+}
+
+function efed_roleplay_wrestler_next_card_block(){
+	$out = '';
+	
+	global $user;
+	
+	$cards = efed_roleply_get_next_card($user->uid);
+	
+	foreach($cards as $card){
+		$show = node_load($card->parent_node);
+		
+		$out .= '<div class="card">';
+		$out .= '<div class="content">';
+		$out .= '<ul>';
+		$out .= '<li>' . l($show->title. ', ' . $card->title,'node/' . $card->nid). '</li>';
+		$out .= '<li>Roleplay Deadline: <em>' . format_date($card->field_deadline[0]['value'],'medium') . '</em></li>';
+		$out .= '<li>Card will be aired on, <em>' . format_date($card->field_show_date[0]['value'],'medium') . '</em></li>';
+		$out .= '</ul>';
+		$out .= '</div>';
+		$out .= '</div>';
+	}
+	
+	//print_r($cards);
+	//exit();
+	
+	return $out;
+}
+
+function efed_roleply_get_next_card($uid = 0){
+	$results = array();
+	
+	$sql = "SELECT mat.parent_nid AS nid
+			FROM 
+			content_field_comp AS comp, 
+			relativity AS mat,
+			content_type_card AS card
+			WHERE 
+			comp.field_comp_uid = %d 
+			AND
+			comp.nid = mat.nid 
+			AND 
+			card.field_show_date_value > %d
+			ORDER BY card.field_show_date_value";
+			
+	$result = db_query($sql,$uid,$_SERVER['REQUEST_TIME']);		
+		
+	while($data = db_fetch_object($result)){
+		$results[] = node_load($data->nid);
+	}
+	
+	return $results;
+}
+
+?>

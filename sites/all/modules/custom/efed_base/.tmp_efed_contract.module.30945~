@@ -1,0 +1,52 @@
+<?php
+
+define('EFED_CONTRACT_TITLE','e-fed Contract');
+
+/*
+function efed_contract_theme(){
+	return array(
+		'efed_contract_link' => array(
+			'arguments' => array('title' => NULL, 'path' => NULL),
+		),
+	);
+}
+
+function theme_efed_contract_link($title, $fid) {
+	return l($title, 'resource/' . $fid);
+}
+
+*/
+function efed_contract_perm() {
+  return array('administer efed contact');
+}
+
+function efed_contract_menu() {
+		  
+	$items['admin/efed/contract/settings'] = array(
+    	'title' => EFED_CONTRACT_TITLE . ' Settings',
+    	'page callback' => 'efed_contract_view_stats',
+    	'access arguments' => array('administer efed contact'),
+		'type' => MENU_CALLBACK,
+  	);   
+	
+	$items['admin/efed/contract/create'] = array(
+    	'title' => EFED_CONTRACT_TITLE . ' Create',
+	    'page callback'    => 'drupal_get_form',
+	    'page arguments'   => array('efed_contract_admin_create_form'),
+    	'access arguments' => array('administer efed contact'),
+		'type' => MENU_CALLBACK,
+  	); 	
+	
+	return $items;	
+}
+function efed_contract_admin_create_form($form_state){
+	$form = array();
+	
+				
+	return $form;
+}
+
+
+function efed_contract_admin_create_submit($form, &$form_state){	
+
+}

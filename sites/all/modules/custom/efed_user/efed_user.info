@@ -1,0 +1,9 @@
+; $Id$
+name = "User"
+description = "custom menu callbacks, and custom forms for managing users with the default role."
+package = "E-Fed"
+dependencies[] = "efed_roster"
+dependencies[] = "efed_character"
+dependencies[] = "efed_roster"
+dependencies[] = "efed_contract"
+core = 6.x

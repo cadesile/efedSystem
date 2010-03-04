@@ -1,0 +1,67 @@
+CHANGELOG for Forum Access for Drupal 6
+
+forum_access 6.x-1.x-dev:
+
+
+forum_access 6.x-1.x-RC1 (2009-06-03):
+  Bugs fixed:
+    - #472494: check_plain() the role names.
+
+forum_access 6.x-1.x-BETA4 (2009-05-22):
+  Enhancements:
+    - #243076: Major update of Swedish translation.
+  Bugs fixed:
+    - Fix minor structural bug.
+    - #410930: Work around a core bug that puts wrong values into $node->tid.
+    - Tune the behavior of the administrative interface.
+    - #413708: Make forums visible to users with 'administer nodes' permission.
+    - #408560: Grants still not saved under some circumstances.
+    - #426498: Potential conflict with pre-existing 'Forum Moderator' role.
+    - #407080: Remove the 'reply' links if the user does not have the 'Post' grant.
+    - #408560: Grants not saved for newly created forums.
+
+forum_access 6.x-1.x-BETA3 (2009-03-18):
+  Enhancements:
+    - #310254, #163964: Implement comment moderation as well as advanced node moderation.
+    - Remove 'post' links from forum page if the user doesn't have the 'create' permission.
+    - Disable checkboxes for roles that have no or full access anyway.
+    - #213957: Implement the ability to use the settings of an existing forum as a template.
+    - Provide a choice of how/when to update the {node_access} table and only do it if necessary.
+    - Tune presentation of configuration information.
+    - Add extensive configuration information and trouble-shooting tips.
+    - Use View grant to control access to the forum's admin page (with the access settings!), too.
+    - Make forum_access_db_rewrite_sql() more resistant against name conflicts.
+    - Keep the checkboxes aligned even when the column titles wrap; improve the titles for containers.
+
+forum_access 6.x-1.x-BETA2 (2009-01-29):
+  Enhancements:
+    - Collapse Moderators fieldset if empty.
+    - Factor out form and batch code into .inc files.
+    - Implement batch mode to support correct updating (using node_access_acquire_grants() rather than node_access_write_grants()).
+    - Implement grant priority.
+    - Provide help for getting along with Content Access.
+    - #109924: Add optional forum_access_preprocess_forum_list(&$variables) function to provide moderators in the $forums template variable.
+    - #109924: Add new forum_access_get_moderator_uids($tid) function (requires new ACL version!).
+
+forum_access 6.x-1.x-BETA1 (2008-10-14):
+  Bugs fixed:
+    - #344711: Fix forum_access_access() to use $account consistently.
+    - #328341: Make pgsql CAST() conditional on the database engine.
+    - #309113: Fix warning messages in bootstrap.inc (caused by bad drupal_set_message() call).
+    - #302774: Remove cruft from _forum_access_get_roles().
+    - Use node_access_needs_rebuild() rather than node_access_rebuild() when enabling/disabling module.
+    - Fix cosmetic coder issues (no functional change).
+    - #246959: Fix a bad t() call.
+    - #219778: Remove grants when roles are deleted, purge orphaned grants.
+    - #230123: Newest pgsql refuses to do automatic type conversions.
+    - Provide a message for uninitialized forums when newly installed, rather than the incorrect 'default' setting of grant_all for 1 & 2.
+    - #222477: forum_access_node_access_records() didn't return its result.
+  Porting to D6:
+    - #128846: Accommodate PostgreSQL 8.3's requirement for explicit casts.
+    - Publish .pot file.
+    - Port precautionary warning on Content Access page (will need to test and activate full diagnostics when CA is ported).
+    - #231611: Add support for non-forum content types; update moderator(s) when changing forum.
+    - Avoid E_NOTICEs — ready for beta.
+    - First-shot port to D6.
+    - Copied 5.x-1.9.
+

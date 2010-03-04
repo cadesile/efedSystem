@@ -1,0 +1,313 @@
+<?php
+
+efed_base();
+
+define('EFED_CONTRACT_ADMIN_TITLE',EFED_APP_TITLE . 'Contract ');
+define('EFED_CONTRACT_TITLE',EFED_TITLE . 'Contract ');
+
+/*
+function efed_contract_theme(){
+	return array(
+		'efed_contract_link' => array(
+			'arguments' => array('title' => NULL, 'path' => NULL),
+		),
+	);
+}
+
+function theme_efed_contract_link($title, $fid) {
+	return l($title, 'resource/' . $fid);
+}
+
+*/
+function efed_contract_perm() {
+  return array('administer efed contract');
+}
+
+function efed_contract_menu() {
+		
+	/*
+	 * Adminstration menu callbacks
+	   
+	$items[EFED_ADMIN_AREA .'contract'] = array(
+    	'title' => EFED_CONTRACT_ADMIN_TITLE . 'Settings',
+    	'page callback' => 'efed_contract_view_stats',
+    	'access arguments' => array('administer efed contract'),
+		'type' => MENU_CALLBACK,
+  	);*/   
+	
+	$items[EFED_ADMIN_AREA .'contract/%/store'] = array(
+    	'title' => EFED_CONTRACT_ADMIN_TITLE . 'Create',
+	    'page callback'    => 'drupal_get_form',
+	    'page arguments'   => array('efed_contract_admin_create_form'),
+    	'access arguments' => array('administer efed contract'),
+		'type' => MENU_CALLBACK,
+  	);  
+		
+	/*
+	 * User callback menu callbacks
+	 * EFED_DEFAULT_ROLE user can access
+	 */  
+	 
+	$items['contract'] = array(
+    	'title' => EFED_CONTRACT_TITLE . 'View',
+    	'page callback' => 'efed_contract_user_contract',
+    	'access arguments' => array('administer efed contract'),
+		'type' => MENU_CALLBACK,
+  	); 	
+	
+	return $items;	
+}
+/*
+function efed_contract_node_info() {
+  // We return an array since a module can define multiple node types.
+  // We're only defining one node type, type 'mymodule'.
+  return array(
+    'efed_contract' => array(
+	    'name' => t('E-Fed Contract'), // Human readable name. Required.
+	    'module' => 'efed_contract',  // Machine readable name. (alphanueric, '_' only) Required.
+	    'description' => t('Roster contract, assigned by site administrator.'), // Required.
+	    'has_title' => TRUE,
+	    'title_label' => t('Title'),
+	    'has_body' => TRUE,
+	    'body_label' => t('Content'),
+	    'min_word_count' => 0,
+	    'locked' => TRUE
+    )
+  );
+}
+*/
+function efed_contract_exists($uid){
+	$results = array();
+	
+	$result = db_query("SELECT COUNT(*) AS count FROM {efed_contract} WHERE uid = %d",$uid);			
+	$data = db_fetch_object($result);		
+	return ($data->count > 0) ? true : false;
+}
+
+function efed_contract_manage(){
+	
+}
+
+function efed_contract_manage_form($form_state){
+	$form = array();
+	
+	$form['copy'] = array(
+	  	'#type' => 'checkbox',
+	  	'#title' => t('Sign.'),
+		'#description' => t('Once you have agreed to sign your contract you will be unable to <em>break</em> it, unless you are <b>fired</b>.')
+	);
+	
+	$form['submit'] = array(
+		'#type' => 'submit', 
+		'#value' => t('Accept')
+	);
+	
+	return $form;
+}
+
+function efed_contract_manage_form_submit($form, &$form_state){	
+	global $user;
+
+}
+
+function efed_contract_admin_create_form($form_state){
+	$form = array();
+	
+	$contract = efed_contract_load_for_uid(arg(5));
+	$member = user_load(arg(5));
+	$roster = efed_roster_load(arg(3));
+		
+	$form['info'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Contract Details'),
+		'#description' => t("Manage <b>" . $member->name . "'s</b> contract for <em>" . $roster->name . "</em>"),
+		'#collapsible' => TRUE,
+		'#collapsed' => FALSE,
+	);	
+	
+	$form['info']['contract_id'] = array(
+	  	'#type' => 'hidden',
+		'#default_value' => $contract->contract_id,
+	);	
+	
+	$form['info']['signed'] = array(
+	  	'#type' => 'hidden',
+		'#default_value' => ($contract->signed)? true : false,
+	);	
+	
+	$form['info']['roster_id'] = array(
+	  	'#type' => 'hidden',
+		'#default_value' => arg(3),
+	);	
+		
+	$form['info']['uid'] = array(
+	  	'#type' => 'hidden',
+		'#default_value' => arg(5),
+	);
+	
+		
+	$form['info']['wage'] = array(
+	  	'#title' => t('Wage'),
+	  	'#type' => 'textfield',
+		'#description' => '$ US Dollars',
+		'#default_value' => $contract->wage,
+		'#size' => 60,
+		'#maxlength' => 128,
+  		'#required' => TRUE,
+	);
+	
+	$form['info']['notes'] = array(
+	  	'#type' => 'textarea',
+		'#default_value' => $contract->notes,
+	  	'#title' => t('Notes'),
+  		'#required' => TRUE,
+	);
+	$date_start = ($contract)? $contract->date_start : time();
+	
+	$form['info']['date_start'] = array(
+		'#type' => 'date',
+		'#title' => t('Date Start'),
+		'#default_value' => array(			
+			'year' => format_date($date_start,'custom','Y'),
+			'month' => format_date($date_start,'custom','n'),
+			'day' => format_date($date_start,'custom','d'),
+		),
+		'#required' => true,
+	);
+	
+	$date_end = ($contract->date_end)? $contract->date_end : time();
+	
+	$form['info']['date_end'] = array(
+		'#type' => 'date',
+		'#title' => t('Date End'),
+		'#default_value' => array(
+			'year' => format_date($date_end,'custom','Y'),
+			'month' => format_date($date_end,'custom','n'),
+			'day' => format_date($date_end,'custom','d'),
+		),
+		'#required' => true,
+	);
+		
+	$form['store'] = array(
+		'#type' => 'submit', 
+		'#value' => t('Store')
+	);
+		
+	$form['cancel'] = array(
+		'#type' => 'submit', 
+		'#value' => t('Cancel')
+	);
+				
+	return $form;
+}
+
+function efed_contract_admin_create_form_submit($form, &$form_state){	
+	$contract = (object)$form_state['values'];
+	
+	switch($contract->op){
+		case 'Store':						
+				//TODO: bug, date goes back one after saving
+				
+				$contract->notes = $form_state['values']['notes'];
+				$contract->date_start = mktime(0,0,0,$contract->date_start['month'],$contract->date_start['day'],$contract->date_start['year']);
+				$contract->date_end = mktime(0,0,0,$contract->date_end['month'],$contract->date_end['day'],$contract->date_end['year']);
+					
+				$contract = efed_contract_store($contract);
+				
+				if($contract->contract_id){
+					drupal_set_message('Contract details stored.','status');		
+				}else{
+					drupal_set_message('Contract details could not be stored.','error');
+				}		
+			break;
+		case 'Cancel':
+				drupal_goto('admin/efed/roster/store/'.$contract->roster_id);
+			break;		
+	}
+}
+
+
+/*
+ * 
+ * BASE STORE(CREATE/UPDATE), READ & DELETE FUNCTION,  * 
+ * 
+ */
+
+function efed_contract_load_for_uid($uid){		
+	$sql = "SELECT * FROM {efed_contract} WHERE uid = %d";	
+	$result = db_query($sql,$uid);		
+	$data = db_fetch_object($result);
+	return $data;	
+}
+
+function efed_contract_load($contract_id){		
+	$sql = "SELECT * FROM {efed_contract} WHERE contract_id = %d";	
+	$result = db_query($sql,$contract_id);		
+	$data = db_fetch_object($result);	
+	return $data;
+}
+
+function efed_contract_store($contract){	
+	if($contract->contract_id > 0){	
+		$sql = "UPDATE {efed_contract} SET 
+			roster_id = %d,
+			updated = %d,
+			date_start = %d,
+			date_end = %d,
+			wage = %d,
+			signed = %d,
+			notes = '%s'
+			WHERE 
+			contract_id = %d";	
+		db_query($sql,
+		$contract->roster_id,
+		time(),
+		$contract->date_start,
+		$contract->date_end,
+		$contract->wage,
+		$contract->signed,
+		$contract->notes,
+		$contract->contract_id);
+	}else{		
+		db_query("INSERT INTO {efed_contract} (
+			roster_id, 
+			uid, 
+			created, 
+			updated, 
+			date_start, 
+			date_end, 
+			wage, 
+			notes
+			) VALUES(
+			%d,
+			%d,
+			%d,
+			%d,
+			%d,
+			%d,
+			%d,
+			'%s'
+			)",
+		$contract->roster_id,
+		$contract->uid,
+		time(),
+		time(),
+		$contract->date_start,
+		$contract->date_end,
+		$contract->wage,
+		$contract->notes);
+		
+		$sql = "SELECT contract_id AS id FROM {efed_contract} ORDER BY contract_id LIMIT 0,1";
+		$result = db_query($sql);			
+		$data = db_fetch_object($result);
+				
+		$contract->contract_id = $data->id;
+	}
+	
+	return $contract;
+}
+
+function efed_contract_delete($contract_id){		
+	$sql = "DELETE FROM {efed_contract} WHERE contract_id = %d";			
+	db_query($sql,$contract_id);	
+}

@@ -1,0 +1,82 @@
+<?php
+// $Id: data_ui.module,v 1.4 2009/07/18 22:09:38 alexb Exp $
+
+/**
+ * Implementation of hook_menu()
+ */
+function data_ui_menu(){
+  $items = array();
+  $items['admin/content/data'] = array(
+    'title' => 'Data tables',
+    'description' => 'Administer data tables.',
+    'page callback' => 'data_ui_overview',
+    'file' => 'data_ui.admin.inc',
+    'access arguments' => array('administer data tables'), 
+  );
+  $items['admin/content/data/create'] = array(
+    'title' => 'Create a table',
+    'description' => 'Create a data table.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('data_ui_add_form'),
+    'file' => 'data_ui.admin.inc',
+    'access arguments' => array('administer data tables'),
+    'type' => MENU_CALLBACK, 
+  );
+  $items['admin/content/data/%data_ui_table/drop'] = array(
+    'title' => 'Drop table',
+    'description' => 'Drop a data table.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('data_ui_drop_form', 3),
+    'file' => 'data_ui.admin.inc',
+    'access arguments' => array('administer data tables'),
+    'type' => MENU_CALLBACK, 
+  );
+  $items['admin/content/data/edit/%data_ui_table'] = array(
+    'title' => 'Data table',
+    'description' => 'Administer data tables.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('data_ui_edit_form', 4),
+    'file' => 'data_ui.admin.inc',
+    'access arguments' => array('administer data tables'),
+    'type' => MENU_CALLBACK, 
+  );
+  return $items;
+}
+
+/**
+ * Menu loader callback.
+ */
+function data_ui_table_load($table_name) {
+  return data_get_table($table_name);
+}
+
+/**
+ * Implementation of hook_views_api().
+ */
+function data_ui_views_api() {
+  return array(
+    'api' => '2.0',
+  );
+}
+
+/**
+ * Implementation of hook_theme()
+ */
+function data_ui_theme() {
+  return array(
+    'data_ui_edit_form' => array(
+      'arguments' => array('form' => array()),
+    ),
+    'data_ui_add_form' => array(
+      'arguments' => array('form' => array()),
+    ),
+  );
+}
+
+
+/**
+ * Implementation of hook_perm().
+ */
+function data_ui_perm() {
+  return array('administer data tables');
+}

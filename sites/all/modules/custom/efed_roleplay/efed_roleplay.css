@@ -1,0 +1,24 @@
+#efed-roleplay-view-filter-form{
+	margin-bottom: 0 !important;
+	border-bottom: solid 1px #e3e3e3;
+	padding: 10px 0px 10px 0px; 
+}
+
+#efed-roleplay-view-filter-form #edit-submit{
+	margin: 0 !important;
+}
+.block-efed_roleplay .content{
+	padding: 0px !important;
+}
+
+.info{
+	font-size: 11px;
+	border-bottom: solid 1px #e3e3e3;
+	padding: 10px 0px 10px 0px;
+}
+
+.character_thumb{
+	float: right;
+	margin-left: 10px;
+	margin-bottom: 10px;
+}

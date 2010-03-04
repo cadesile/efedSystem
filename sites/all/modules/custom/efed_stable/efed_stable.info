@@ -1,0 +1,6 @@
+; $Id$
+name = "Stable"
+description = "custom menu callbacks, and custom forms for managing and editing stables relating to user with default site role."
+package = "E-Fed"
+dependencies[] = "efed_roster"
+core = 6.x

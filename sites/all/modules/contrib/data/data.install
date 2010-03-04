@@ -1,0 +1,113 @@
+<?php
+// $Id: data.install,v 1.4 2009/07/19 13:18:23 alexb Exp $
+
+/**
+ * Implementation of hook_schema().
+ */
+function data_schema() {
+  $schema['data_tables'] = array(
+    'description' => 'Tables managed by Data module.',
+    'fields' => array(
+      'title' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Natural name of the table.',
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Table name.',
+      ),
+      'table_schema' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'description' => 'Table schema.',
+        'serialize' => TRUE,
+      ),
+      'meta' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'description' => 'Meta information about the table and its fields.',
+        'serialize' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+        'name' => array('name'),
+      ),
+  );
+  // @todo: we call join information in DataTable 'links' but here we call it 'join'.
+  $schema['data_join'] = array(
+    'description' => 'Join information for tables managed Data module.',
+    'fields' => array(
+      'left_table' => array(
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Left table.',
+      ),
+      'left_field' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Column of left table.',
+      ),
+      'right_table' => array(
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => FALSE,
+        'default' => '',
+        'description' => 'Right table.',
+      ),
+      'right_field' => array( // @todo: should be right_field
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+        'default' => '',
+        'description' => 'Column of right table.',
+      ),
+      'inner_join' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => t('Flag indicating whether this relation should use an INNER JOIN.'),
+      ),
+    ),
+    'primary key' => array(
+      'left_table', 
+      'right_table', 
+    ),
+    'indexes' => array(
+        'left_table' => array('left_table'),
+        'right_table' => array('right_table'),
+    ),
+  );
+  // Load dynamically created tables.
+  if (function_exists('data_get_schema')) {
+    $schema += data_get_schema();
+  }
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function data_install() {
+  // Create tables.
+  drupal_install_schema('data');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function data_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('data');
+}

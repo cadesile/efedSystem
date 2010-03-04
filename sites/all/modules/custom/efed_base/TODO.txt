@@ -1,0 +1,14 @@
+TODO:
+
+	- rework breadcrumb module
+	- use views for RSS feeds
+	- E-Fed alerts module
+	- add watchdog trace across e-fed suite
+	- file upload folder structure
+	- MESSAGE SYSTEM
+	- AUTO NEWS SYSTEM
+	- Add Charcacter 'role' e.g. Manager, Trainer, Wrestler
+	- When user is delete, character isn't for stability of results etc, character status is 'fired'
+	- Character block
+	- when character signs contract THEN create roster relationship (when contract ends roster relationship delete)
+	- Customise home page show scroller configuration to allow admin to select order

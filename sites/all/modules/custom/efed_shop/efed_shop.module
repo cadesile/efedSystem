@@ -1,0 +1,598 @@
+<?php
+
+efed_base();
+
+define('EFED_SHOP_PATH','node/add/efed-product');
+
+function efed_shop_init() {
+	drupal_add_css(drupal_get_path('module','efed_shop').'/efed_shop.css');
+	drupal_add_js(drupal_get_path('module','efed_shop').'/efed_shop.js');
+}
+
+function efed_shop_block($op = 'list', $delta = 0, $edit = array()) {
+  if ($op == 'list') {
+    $blocks[0] = array(
+		'info' => t('Shopping Cart')
+	);
+    return $blocks;
+  }
+  else if ($op == 'view') {
+    switch($delta) {
+      case 0:
+        $block = array('subject' => t('Shopping Cart'),
+			'content' => efed_shop_block_0()
+		);
+		
+        break;
+    }
+    return $block;
+  }
+}
+
+function efed_shop_block_0(){	
+	$items = array();
+	$cart = efed_cart_load();
+	return '<div class="jcarousel-skin-efedsystem_right_block">'.theme('efed_cart',$cart).'</div>';
+}
+
+function efed_shop_theme() {
+  return array(
+    'efed_cart' => array(
+      'arguments' => array('cart' => NULL),
+      'template' => 'cart'
+    ),
+  );
+}
+
+function efed_shop_cart_form($form,$cart){
+	$form = array();
+		
+	$form['submit'] = array(
+		'#type' => 'submit',
+		'#value' => 'Confirm',
+	);
+	
+	$form['clear'] = array(
+		'#type' => 'submit',
+		'#value' => 'Clear',
+	);
+				
+	return $form;
+}
+
+function efed_shop_cart_form_submit($form,$form_state){
+	global $user;
+	$obj = (object)$form_state['values'];
+	
+	$cart = efed_cart_load();
+	
+	switch($obj->op){
+		case 'Confirm':
+			foreach($cart as $cid => $products){
+			
+				foreach($products as $shop_id){
+					$p = array(
+						'cid' => $cid,
+						'shop_id' => $shop_id,
+					);
+					
+					efed_purchase_store((object)$p);
+				}
+			}
+			efed_cart_clear();
+			
+			drupal_set_message('Cart <em>confirmed</em>, your purchases will be confirmed by the efedSystem administrator','status',TRUE);
+			
+			drupal_goto('character-profiles/'.$user->uid.'/cart-history');
+		break;
+		
+		case 'Clear':
+			efed_cart_clear();
+			
+			drupal_set_message('Cart <em>cleared</em>','status');
+		break;
+	}
+	
+}
+
+function efed_shop_buy_form($form,$shop_id){
+	$form = array();
+	
+	global $user;
+	$user = user_load($user->uid);
+
+	if(in_array(EFED_DEFAULT_ROLE,$user->roles)){
+		
+		$p = efed_shop_load($shop_id);
+		
+		$options = array();
+		
+		foreach($user->profiles as $c){
+			$options[$c->character_id] = $c->name;
+			$balances .= '<div class="balance" id="balance_'.$c->character_id.'">Current Balance: '.efed_price($c->balance->balance).'</div>';
+		}
+		
+		$form['nid'] = array(
+			'#type' => 'hidden',
+			'#value' => $p->nid,
+		);	
+		
+		$form['cid'] = array(
+			'#title' => 'Character',
+			'#description' => 'Select the character account you want to use',
+			'#type' => 'select',
+			'#options' => $options,
+		);	
+		
+		$form['balances'] = array(
+			'#value' => $balances,
+		);
+		
+		$form['submit'] = array(
+			'#type' => 'submit',
+			'#value' => 'Add to cart',
+		);
+	
+	}
+				
+	return $form;
+
+}
+
+function efed_shop_buy_form_submit($form,$form_state){
+	$obj = (object)$form_state['values'];
+	$node = node_load($obj->nid);
+	$p = efed_shop_load($node->shop_id);
+	$c = efed_character_load($obj->cid);
+
+	efed_cart_add($p,$c);
+	
+	drupal_set_message('<em>'.$node->title.'</em> added to <b>'.$c->name.'</b>\'s cart','status');
+	
+}
+
+function efed_shop_perm() {
+  return array('administer efed shop');
+}
+
+function efed_shop_node_info() {
+  
+	$node_types['efed_product'] = array(
+		'name' => t('E-Fed Shop Product'),
+		'base' => 'efed_shop',
+		'module' => 'node',
+		'title_label' => 'Product Name',
+		'body_label' => 'Description',
+	);
+	
+	return $node_types;
+}
+
+function efed_shop_menu() {
+	
+	/*
+	 * Adminstration menu callbacks
+	 */  
+	 
+	$items[EFED_ADMIN_AREA .'/shop'] = array(
+    	'title' => 'Products',
+    	'page callback' => 'efed_shop_admin_view',
+    	'weight' => 10,
+    	'access arguments' => array('administer efed shop'), 
+  	);  
+	
+	$items[EFED_ADMIN_AREA .'/shop/delete'] = array(
+    	'page callback' => 'efed_shop_admin_delete',
+    	'access arguments' => array('administer efed shop'), 	
+  	);  
+	 
+	$items[EFED_ADMIN_AREA .'/shop/outstanding'] = array(
+    	'title' => 'Outstanding Orders',
+    	'page callback' => 'efed_shop_admin_purchases_view',
+    	'weight' => 10,
+    	'access arguments' => array('administer efed shop'), 
+		'type' => MENU_LOCAL_TASK,
+  	); 
+	 
+	$items[EFED_ADMIN_AREA .'/shop/history'] = array(
+    	'title' => 'Order History',
+    	'page callback' => 'efed_shop_admin_history_view',
+    	'weight' => 10,
+    	'access arguments' => array('administer efed shop'), 
+		'type' => MENU_LOCAL_TASK,
+  	);
+	
+	$items[EFED_ADMIN_AREA .'/shop/purchases/confirm'] = array(
+    	'page callback' => 'efed_shop_admin_confirm',
+    	'access arguments' => array('administer efed shop'), 	
+  	);  
+	
+	$items['shop'] = array(
+    	'page callback' => 'efed_shop_view',
+    	'access arguments' => array('access content'), 	
+  	); 
+	
+	return $items;	
+}
+
+function efed_shop_view(){	
+	$limit = 10;
+	
+	$header = array(
+		array('data' => t('Product')),
+		array('data' => t('Price')),
+	);
+
+	$cards = array();
+	$shops = pager_query("SELECT nid FROM {efed_shop} ORDER BY shop_id",$limit);
+	
+	while($data = db_fetch_object($shops)){
+		$node = node_load($data->nid);
+						
+		$rows[] = array(
+			array('data' => l(t($node->title),'node/'.$data->nid)),
+			array('data' => '$'.number_format($node->price,2)),
+		);
+	}	
+	
+	$output .= theme('table', $header, $rows);
+	$output .= theme('pager', NULL, $limit, 0);
+	
+	return $output;
+}
+
+function efed_shop_admin_confirm(){	
+	$form = array();
+	$p = efed_purchase_load(arg(5));
+	// load shop item
+	$s = efed_shop_load($p->shop_id);
+	// load character
+	$c = efed_character_load($p->cid);
+	$node = node_load($s->nid);
+	// assign character balance to varible
+	$b = $c->balance;
+		
+	// purchase confirmed
+	$p->completed = TRUE;
+	
+	// take value of purchase from character balance
+	$b->balance = $b->balance - $s->price;
+	efed_balance_store($b);
+	efed_purchase_store($p);
+	
+	// load user roster
+	$r = efed_roster_load($c->contract->roster_id);
+	// add price of purchase to roster balance
+	$r->balance = $r->balance - $s->price;
+	efed_roster_store($r);
+	
+	drupal_set_message($c->name. '\'s purchase of <em>'. $node->title . '</em> confirmed, <b>'.$r->name.'</b> balance increased.','status');
+	drupal_goto(EFED_ADMIN_AREA .'/shop/outstanding');
+}
+
+function efed_shop_admin_delete(){	
+	$form = array();
+	$shop = node_load(arg(4));
+	node_delete($shop->shop_id);
+	
+	drupal_set_message('Product <em>'. $show->title . '</em> deleted.','status');
+	drupal_goto(EFED_ADMIN_AREA .'/shop');
+}
+
+function efed_shop_admin_view(){	
+	$limit = 10;
+	
+	$header = array(
+		array('data' => t('Product')),
+		array('data' => t('Price')),
+		array('data' => t('')),
+	);
+
+	$cards = array();
+	$shops = pager_query("SELECT nid FROM {efed_shop} ORDER BY shop_id",$limit);
+	
+	while($data = db_fetch_object($shops)){
+		$node = node_load($data->nid);
+						
+		$edit_opt = array(
+			'query' => array(
+				'destination'=>'admin/efed/shop'
+			),
+		);
+						
+		$rows[] = array(
+			array('data' => t($node->title)),
+			array('data' => '$'.number_format($node->price,2)),
+			array('data' => l('Edit','node/'.$data->nid.'/edit',$edit_opt)),
+			array('data' => l('Delete',EFED_ADMIN_AREA .'/shop/delete/'.$node->shop_id)),
+		);
+	}	
+	
+	$output .= theme('table', $header, $rows);
+	$output .= theme('pager', NULL, $limit, 0);
+	
+	$output .= l('Create Product',EFED_SHOP_PATH);
+	
+	return $output;
+}
+
+function efed_shop_admin_purchases_view(){	
+	$limit = 10;
+	
+	$header = array(
+		array('data' => t('Character')),
+		array('data' => t('Product')),
+		array('data' => t('Price')),
+		array('data' => t('Date')),
+		array('data' => t('')),
+	);
+
+	$cards = array();
+	$shops = pager_query("SELECT * FROM {efed_purchase} WHERE completed = 0 ORDER BY updated DESC",$limit);
+	
+	while($data = db_fetch_object($shops)){
+		$c = efed_character_load($data->cid);
+		$p = efed_shop_load($data->shop_id);
+		$node = node_load($p->nid);
+						
+		$rows[] = array(
+			array('data' => t($c->name)),
+			array('data' => t($node->title)),
+			array('data' => '$'.number_format($node->price,2)),
+			array('data' => format_date($data->updated,'medium')),
+			array('data' => l('Confirm',EFED_ADMIN_AREA .'/shop/purchases/confirm/'.$data->purchase_id)),
+		);
+	}	
+	if(count($rows)>0){
+		$output .= theme('table', $header, $rows);
+		$output .= theme('pager', NULL, $limit, 0);
+	}else{
+		$output .= '<p><em>empty</em></p>';
+	}
+	return $output;
+}
+
+function efed_shop_admin_history_view(){	
+	$limit = 10;
+	
+	$header = array(
+		array('data' => t('Character')),
+		array('data' => t('Product')),
+		array('data' => t('Price')),
+		array('data' => t('Date')),
+	);
+
+	$cards = array();
+	$shops = pager_query("SELECT * FROM {efed_purchase} WHERE completed = 1 ORDER BY updated DESC",$limit);
+	
+	while($data = db_fetch_object($shops)){
+		$c = efed_character_load($data->cid);
+		$p = efed_shop_load($data->shop_id);
+		$node = node_load($p->nid);
+						
+		$rows[] = array(
+			array('data' => t($c->name)),
+			array('data' => t($node->title)),
+			array('data' => '$'.number_format($node->price,2)),
+			array('data' => format_date($data->updated,'medium')),
+		);
+	}	
+	if(count($rows)>0){
+		$output .= theme('table', $header, $rows);
+		$output .= theme('pager', NULL, $limit, 0);
+	}else{
+		$output .= '<p><em>empty</em></p>';
+	}
+	return $output;
+}
+
+function efed_shop_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+	switch($node->type){
+		case 'efed_product':
+			$p = efed_shop_load_by_nid($node->nid);	
+			
+			switch ($op) {
+				case 'load':
+							
+					$node->product_id = $p->product_id;					
+					$node->price = $p->price;					
+					$node->shop_id = $p->shop_id;	
+					
+				break;
+				
+				case 'insert':
+				
+					efed_shop_store($node);
+				
+				break;
+				
+				case 'update':
+				
+					efed_shop_store($node);
+				
+				break;
+				
+				case 'delete':					
+				
+					efed_shop_delete($node->shop_id);
+				
+				break;
+			}
+		break;
+	}
+	
+}
+
+function efed_shop_form_alter(&$form, $form_state, $form_id) {
+	
+	switch($form_id){
+		case 'efed_product_node_form':	
+		
+			if(arg(1)!='add'){
+				$node = node_load(arg(1));
+			}
+		
+			$form['product'] = array(
+				'#title' => 'Product Info',
+				'#type' => 'fieldset',
+				'#description' => $desc,
+				'#weight' => -50,
+				'#collapsible' => TRUE,
+				'#collapsed' => FALSE,
+			);
+	
+			$form['product']['shop_id'] = array(
+				'#type' => 'hidden',
+				'#value' => $node->shop_id,
+			);			
+			
+	
+			$form['product']['price'] = array(
+				'#title' => t('Price'),
+				'#type' => 'textfield',
+				'#default_value' => $node->price,
+				'#required' => TRUE,
+			);			
+			
+			$form['product']['title'] = $form['title'];
+			$form['product']['body_field'] = $form['body_field'];			
+
+			unset($form['title']);
+			unset($form['author']);
+			unset($form['buttons']['preview']);
+			unset($form['body_field']);
+			unset($form['comment_settings']);
+			unset($form['menu']);
+			unset($form['path']);
+			unset($form['attachments']);
+			unset($form['title']);	
+			
+		break;
+	}
+}
+
+/*
+ * 
+ * BASE STORE(CREATE/UPDATE), READ & DELETE FUNCTION,  * 
+ * shop
+ * 
+ */
+
+function efed_shop_load_cart_history($cid){		
+	$items = array();
+	$result = db_query("SELECT purchase_id FROM {efed_purchase} WHERE cid = %d",$cid);
+	while($data = db_fetch_object($result)) $items[] = efed_purchase_load($data->purchase_id);
+	return $items;
+}
+
+function efed_cart_load(){
+	global $user;	
+	return variable_get('efed_cart_'.$user->uid,array());
+}
+
+function efed_cart_clear(){
+	global $user;	
+	variable_set('efed_cart_'.$user->uid,array());
+}
+
+function efed_cart_add($p,$c){
+	global $user;	
+	$cart = efed_cart_load();
+	$cart[$c->character_id][$p->shop_id] = $p->shop_id;
+	variable_set('efed_cart_'.$user->uid,$cart);
+}
+
+function efed_cart_remove($p,$c){
+	$cart = efed_cart_load();
+	unset($cart[$c->character_id][$p->shop_id]);
+}
+
+function efed_shop_load($shop_id){		
+	$sql = "SELECT * FROM {efed_shop} WHERE shop_id = %d";	
+	$result = db_query($sql,$shop_id);		
+	$data = db_fetch_object($result);		
+	$data->purchases = efed_shop_load_purchases($shop_id);	
+	
+	return $data;
+}
+
+function efed_shop_load_purchases($shop_id){		
+	$items = array();
+	$result = db_query("SELECT purchase_id FROM {efed_purchase} WHERE shop_id = %d",$shop_id);
+	while($data = db_fetch_object($result)) $items[] = efed_purchase_load($data->purchase_id);
+	return $items;
+}
+
+function efed_shop_load_all(){		
+	$items = array();
+	$sql = "SELECT shop_id FROM {efed_shop} ORDER BY price DESC";	
+	$shop = db_query($sql);		
+	while($data = db_fetch_object($shop)){
+		$items[] = efed_shop_load($data->shop_id);
+	}
+	return $items;
+}
+
+function efed_shop_load_by_nid($nid){		
+	$sql = "SELECT shop_id FROM {efed_shop} WHERE nid = %d";	
+	$shop = db_query($sql,$nid);		
+	$data = db_fetch_object($shop);	
+	return efed_shop_load($data->shop_id);
+}
+
+function efed_shop_store($object){	
+
+	if($object->shop_id>0){	
+		drupal_write_record('efed_shop',$object,'shop_id');
+	}else{		
+		drupal_write_record('efed_shop',$object);
+	}
+	
+	return $object;
+}
+
+function efed_shop_delete($shop_id){	
+	
+	$shop = efed_shop_load($shop_id);
+
+	foreach($shop->purchases as $p){
+		efed_purchase_delete($p->purchase_id);
+	}
+	
+	$sql = "DELETE FROM {efed_shop} WHERE shop_id = %d";			
+	db_query($sql,$shop_id);	
+}
+
+/*
+ * 
+ * BASE STORE(CREATE/UPDATE), READ & DELETE FUNCTION,  * 
+ * shop PART
+ * 
+ */
+
+function efed_purchase_load($purchase_id){		
+	$sql = "SELECT * FROM {efed_purchase} WHERE purchase_id = %d";	
+	$shop = db_query($sql,$purchase_id);		
+	$data = db_fetch_object($shop);	
+		
+	return $data;
+}
+
+function efed_purchase_store($object){	
+
+	if($object->purchase_id>0){		
+		$object->updated = time();
+		drupal_write_record('efed_purchase',$object,'purchase_id');
+	}else{		
+		$object->created = time();
+		$object->updated = time();
+		drupal_write_record('efed_purchase',$object);
+	}
+	
+	return $object;
+}
+
+function efed_purchase_delete($purchase_id){	
+	$sql = "DELETE FROM {efed_purchase} WHERE purchase_id = %d";			
+	db_query($sql,$purchase_id);	
+}
