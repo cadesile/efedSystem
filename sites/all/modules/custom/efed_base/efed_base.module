@@ -7,6 +7,9 @@ function efed_base_init() {
 	drupal_add_css(drupal_get_path('module','efed_base').'/js/jcarousel/jquery.jcarousel.css');
 	drupal_add_css(drupal_get_path('module','efed_base').'/js/jcarousel/skins/right_block/skin.css');
 	drupal_add_js(drupal_get_path('module','efed_base').'/js/jcarousel/jquery.jcarousel.pack.js');
+	drupal_add_js(drupal_get_path('module','efed_base').'/js/cufon/cufon.js');
+	drupal_add_js(drupal_get_path('module','efed_base').'/js/cufon/cufon-settings.js');
+	drupal_add_js(drupal_get_path('module','efed_base').'/js/cufon/cufon-font.js');
 	drupal_add_css(drupal_get_path('module','efed_base').'/efed_base.css');
 }
 

@@ -1,0 +1,165 @@
+[33mcommit 0ec39dbd9f2956352591ab7c0a94c2055175505f[m
+Author: Courtney Adesile <courtney.adesile@gmail.com>
+Date:   Thu Mar 4 00:22:31 2010 +0000
+
+    added first repo of efedSystem build
+
+[1mdiff --git a/.htaccess b/.htaccess[m
+[1mnew file mode 100644[m
+[1mindex 0000000..28e147d[m
+[1m--- /dev/null[m
+[1m+++ b/.htaccess[m
+[36m@@ -0,0 +1,116 @@[m
+[32m+[m[32m#[m
+[32m+[m[32m# Apache/PHP/Drupal settings:[m
+[32m+[m[32m#[m
+[32m+[m
+[32m+[m[32m# Protect files and directories from prying eyes.[m
+[32m+[m[32m<FilesMatch "\.(engine|inc|info|install|module|profile|test|po|sh|.*sql|theme|tpl(\.php)?|xtmpl|svn-base)$|^(code-style\.pl|Entries.*|Repository|Root|Tag|Template|all-wcprops|entries|format)$">[m
+[32m+[m[32m  Order allow,deny[m
+[32m+[m[32m</FilesMatch>[m
+[32m+[m
+[32m+[m[32m# Don't show directory listings for URLs which map to a directory.[m
+[32m+[m[32mOptions -Indexes[m
+[32m+[m
+[32m+[m[32m# Follow symbolic links in this directory.[m
+[32m+[m[32mOptions +FollowSymLinks[m
+[32m+[m
+[32m+[m[32m# Make Drupal handle any 404 errors.[m
+[32m+[m[32mErrorDocument 404 /index.php[m
+[32m+[m
+[32m+[m[32m# Force simple error message for requests for non-existent favicon.ico.[m
+[32m+[m[32m<Files favicon.ico>[m
+[32m+[m[32m  # There is no end quote below, for compatibility with Apache 1.3.[m
+[32m+[m[32m  ErrorDocument 404 "The requested file favicon.ico was not found.[m
+[32m+[m[32m</Files>[m
+[32m+[m
+[32m+[m[32m# Set the default handler.[m
+[32m+[m[32mDirectoryIndex index.php[m
+[32m+[m
+[32m+[m[32m# Override PHP settings. More in sites/default/settings.php[m
+[32m+[m[32m# but the following cannot be changed at runtime.[m
+[32m+[m
+[32m+[m[32m# PHP 4, Apache 1.[m
+[32m+[m[32m<IfModule mod_php4.c>[m
+[32m+[m[32m  php_value magic_quotes_gpc                0[m
+[32m+[m[32m  php_value register_globals                0[m
+[32m+[m[32m  php_value session.auto_start              0[m
+[32m+[m[32m  php_value mbstring.http_input             pass[m
+[32m+[m[32m  php_value mbstring.http_output            pass[m
+[32m+[m[32m  php_value mbstring.encoding_translation   0[m
+[32m+[m[32m</IfModule>[m
+[32m+[m
+[32m+[m[32m# PHP 4, Apache 2.[m
+[32m+[m[32m<IfModule sapi_apache2.c>[m
+[32m+[m[32m  php_value magic_quotes_gpc                0[m
+[32m+[m[32m  php_value register_globals                0[m
+[32m+[m[32m  php_value session.auto_start              0[m
+[32m+[m[32m  php_value mbstring.http_input             pass[m
+[32m+[m[32m  php_value mbstring.http_output            pass[m
+[32m+[m[32m  php_value mbstring.encoding_translation   0[m
+[32m+[m[32m</IfModule>[m
+[32m+[m
+[32m+[m[32m# PHP 5, Apache 1 and 2.[m
+[32m+[m[32m<IfModule mod_php5.c>[m
+[32m+[m[32m  php_value magic_quotes_gpc                0[m
+[32m+[m[32m  php_value register_globals                0[m
+[32m+[m[32m  php_value session.auto_start              0[m
+[32m+[m[32m  php_value mbstring.http_input             pass[m
+[32m+[m[32m  php_value mbstring.http_output            pass[m
+[32m+[m[32m  php_value mbstring.encoding_translation   0[m
+[32m+[m[32m</IfModule>[m
+[32m+[m
+[32m+[m[32m# Requires mod_expires to be enabled.[m
+[32m+[m[32m<IfModule mod_expires.c>[m
+[32m+[m[32m  # Enable expirations.[m
+[32m+[m[32m  ExpiresActive On[m
+[32m+[m
+[32m+[m[32m  # Cache all files for 2 weeks after access (A).[m
+[32m+[m[32m  ExpiresDefault A1209600[m
+[32m+[m
+[32m+[m[32m  <FilesMatch \.php$>[m
+[32m+[m[32m    # Do not allow PHP scripts to be cached unless they explicitly send cache[m
+[32m+[m[32m    # headers themselves. Otherwise all scripts would have to overwrite the[m
+[32m+[m[32m    # headers set by mod_expires if they want another caching behavior. This may[m
+[32m+[m[32m    # fail if an error occurs early in the bootstrap process, and it may cause[m
+[32m+[m[32m    # problems if a non-Drupal PHP file is installed in a subdirectory.[m
+[32m+[m[32m    ExpiresActive Off[m
+[32m+[m[32m  </FilesMatch>[m
+[32m+[m[32m</IfModule>[m
+[32m+[m
+[32m+[m[32m# Various rewrite rules.[m
+[32m+[m[32m<IfModule mod_rewrite.c>[m
+[32m+[m[32m  RewriteEngine on[m
+[32m+[m
+[32m+[m[32m  # If your site can be accessed both with and without the 'www.' prefix, you[m
+[32m+[m[32m  # can use one of the following settings to redirect users to your preferred[m
+[32m+[m[32m  # URL, either WITH or WITHOUT the 'www.' prefix. Choose ONLY one option:[m
+[32m+[m[32m  #[m
+[32m+[m[32m  # To redirect all users to access the site WITH the 'www.' prefix,[m
+[32m+[m[32m  # (http://example.com/... will be redirected to http://www.example.com/...)[m
+[32m+[m[32m  # adapt and uncomment the following:[m
+[32m+[m[32m  # RewriteCond %{HTTP_HOST} ^example\.com$ [NC][m
+[32m+[m[32m  # RewriteRule ^(.*)$ http://www.example.com/$1 [L,R=301][m
+[32m+[m[32m  #[m
+[32m+[m[32m  # To redirect all users to access the site WITHOUT the 'www.' prefix,[m
+[32m+[m[32m  # (http://www.example.com/... will be redirected to http://example.com/...)[m
+[32m+[m[32m  # uncomment and adapt the following:[m
+[32m+[m[32m  # RewriteCond %{HTTP_HOST} ^www\.example\.com$ [NC][m
+[32m+[m[32m  # RewriteRule ^(.*)$ http://example.com/$1 [L,R=301][m
+[32m+[m
+[32m+[m[32m  # Modify the RewriteBase if you are using Drupal in a subdirectory or in a[m
+[32m+[m[32m  # VirtualDocumentRoot and the rewrite rules are not working properly.[m
+[32m+[m[32m  # For example if your site is at http://example.com/drupal uncomment and[m
+[32m+[m[32m  # modify the following line:[m
+[32m+[m[32m  # RewriteBase /drupal[m
+[32m+[m[32m  #[m
+[32m+[m[32m  # If your site is running in a VirtualDocumentRoot at http://example.com/,[m
+[32m+[m[32m  # uncomment the following line:[m
+[32m+[m[32m  # RewriteBase /[m
+[32m+[m
+[32m+[m[32m  # Rewrite URLs of the form 'x' to the form 'index.php?q=x'.[m
+[32m+[m[32m  RewriteCond %{REQUEST_FILENAME} !-f[m
+[32m+[m[32m  RewriteCond %{REQUEST_FILENAME} !-d[m
+[32m+[m[32m  RewriteCond %{REQUEST_URI} !=/favicon.ico[m
+[32m+[m[32m  RewriteRule ^(.*)$ index.php?q=$1 [L,QSA][m
+[32m+[m[32m</IfModule>[m
+[32m+[m
+[32m+[m[32m# $Id: .htaccess,v 1.90.2.4 2009/12/07 12:00:40 goba Exp $[m
+[1mdiff --git a/CHANGELOG.txt b/CHANGELOG.txt[m
+[1mnew file mode 100644[m
+[1mindex 0000000..81b7dd8[m
+[1m--- /dev/null[m
+[1m+++ b/CHANGELOG.txt[m
+[36m@@ -0,0 +1,1006 @@[m
+[32m+[m[32m// $Id: CHANGELOG.txt,v 1.253.2.35 2009/12/16 20:47:10 goba Exp $[m
+[32m+[m
+[32m+[m[32mDrupal 6.15, 2009-12-16[m
+[32m+[m[32m----------------------[m
+[32m+[m[32m- Fixed security issues (Cross site scripting), see SA-CORE-2009-009.[m
+[32m+[m[32m- Fixed a variety of other bugs.[m
+[32m+[m
+[32m+[m[32mDrupal 6.14, 2009-09-16[m
+[32m+[m[32m----------------------[m
+[32m+[m[32m- Fixed security issues (OpenID association cross site request forgeries,[m
+[32m+[m[32m  OpenID impersonation and File upload), see SA-CORE-2009-008.[m
+[32m+[m[32m- Changed the system modules page to not run all cache rebuilds; use the[m
+[32m+[m[32m  button on the performance settings page to achieve the same effect.[m
+[32m+[m[32m- Added support for PHP 5.3.0 out of the box.[m
+[32m+[m[32m- Fixed a variety of small bugs.[m
+[32m+[m
+[32m+[m[32mDrupal 6.13, 2009-07-01[m
+[32m+[m[32m----------------------[m
+[32m+[m[32m- Fixed security issues (Cross site scripting, Input format access bypass and[m
+[32m+[m[32m  Password leakage in URL), see SA-CORE-2009-007.[m
+[32m+[m[32m- Fixed a variety of small bugs.[m
+[32m+[m
+[32m+[m[32mDrupal 6.12, 2009-05-13[m
+[32m+[m[32m----------------------[m
+[32m+[m[32m- Fixed security issues (Cross site scripting), see SA-CORE-2009-006.[m
+[32m+[m[32m- Fixed a variety of small bugs.[m
+[32m+[m
+[32m+[m[32mDrupal 6.11, 2009-04-29[m
+[32m+[m[32m----------------------[m
+[32m+[m[32m- Fixed security issues (Cross site scripting and limited information[m
+[32m+[m[32m  disclosure), see SA-CORE

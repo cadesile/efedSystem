@@ -1,9 +1,9 @@
 .jcarousel-skin-show_scrollable .jcarousel-container-horizontal {
-    width: 600px;
+    width: 710px;
 }
 
 .jcarousel-skin-show_scrollable .jcarousel-clip-horizontal {
-    width:  600px;
+    width:  710px;
 }
 .jcarousel-skin-show_scrollable li {
 	background-image: none;
@@ -20,7 +20,7 @@
 .jcarousel-skin-show_scrollable  ul li.jcarousel-item .content{
 	font-weight: bold;
 	color: #fff;
-	width: 580px;
+	width: 690px;
 	position: absolute;
 	bottom: 0px;
 	padding: 5px 10px;
@@ -32,7 +32,7 @@
 
 .jcarousel-skin-show_scrollable .jcarousel-item {
 	position: relative;
-    width: 600px;
+    width: 710px;
     height: 200px;
 }
 

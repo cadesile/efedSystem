@@ -208,6 +208,7 @@ function efed_shop_menu() {
   	);  
 	
 	$items['shop'] = array(
+    	'title' => 'Shop',
     	'page callback' => 'efed_shop_view',
     	'access arguments' => array('access content'), 	
   	); 

@@ -3,11 +3,14 @@
 }
 
 .jcarousel-skin-efedsystem_right_block .jcarousel-container-horizontal {
-    width: 160px;
+    width: 230px;
 }
 
 .jcarousel-skin-efedsystem_right_block .jcarousel-clip-horizontal {
-    width:  160px;
+    width:  230px;
+}
+.jcarousel-skin-efedsystem_right_block ul {
+	margin: 0px !important;
 }
 .jcarousel-skin-efedsystem_right_block li {
 	background-image: none;
@@ -15,10 +18,10 @@
 
 }
 .jcarousel-skin-efedsystem_right_block  ul li.jcarousel-item{
+    width:  210px;
 	margin: 0px;
-	padding: 5px 10px !important;
+	padding: 0px 10px;
 	position: relative;
-    width: 140px;
 	height: auto;
 }
 .jcarousel-skin-efedsystem_right_block  ul li.jcarousel-item .content a{
