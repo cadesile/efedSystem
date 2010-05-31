@@ -6,7 +6,7 @@
 <div class="node<?php if ($sticky) { print " sticky"; } ?><?php if (!$status) { print " node-unpublished"; } ?>">
   <div class="content">
 	<div class="card">
-		<?php print theme('imagecache','efed_show_banner',$card->show->banner,$card->show->title); ?>
+		<?php print theme('imagecache','efed_show_max',$card->show->banner,$card->show->title); ?>
 		<div class="info">
 			<div><b>Location:</b> <?php print $card->location; ?></div>
 			<div><b>Card Date:</b> <?php print format_date($card->card_date,'custom','d/m/Y - i:H'); ?></div>

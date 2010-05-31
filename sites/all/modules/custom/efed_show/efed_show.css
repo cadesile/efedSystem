@@ -1,9 +1,9 @@
 div.show {
--moz-border-radius:5px 5px 5px 5px;
-background-color:#E3E3E3;
-display:block;
-margin-bottom:10px;
-padding:10px;
+	-moz-border-radius:5px 5px 5px 5px;
+	background-color:#E3E3E3;
+	display:block;
+	margin-bottom:10px;
+	padding:10px;
 }
 
 div.show .show-name {
@@ -36,6 +36,11 @@ div.show_scroller div.match div.title{
 }
 
 div.show_scroller div.match div.belt{
+	-moz-border-radius:0px;
+	background-color:transparent;
+	display:block;
+	margin-bottom:0px;
+	padding:0px;
 	font-style: italic;
 }
 

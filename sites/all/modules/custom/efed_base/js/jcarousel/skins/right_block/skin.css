@@ -39,7 +39,7 @@
 .jcarousel-skin-efedsystem_right_block .jcarousel-prev-horizontal,
 .jcarousel-skin-efedsystem_right_block .jcarousel-next-horizontal {
 	position: absolute;
-	bottom: 10px;
+	top: -45px;
 
 }
 .jcarousel-skin-efedsystem_right_block .jcarousel-next-horizontal {

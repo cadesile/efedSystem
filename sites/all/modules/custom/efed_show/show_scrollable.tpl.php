@@ -22,7 +22,7 @@
 					<?php print theme('efed_match',$match,'Main Event','small'); ?>
 					<div class="content">
 						<div class="title">Show: <?php print l($node->title,'node/'.$node->nid); ?></div>
-						<div class="date">Next Card: <?= ($node->nid)? l(format_date($card->card_date),'node/'.$node->nid): 'TBC';?></div>
+						<div class="date">Next Card: <?= ($node->nid)? l(format_date($card->card_date),'node/'.$card->nid): 'TBC';?></div>
 					</div>
 				</div>
 			</li>

@@ -266,6 +266,15 @@ div.node {
 
 #forum .container {
 	width: auto !important;
+	display: inherit;
+}
+
+.node-type-forum .indented {
+	margin-left: 0px;
+}
+
+.forum-post-panel-main  {
+	min-height:inherit;
 }
 
 .breadcrumb {
