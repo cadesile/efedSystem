@@ -69,11 +69,11 @@ function efed_breadcrumb_display($breadcrumb){
 			$wrap = TRUE;
 		break;			
 	}
-	
-	if(empty($breadcrumb)){	
-		$breadcrumb = 'Home';
-		$wrap = TRUE;
-	}
+//	
+//	if(empty($breadcrumb)){
+//		$breadcrumb = 'Home';
+//		$wrap = TRUE;
+//	}
 	
 	if($wrap){
 		$breadcrumb = '<div class="breadcrumb">'.$breadcrumb.'</div>';		

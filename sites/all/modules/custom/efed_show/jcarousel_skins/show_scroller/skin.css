@@ -24,7 +24,6 @@
 	position: absolute;
 	bottom: 0px;
 	padding: 5px 10px;
-    background: transparent url(f00.gif) repeat 0 0;
 }
 .jcarousel-skin-show_scrollable  ul li.jcarousel-item .content a{
 	color: #e3e3e3;
@@ -74,7 +73,7 @@
 }
 
 .jcarousel-skin-show_scrollable .jcarousel-prev-horizontal {
-	left: 523px;
+		right: 40px;
     width: 32px;
     height: 32px;
     cursor: pointer;

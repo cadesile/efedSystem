@@ -9,9 +9,7 @@
 	<?php 
 	if($node->part_type=='match'){
 	
-		$op = array(
-			'fragment' => $node->nid,
-		);
+		$op = array('fragment' => $node->nid);
 	
 	?>
 	<h3><?php print l($c->card_title,'node/'.$r->nid,$op); ?></h3>

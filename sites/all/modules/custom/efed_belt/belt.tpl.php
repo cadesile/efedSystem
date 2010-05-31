@@ -1,20 +1,28 @@
 <?php
-	$gm = efed_character_load($roster->gm_id);
-?>
+$current = efed_character_load($belt->current_champion->cid);
+unset($belt->history[0]);
 
-<div class="node clear-block">
-	<div class="content roster">
-		<h3><?php print l($roster->name,'roster/'.$roster->roster_id); ?></h3>
-		<p class="type"><b>General Manager:</b> <?php print $gm->name; ?></p>
-		<p class="type"><b>Balance:</b> $<?php print number_format($roster->balance,2); ?></p>
-		<p>
-			<?php
-			if($roster->banner){
-				print theme('imagecache','efed_thumbnail',$show->banner,$show->title);
-			}
-			?>
-			<?php print $roster->description; ?>
-		</p>
-		<p>Members: <?php print count($roster->members); ?></p>
+?>
+<div class="belt">
+	<div class="belt-name"><?php print $belt->name; ?></div>
+	<?php if($belt->current_champion): ?>
+	<div class="current-champion">
+		<div class="holder"><b>Current holder:</b> <?php print $current->name; ?></div>
+		<div class="date"><b>Start date:</b> <?php print format_date($belt->current_champion->start, 'small'); ?></div>
 	</div>
+	<?php else: ?>
+	<div class="vacant">Title vacant.</div>
+	<?php endif; ?>
+	<?php if($belt->history): ?>
+	<div class="history">
+		<b>Previous champion(s):</b>
+		<?php foreach($belt->history as $history): ?>
+		<?php $c = efed_character_load($history->cid); ?>
+		<div class="past-champion">
+			<div class="holder"><?php print $c->name; ?></div>
+			<div class="date"><b>Date:</b> <?php print format_date($history->start, 'small'); ?> - <?php print format_date($history->end, 'small'); ?></div>
+		</div>
+		<?php endforeach; ?>
+	</div>
+	<?php endif; ?>
 </div>

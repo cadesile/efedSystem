@@ -1,10 +1,14 @@
 <?php
-	$c = efed_character_load($belt->current_champion->cid);
+$current = efed_character_load($belt->current_champion->cid);
 ?>
-
-<div class="node clear-block">
-	<div class="content roster">
-		<p class="type"><b>Title:</b> <?php print $belt->name; ?></p>
-		<p class="type"><b>Holder:</b> <?php print $c->name; ?></p>
+<div class="belt">
+	<div class="belt-name"><?php print $belt->name; ?></div>
+	<?php if($belt->current_champion): ?>
+	<div class="current-champion">
+		<div class="holder"><b>Current holder:</b> <?php print $current->name; ?></div>
+		<div class="date"><b>Start date:</b> <?php print format_date($belt->current_champion->start, 'small'); ?></div>
 	</div>
+	<?php else: ?>
+	<div class="vacant">Title vacant.</div>
+	<?php endif; ?>
 </div>

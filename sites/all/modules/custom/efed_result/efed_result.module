@@ -32,6 +32,10 @@ function efed_result_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 					$node->card_id = $result->card_id;					
 					$node->result_id = $result->result_id;				
 					$node->parts = $result->parts;
+
+				break;
+
+				case 'view':
 					$node->body = theme('efed_result',$node);
 					
 				break;
@@ -70,7 +74,8 @@ function efed_result_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 			switch ($op) {
 				case 'load':
 				
-					$part = efed_result_part_load_by_nid($node->nid);				
+					$part = efed_result_part_load_by_nid($node->nid);
+
 					$node->match_id = $part->match_id;	
 					$node->part_type = $part->type;
 					$node->result_id = $part->result_id;
@@ -79,6 +84,10 @@ function efed_result_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 					$node->winner = $part->winner;
 					$node->time = $part->time;
 					$node->content_body = $node->body;
+
+				break;
+
+				case 'view':
 					$node->body = theme('efed_result_part',$node);
 					
 				break;
@@ -136,8 +145,13 @@ function efed_result_block($op = 'list', $delta = 0, $edit = array()) {
   else if ($op == 'view') {
     switch($delta) {
       case 0:
+				$block_0 = efed_result_block_0(variable_get('efed_result_amount', 5));
+
+				if($block_0) {
         $block = array('subject' => t('Latest Results'),
           'content' => efed_result_block_0(variable_get('efed_result_amount', 5)));
+				}
+
         break;
     }
     return $block;
@@ -145,7 +159,7 @@ function efed_result_block($op = 'list', $delta = 0, $edit = array()) {
 }
 
 function efed_result_block_0($amount){	
-	$items = array();
+	$items = FALSE;
 	
 	$sql = "SELECT node.nid
 			FROM efed_result
@@ -163,8 +177,12 @@ function efed_result_block_0($amount){
 		'<br/><em>'.$card->location.'</em>
 		<br/>'.format_date($node->created,'medium');
 	}
-		
-	return '<div class="jcarousel-skin-efedsystem_right_block">'.theme('item_list',$items).'</div>';
+
+	if($items) {
+		return '<div class="jcarousel-skin-efedsystem_right_block">'.theme('item_list',$items).'</div>';
+	}else {
+		return FALSE;
+	}
 }
 
 function efed_result_types(){
@@ -675,8 +693,7 @@ function efed_result_form_alter_roleplays($match){
 	
 		$rows[] = array(
 			array('data' => $c->name),
-			array('data' => $rp->title),
-			array('data' => l('view','node/'.$rp->nid.'/edit')),
+			array('data' => l($rp->title,'node/'.$rp->nid, array('attributes' => array('target' => '_blank')))),
 		);
 	}	
 	

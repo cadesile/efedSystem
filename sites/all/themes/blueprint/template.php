@@ -110,7 +110,6 @@ function blueprint_preprocess_page(&$vars) {
   unset($css['all']['module']['sites/all/modules/contrib/plus1/plus1.css']);
   $vars['styles'] = drupal_get_css($css);   
   */
-
 }
 
 /**
@@ -292,6 +291,12 @@ function blueprint_help() {
  * @return a string containing the breadcrumb output.
  */
 function blueprint_breadcrumb($breadcrumb) {
+
+	if(module_exists('efed_breadcrumb')) {
+    $breadcrumb[] = drupal_get_title();
+		return efed_breadcrumb_display(implode(' &rsaquo; ', $breadcrumb));
+	}
+
   if (count($breadcrumb) > 1) {
     $breadcrumb[] = drupal_get_title();
     return '<div class="breadcrumb">'. implode(' &rsaquo; ', $breadcrumb) .'</div>';

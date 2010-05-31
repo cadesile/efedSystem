@@ -6,3 +6,12 @@
 .block-efed_result .content{
 	padding: 0px !important;
 }
+
+.info {
+	border: 0px;
+	-moz-border-radius:5px 5px 5px 5px;
+	background-color: #e3e3e3;
+	padding: 10px !important;
+	display: block;
+	margin-bottom: 10px;
+}

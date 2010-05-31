@@ -1,4 +1,33 @@
+.belt {
+-moz-border-radius:5px 5px 5px 5px;
+background-color:#E3E3E3;
+display:block;
+margin-bottom:10px;
+padding:10px;
+}
 
+.belt .belt-name {
+	font-size: 14px;
+	font-weight: bold;
+	margin-bottom: 10px;
+}
+
+.belt .current-champion {
+	margin-bottom: 10px;
+}
+
+.belt .history {
+	font-size: 9px;
+}
+
+.belt .history .past-champion {
+	margin-bottom: 10px;
+}
+
+.belt .date {
+	font-style:italic;
+	color:#616161;
+}
 
 
 

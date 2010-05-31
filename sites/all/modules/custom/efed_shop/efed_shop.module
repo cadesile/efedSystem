@@ -48,11 +48,13 @@ function efed_shop_cart_form($form,$cart){
 	$form = array();
 		
 	$form['submit'] = array(
+		'#name' => 'confirm',
 		'#type' => 'submit',
 		'#value' => 'Confirm',
 	);
 	
 	$form['clear'] = array(
+		'#name' => 'clear',
 		'#type' => 'submit',
 		'#value' => 'Clear',
 	);
@@ -66,8 +68,8 @@ function efed_shop_cart_form_submit($form,$form_state){
 	
 	$cart = efed_cart_load();
 	
-	switch($obj->op){
-		case 'Confirm':
+	switch($form_state['clicked_button']['#name']){
+		case 'confirm':
 			foreach($cart as $cid => $products){
 			
 				foreach($products as $shop_id){
@@ -86,7 +88,7 @@ function efed_shop_cart_form_submit($form,$form_state){
 			drupal_goto('character-profiles/'.$user->uid.'/cart-history');
 		break;
 		
-		case 'Clear':
+		case 'clear':
 			efed_cart_clear();
 			
 			drupal_set_message('Cart <em>cleared</em>','status');

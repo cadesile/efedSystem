@@ -7,11 +7,11 @@
  *
  * If you use a customized color scheme, you must regenerate it after
  * modifying this file.
- */
+*/
 
 /**
  * Generic elements
- */
+*/
 body {
   margin: 0;
   padding: 0;
@@ -300,9 +300,16 @@ table .form-button, table .form-submit {
   margin-bottom: 2.5em;
 }
 
+.page-home .col-center {
+	-moz-border-radius:0px !important;
+	background-color:#000 !important;
+	border:0px !important;
+	padding:0px !important;
+}
+
 /**
  * Layout
- */
+*/
 #header-region {
 }
 
@@ -315,8 +322,8 @@ table .form-button, table .form-submit {
 }
 
 #wrapper {
-/*
-  background: #edf5fa url(images/body.png) repeat-x 50% 0;
+	/*
+		background: #edf5fa url(images/body.png) repeat-x 50% 0;
   */
 }
 
@@ -328,7 +335,7 @@ table .form-button, table .form-submit {
 }
 
 #wrapper #container #header {
-position: relative;
+	position: relative;
 	height: 80px;
   border-bottom: solid 1px #FF0000;
   margin-bottom: 10px;
@@ -362,7 +369,7 @@ position: relative;
 #wrapper #container #header #block-menu-primary-links ul,
 #wrapper #container #header #block-menu-primary-links li{
 	padding: 0px;
-	margin: 0px;	
+	margin: 0px;
 }
 #wrapper #container #header #block-menu-primary-links li a{
 	font-size: 12px;
@@ -444,80 +451,24 @@ body.sidebars #squeeze {
 #wrapper #container .sidebar .block {
   margin: 0 0 1.5em 0;
 }
-/*
-.sidebar .block {
-  padding: 0 15px 0 0px;
-}
-*/
-.sidebar .block  h2{
-	padding: 5px 10px 5px 10px;
-	color: white;
-	font-size: 11px;
-	font-weight: bold;
-	background-color: #FF0000;
+
+.block {
+	background: #eaeaea url(images/block-bg.gif) 0 0 repeat-x;
+	margin-bottom: 10px;
 }
 
-.sidebar .block.container-inline div, .container-inline label{
-	display: block;
-}
-
-.sidebar .block  .content{
-	font-size: 11px;
-	margin: 0px;
-	padding: 5px 10px 5px 10px;
-	background-color: #E9EFF3;
-}
-
-.sidebar .block  .content ul{
-	padding: 0px;
-	margin: 0px;
-}
-
-.sidebar .block  .content ul li{
-	background-image: none;
-	padding: 0px;
-	margin: 0px;
-}
-
-#sidebar-right .block {
-  padding: 0 0px 0 15px;
-}
-
-#sidebar-left .block {
-  padding: 0 15px 0 0;
-}
-
-.block .content {
-  margin: 0.5em 0;
-}
-
-.sidebar-left .block-region {
-  margin: 0 15px 0 0px; /* LTR */
-}
-
-.sidebar-right .block-region {
-  margin: 0 0px 0 15px; /* LTR */
-}
-
-.block-region {
-  padding: 1em;
-  background: transparent;
-  border: 2px dashed #b4d7f0;
-  text-align: center;
-  font-size: 1.3em;
-}
 
 /* Now we add the backgrounds for the main content shading */
 #wrapper #container #center #squeeze {
-/*
-  background: #fff url(images/bg-content.png) repeat-x 50% 0;
+	/*
+		background: #fff url(images/bg-content.png) repeat-x 50% 0;
   */
   position: relative;
 }
 
 #wrapper #container #center .right-corner {
-/*
-  background: transparent url(images/bg-content-right.png) no-repeat 100% 0;
+	/*
+		background: transparent url(images/bg-content-right.png) no-repeat 100% 0;
   */
   position: relative;
   left: 10px;
@@ -553,7 +504,7 @@ body.sidebars #footer {
 
 /**
  * Header
- */
+*/
 
 #wrapper #container #header h1 a:hover {
   text-decoration: none;
@@ -579,7 +530,7 @@ body.sidebars #footer {
 
 /**
  * Primary navigation
- */
+*/
 ul.primary-links {
   margin: 0;
   padding: 0;
@@ -614,7 +565,7 @@ ul.primary-links li a:hover, ul.primary-links li a.active {
 
 /**
  * Secondary navigation
- */
+*/
 ul.secondary-links {
   margin: 0;
   padding: 18px 0 0;
@@ -646,7 +597,7 @@ ul.secondary-links li a:hover, ul.secondary-links li a.active {
 
 /**
  * Local tasks
- */
+*/
 ul.primary, ul.primary li, ul.secondary, ul.secondary li {
   border: 0;
   background: none;
@@ -701,7 +652,7 @@ ul.secondary li.active a {
 
 /**
  * Nodes & comments
- */
+*/
 .node {
   padding: 10px 0px 0px 0px;
 }
@@ -709,7 +660,7 @@ ul.secondary li.active a {
 .node .show img{
 	float: left;
 	margin-right: 10px;
-	
+
 }
 
 ul.links li, ul.inline li {
@@ -799,7 +750,7 @@ ul.links li, ul.inline li {
 
 /**
  * Aggregator.module
- */
+*/
 #aggregator {
   margin-top: 1em;
 }
@@ -822,19 +773,19 @@ ul.links li, ul.inline li {
 
 /**
  * Color.module
- */
+*/
 #palette .form-item {
   border: 1px solid #fff;
 }
 #palette .item-selected {
-/*
-  background: #fff url(images/gradient-inner.png) repeat-x 0 0;*/
+	/*
+		background: #fff url(images/gradient-inner.png) repeat-x 0 0;*/
   border: 1px solid #d9eaf5;
 }
 
 /**
  * Menu.module
- */
+*/
 tr.menu-disabled {
   opacity: 0.5;
 }
@@ -847,18 +798,18 @@ tr.even td.menu-disabled {
 
 /**
  * Poll.module
- */
+*/
 .poll .bar {
-/*
-  background: #fff url(images/bg-bar-white.png) repeat-x 0 0;
+	/*
+		background: #fff url(images/bg-bar-white.png) repeat-x 0 0;
   */
   border: solid #f0f0f0;
   border-width: 0 1px 1px;
 }
 
 .poll .bar .foreground {
-/*
-  background: #71a7cc url(images/bg-bar.png) repeat-x 0 100%;
+	/*
+		background: #71a7cc url(images/bg-bar.png) repeat-x 0 100%;
   */
 }
 
@@ -868,7 +819,7 @@ tr.even td.menu-disabled {
 
 /**
  * Autocomplete.
- */
+*/
 #autocomplete li {
   cursor: default;
   padding: 2px;
@@ -877,7 +828,7 @@ tr.even td.menu-disabled {
 
 /**
  * Collapsible fieldsets
- */
+*/
 fieldset {
   margin: 1em 0;
   padding: 1em;
@@ -924,7 +875,7 @@ html.js fieldset.collapsed legend a {
 
 /**
  * Syndication icons and block
- */
+*/
 #block-node-0 h2 {
   float: left; /* LTR */
   padding-right: 20px; /* LTR */
@@ -941,7 +892,7 @@ html.js fieldset.collapsed legend a {
 
 /**
  * Login Block
- */
+*/
 #user-login-form {
   text-align: center;
 }
@@ -951,7 +902,7 @@ html.js fieldset.collapsed legend a {
 
 /**
  * User profiles.
- */
+*/
 .profile {
   margin-top: 1.5em;
 }
@@ -976,7 +927,7 @@ html.js fieldset.collapsed legend a {
 
 /**
  * Admin Styles
- */
+*/
 div.admin-panel,
 div.admin-panel .description,
 div.admin-panel .body,
@@ -1000,8 +951,8 @@ div.admin .right {
 }
 
 div.admin-panel {
-/*
-  background: #fff url(images/gradient-inner.png) repeat-x 0 0;*/
+	/*
+		background: #fff url(images/gradient-inner.png) repeat-x 0 0;*/
   padding: 1em 1em 1.5em;
 }
 div.admin-panel .description {
@@ -1045,7 +996,7 @@ tr.taxonomy-term-divider-bottom {
 
 /**
  * CSS support
- */
+*/
 
 /*******************************************************************
  * Color Module: Don't touch                                       *
@@ -1053,7 +1004,7 @@ tr.taxonomy-term-divider-bottom {
 
 /**
  * Generic elements.
- */
+*/
 .messages {
   background-color: #fff;
   border: 1px solid #b8d3e5;
@@ -1081,7 +1032,7 @@ div.error, tr.error {
 
 /**
  * dblog.module
- */
+*/
 tr.dblog-user {
   background-color: #fcf9e5;
 }
@@ -1122,7 +1073,7 @@ tr.dblog-page-not-found td.active, tr.dblog-access-denied td.active {
 
 /**
  * Status report colors.
- */
+*/
 table.system-status-report tr.error, table.system-status-report tr.error th {
   background-color: #fcc;
   border-color: #ebb;
@@ -1139,22 +1090,22 @@ table.system-status-report tr.ok, table.system-status-report tr.ok th {
 
 /**
  *	EFED SYSTEM
- */
- 
- .result .info{
+*/
+
+.result .info{
 	font-size: 10px;
 	padding-bottom: 10px;
 	margin-bottom: 10px;
 	border-bottom: solid 1px #e3e3e3;
- }
- 
- .result .part{
+}
+
+.result .part{
 	font-size: 11px;
 	padding-bottom: 10px;
 	margin-bottom: 10px;
 	border-bottom: solid 1px #e3e3e3;
- }
- 
- #forum tr.container td{
+}
+
+#forum tr.container td{
 	background-color: #FF0000;
- }
+}

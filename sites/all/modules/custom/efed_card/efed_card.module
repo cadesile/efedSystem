@@ -1055,6 +1055,7 @@ function efed_match_load($match_id){
 	$sql = "SELECT * FROM {efed_match} WHERE match_id = %d";	
 	$result = db_query($sql,$match_id);		
 	$data = db_fetch_object($result);
+
 	$data->display_rules = ($data->rules==variable_get('rules_default',0))? FALSE : TRUE;
 	$data->teams = efed_comp_load_match_team($match_id);
 	$data->comps = efed_comp_load_match($match_id);

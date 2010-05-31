@@ -2,6 +2,10 @@
 
 efed_base();
 
+function efed_stable_init() {
+	drupal_add_css(drupal_get_path('module','efed_stable').'/efed_stable.css');
+}
+
 function efed_stable_perm() {
   return array('administer efed stable');
 }

@@ -1,26 +1,24 @@
 <?php
-	if($roster){			
-		$r = efed_roster_load($character->roster->roster_id);
-	}
+if($roster) {
+	$r = efed_roster_load($character->roster->roster_id);
+}
 
-	$b = $character->balance;
-	$c = $character->contract;
-	$types = efed_character_status_types();
+$b = $character->balance;
+$c = $character->contract;
+$types = efed_character_status_types();
 ?>
 
-<div class="character_item">
+<div class="character-item">
 	<div class="thumb"><?= $character->img_thumbnail_render?></div>
-	<ul>
-		<li><?=$character->name?></li>
-		<li>Name: <?=$character->forename?> <?=$character->surname?></li>
-		<?php if($roster){ ?>
-		<li>Roster: <?=$r->name?></li>
-		<?php } ?>
-		<li>Gender: <?=$character->gender?></li>
-		<li>Status: <?=$types[$character->status]?></li>
-		<?php if($c){ ?>
-		<li>Contract: <?=format_date($c->date_start,'custom','m/d/Y')?> - <?=format_date($c->date_end,'custom','m/d/Y')?></li>
-		<?php } ?>
-	</ul>
+	<div class="character-name"><?=$character->name?></div>
+	<div class="real-name"><b>Name:</b> <?=$character->forename?> <?=$character->surname?></div>
+	<?php if($roster): ?>
+	<div class="roster"><b>Roster:</b> <?=$r->name?></div>
+	<?php endif; ?>
+	<div class="gender <?=$character->gender?>"><b>Gender:</b> <?=$character->gender?></div>
+	<div class="status"><b>Status:</b> <?=$types[$character->status]?></div>
+	<?php if($c): ?>
+	<div class="date"><b>Contract:</b> <?=format_date($c->date_start, 'small')?> - <?=format_date($c->date_end, 'small')?></div>
+	<?php endif; ?>
 	<div class="clear"></div>
 </div>
