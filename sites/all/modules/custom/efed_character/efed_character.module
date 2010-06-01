@@ -131,7 +131,7 @@ function efed_character_theme() {
 									'template' => 'character'
 					),
 					'efed_character_item' => array(
-									'arguments' => array('character' => NULL,'roster' => FALSE),
+									'arguments' => array('character' => NULL,'roster' => FALSE, 'class' => NULL),
 									'template' => 'character_item',
 					),
 	);

@@ -75,9 +75,9 @@ function efed_breadcrumb_display($breadcrumb){
 //		$wrap = TRUE;
 //	}
 	
-	//if($wrap){
+	if($breadcrumb){
 		$breadcrumb = '<div class="breadcrumb">'.$breadcrumb.'</div>';		
-	//}
+	}
 
 	return $breadcrumb;
 }

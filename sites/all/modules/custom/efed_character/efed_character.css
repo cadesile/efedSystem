@@ -1,4 +1,8 @@
 .character-item{
+	float: left;
+	width: 250px;
+	height: 100px;
+	margin-right: 10px;
 	-moz-border-radius:5px 5px 5px 5px;
 	background-color:#E3E3E3;
 	display:block;
