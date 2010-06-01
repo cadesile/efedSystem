@@ -29,5 +29,14 @@ padding:10px;
 	color:#616161;
 }
 
+.block-efed_belt .belt {
+-moz-border-radius: 0px;
+background-color:transparent;
+display:block;
+margin-bottom:0px;
+padding:0px;
+}
 
-
+.block-efed_belt .content {
+padding:0 !important;
+}

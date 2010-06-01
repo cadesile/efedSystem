@@ -54,6 +54,42 @@ function efed_belt_menu() {
 	
 	return $items;	
 }
+/**
+ * Implementation of hook_block()
+ */
+function efed_belt_block($op='list', $delta=0, $edit=array()) {
+	switch ($op) {
+		case 'list':
+
+			$blocks[0] = array(
+							'info' => t('Title Holders'),
+							'weight' => 0,
+							'status' => 1,
+							'region' => 'right',
+			);
+
+			return $blocks;
+
+		case 'view':
+			$block = array(
+							'subject' => t('Title Holders'),
+							'content' => efed_belt_block_0(),
+			);
+
+			return $block;
+
+	}
+}
+
+function efed_belt_block_0() {
+	$items = array();
+
+	foreach(efed_belt_load_all() as $belt_id => $name) {
+		$items[] = theme('efed_belt_item', efed_belt_load($belt_id));
+	}
+
+	return '<div class="jcarousel-skin-efedsystem_right_block">'.theme('item_list',$items).'</div>';
+}
 
 function efed_belt_reign_process_delete(){
 	$reign = efed_belt_reign_load(arg(6));

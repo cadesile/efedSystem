@@ -24,7 +24,8 @@ $roster->shows = efed_roster_load_show($roster->roster_id);
 			<?php drupal_set_title($roster->name . ' members'); ?>
 			<?php if(is_array($roster->members)): ?>
 				<?php foreach($roster->members as $c): ?>
-					<?= theme('efed_character_item', efed_character_load($c->cid)); ?>
+					<?php $class = ($class)? FALSE : TRUE; ?>
+					<?= theme('efed_character_item', efed_character_load($c->cid), NULL, $class); ?>
 				<?php endforeach; ?>
 			<?php endif; ?>
 		<?php endif; ?>

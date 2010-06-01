@@ -8,7 +8,7 @@ $c = $character->contract;
 $types = efed_character_status_types();
 ?>
 
-<div class="character-item">
+<div class="character-item <?php print ($class)? '' : 'character-alt'; ?>">
 	<div class="thumb"><?= $character->img_thumbnail_render?></div>
 	<div class="character-name"><?=$character->name?></div>
 	<div class="real-name"><b>Name:</b> <?=$character->forename?> <?=$character->surname?></div>

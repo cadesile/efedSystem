@@ -1,6 +1,6 @@
 .character-item{
 	float: left;
-	width: 250px;
+	width: 318px;
 	height: 100px;
 	margin-right: 10px;
 	-moz-border-radius:5px 5px 5px 5px;
@@ -9,6 +9,10 @@
 	margin-bottom:10px;
 	padding:10px;
 	font-size: 9px;
+}
+
+.character-alt {
+	margin-right: 0px;
 }
 
 .col-right .block-efed_character {
