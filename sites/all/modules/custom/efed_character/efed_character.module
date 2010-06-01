@@ -7,10 +7,10 @@ function efed_character_init() {
 	drupal_add_js(drupal_get_path('module','efed_character').'/efed_character.js');
 }
 function efed_character_menu() {
-		
+
 	/*
 	 * Adminstration menu callbacks
-	 */ 
+	*/
 	/*
 	$items[EFED_ADMIN_AREA .'/stable'] = array(
     	'title' => 'Stables',
@@ -26,734 +26,764 @@ function efed_character_menu() {
   	); 
 	*/
 	$items[EFED_ADMIN_AREA .'/characters'] = array(
-    	'title' => 'Characters',
-	    'page callback'    => 'efed_character_admin_view_all',
-    	'access arguments' => array('administer efed character'),
-		'type' => MENU_CALLBACK,
-  	); 
+					'title' => 'Characters',
+					'page callback'    => 'efed_character_admin_view_all',
+					'access arguments' => array('administer efed character'),
+					'type' => MENU_CALLBACK,
+	);
 	$items[EFED_ADMIN_AREA .'/characters/%'] = array(
-    	'title' => 'Character Edit',
-	    'page callback'    => 'drupal_get_form',
-	    'page arguments'   => array('efed_character_admin_create_form'),
-    	'access arguments' => array('administer efed stable'),
-		'type' => MENU_CALLBACK,
-  	); 
-	
+					'title' => 'Character Edit',
+					'page callback'    => 'drupal_get_form',
+					'page arguments'   => array('efed_character_admin_create_form'),
+					'access arguments' => array('administer efed stable'),
+					'type' => MENU_CALLBACK,
+	);
+
 	$items['character-profiles'] = array(
-		'title' => 'Character Profiles',
-	    'page callback'    => 'efed_character_view_all',
-    	'access arguments' => array('manage profile'),
-		'type' => MENU_CALLBACK,
+					'title' => 'Character Profiles',
+					'page callback'    => 'efed_character_view_all',
+					'access arguments' => array('manage profile'),
+					'type' => MENU_CALLBACK,
 	);
-	
+
 	$items['character-profiles/view'] = array(
-		'title' => 'Character Profiles',
-	    'page callback'    => 'efed_character_view_all',
-    	'access arguments' => array('manage profile'),
-		'type' => MENU_LOCAL_TASK,
+					'title' => 'Character Profiles',
+					'page callback'    => 'efed_character_view_all',
+					'access arguments' => array('manage profile'),
+					'type' => MENU_DEFAULT_LOCAL_TASK,
+					'weight' => 1,
 	);
-	
+
 	$items['character-profiles/cart-history'] = array(
-		'title' => 'Cart History',
-	    'page callback'    => 'efed_character_cart_history',
-    	'access arguments' => array('manage profile'),
-		'type' => MENU_LOCAL_TASK,
+					'title' => 'Cart History',
+					'page callback'    => 'efed_character_cart_history',
+					'access arguments' => array('manage profile'),
+					'type' => MENU_LOCAL_TASK,
+					'weight' => 2,
 	);
-	
+
 	$items['character-profiles/store'] = array(
-		'title' => 'Character Profile',
-	    'page callback'    => 'drupal_get_form',
-	    'page arguments'   => array('efed_character_create_form'),
-    	'access arguments' => array('manage profile'),
-		'type' => MENU_CALLBACK,
+					'title' => 'Character Profile',
+					'page callback'    => 'drupal_get_form',
+					'page arguments'   => array('efed_character_create_form'),
+					'access arguments' => array('manage profile'),
+					'type' => MENU_CALLBACK,
 	);
-	
+
 	$items['character-profiles/store/move'] = array(
-		'title' => 'Character Move',
-	    'page callback'    => 'drupal_get_form',
-	    'page arguments'   => array('efed_character_move_form'),
-    	'access arguments' => array('manage profile'),
-		'type' => MENU_CALLBACK,
+					'title' => 'Character Move',
+					'page callback'    => 'drupal_get_form',
+					'page arguments'   => array('efed_character_move_form'),
+					'access arguments' => array('manage profile'),
+					'type' => MENU_CALLBACK,
 	);
-	
-	return $items;	
+
+	return $items;
+}
+
+/**
+ * Implementation of hook_block()
+ */
+function efed_character_block($op='list', $delta=0, $edit=array()) {
+	switch ($op) {
+		case 'list':
+
+			$blocks[0] = array(
+							'info' => t('Character Info'),
+							'weight' => 0,
+							'status' => 1,
+							'region' => 'right',
+			);
+
+			return $blocks;
+
+		case 'view':
+			$block = array(
+							'subject' => t('Character Info'),
+							'content' => efed_character_block_0(),
+			);
+
+			return $block;
+
+	}
+}
+
+function efed_character() {
+	global $user;
+	return efed_character_load(variable_get($user->uid.'_default_character',0));
+}
+
+function efed_character_block_0() {
+	return theme('efed_character', efed_character());
 }
 
 function efed_character_perm() {
 	return array(
-		'administer efed character',
-		'manage profile',
+					'administer efed character',
+					'manage profile',
 	);
 }
 
 function efed_character_theme() {
-  return array(
-    'efed_character' => array(
-      'arguments' => array('character' => NULL),
-      'template' => 'character'
-    ),
-    'efed_character_item' => array(
-      'arguments' => array('character' => NULL,'roster' => FALSE),
-      'template' => 'character_item',
-    ),
-  );
+	return array(
+					'efed_character' => array(
+									'arguments' => array('character' => NULL),
+									'template' => 'character'
+					),
+					'efed_character_item' => array(
+									'arguments' => array('character' => NULL,'roster' => FALSE),
+									'template' => 'character_item',
+					),
+	);
 }
 
-function efed_character_cart_history(){	
+function efed_character_cart_history() {
 	$limit = 10;
-	
-	global $user;
-	$user = user_load($user->uid);
-	
-	foreach($user->profiles as $c){
-	
-		$b = $c->balance;
-		$message = FALSE;
-			
-		$header = array(
-			array('data' => t('Product')),
-			array('data' => t('Cost')),
-			array('data' => t('Date')),
-			array('data' => t('Confirmed')),
-			array('data' => t('')),
+
+	drupal_set_title('Cart History');
+
+	$c = efed_character();
+
+	$b = $c->balance;
+
+	$message = FALSE;
+
+	$header = array(
+					array('data' => t('Product')),
+					array('data' => t('Cost')),
+					array('data' => t('Date')),
+					array('data' => t('Confirmed')),
+					array('data' => t('')),
+	);
+
+	foreach($c->cart_history as $p) {
+		$product = efed_shop_load($p->shop_id);
+		$node = node_load($product->nid);
+
+		$confirm = ($p->completed)? '<span style="color:green">Yes</span>' : '<span style="color:red">No</span>';
+
+		$rows[] = array(
+						array('data' => l(t($node->title),'node/'.$product->nid)),
+						array('data' => '$'.number_format($node->price,2)),
+						array('data' => format_date($p->updated,'medium')),
+						array('data' => $confirm),
+						array('data' => (!$p->completed)? l('Delete',''): ''),
 		);
 
-		foreach($c->cart_history as $p){
-			$product = efed_shop_load($p->shop_id);
-			$node = node_load($product->nid);
-			
-			$confirm = ($p->completed)? '<span style="color:green">Yes</span>' : '<span style="color:red">No</span>';
-													
-			$rows[] = array(
-				array('data' => l(t($node->title),'node/'.$product->nid)),
-				array('data' => '$'.number_format($node->price,2)),
-				array('data' => format_date($p->updated,'medium')),
-				array('data' => $confirm),
-				array('data' => (!$p->completed)? l('Delete',''): ''),
-			);
-			
-			if(!$p->completed){
-				$message = TRUE;
-				$price = $price + $node->price;
-			}
-		}	
-		
-			
-		$after_balance = $b->balance - $price;
-		
-		$output .= '
+		if(!$p->completed) {
+			$message = TRUE;
+			$price = $price + $node->price;
+		}
+	}
+
+
+	$after_balance = $b->balance - $price;
+
+	$output .= '
 		<p>
 			<b>Character:</b> '.$c->name.'<br/>
 			<b>Balance:</b> '.efed_price($b->balance).'	
 		</p>';
-		
-		if(count($rows)>0){
-			$output .= theme('table', $header, $rows);
-		}else{
-			$output .= '<p><em>empty.</em></p>';
-		}
-		
-		if($message){
-			$output .= '
+
+	if(count($rows)>0) {
+		$output .= theme('table', $header, $rows);
+	}else {
+		$output .= '<p><em>empty.</em></p>';
+	}
+
+	if($message) {
+		$output .= '
 			<p>
 				<b>Balance:</b> '.efed_price($after_balance).'<br/>
 				*if purchase(s) confirmed by the efedSystem administrator
 			</p>';
-		}
-		
-		$output .= '<hr/>';
-	
 	}
 
 	return $output;
 }
 
 
-function efed_character_admin_view_all(){	
+function efed_character_admin_view_all() {
 	$limit = 10;
-	
+
 	$characters = efed_character_load_all();
-	
-	if($characters){
-	
+
+	if($characters) {
+
 		$header = array(
-			array('data' => t('Name')),
-			array('data' => t('Handler')),
-			array('data' => t('Roster')),
-			array('data' => t('Contract Signed')),
+						array('data' => t('Name')),
+						array('data' => t('Handler')),
+						array('data' => t('Roster')),
+						array('data' => t('Contract Signed')),
 		);
-		
-		foreach($characters as $cid => $name){
+
+		foreach($characters as $cid => $name) {
 			$c = efed_character_load($cid);
 			$handler = user_load($c->uid);
 			$roster = efed_roster_load($c->roster->roster_id);
 			$on_roster = ($c->roster->roster_id)? TRUE : FALSE;
 			$has_contract = ($c->contract->contract_id) ? TRUE : FALSE;
-			
+
 			$status = '----';
 			$roster_name =  $status;
-			
-			if($on_roster){				
-				if($c->contract->signed){
+
+			if($on_roster) {
+				if($c->contract->signed) {
 					$status = '<span style="color: green">Yes</span>';
-				}else{					
+				}else {
 					$status = '<span style="color: red">No</span>';
 				}
-				
-				if($roster->roster_id){
+
+				if($roster->roster_id) {
 					$roster_name =  $roster->name;
 				}
 			}
-					
+
 			$rows[] = array(
-				array('data' => l($c->name,EFED_ADMIN_AREA.'/characters/'.$c->character_id)),
-				array('data' => $handler->name),
-				array('data' => $roster_name),
-				array('data' => t($status)),
+							array('data' => l($c->name,EFED_ADMIN_AREA.'/characters/'.$c->character_id)),
+							array('data' => $handler->name),
+							array('data' => $roster_name),
+							array('data' => t($status)),
 			);
-		}	
-		
+		}
+
 		$output .= theme('table', $header, $rows);
-		
-		if(count($user->profiles)>0){
+
+		if(count($user->profiles)>0) {
 			$output .= drupal_get_form('efed_character_default_form');
 		}
-		
-	}else{
+
+	}else {
 		$output = '<p>Empty</p>';
 	}
 
 	return $output;
 }
 
-function efed_character_admin_create_form($form){
+function efed_character_admin_create_form($form) {
 	$form = array();
-	
+
 	$c = efed_character_load(arg(3));
-	
+
 	$form['details'] = array(
-		'#type' => 'fieldset',
-		'#title' => t('Character Info'),
-		'#collapsible' => TRUE,
-		'#collapsed' => FALSE,
-	);	
-	
+					'#type' => 'fieldset',
+					'#title' => t('Character Info'),
+					'#collapsible' => TRUE,
+					'#collapsed' => FALSE,
+	);
+
 	$form['details']['info'] = array(
-		'#value' => theme('efed_character_item',$c,$c->roster),
+					'#value' => theme('efed_character_item',$c,$c->roster),
 	);
-	
+
 	$form['details']['cid'] = array(
-		'#type' => 'hidden',
-		'#default_value' => $c->character_id,
+					'#type' => 'hidden',
+					'#default_value' => $c->character_id,
 	);
-	
+
 	$form['details']['status'] = array(
-		'#type' => 'select',
-		'#title' => 'Status',
-		'#options' => efed_character_status_types(),
-		'#default_value' => $c->status,
+					'#type' => 'select',
+					'#title' => 'Status',
+					'#options' => efed_character_status_types(),
+					'#default_value' => $c->status,
 	);
-	
+
 	$form['details']['uid'] = array(
-		'#type' => 'select',
-		'#title' => 'Handler',
-		'#options' => efed_base_load_users(),
-		'#default_value' => $c->uid,
+					'#type' => 'select',
+					'#title' => 'Handler',
+					'#options' => efed_base_load_users(),
+					'#default_value' => $c->uid,
 	);
-	
+
 	$form['details']['submit'] = array(
-		'#type' => 'submit',
-		'#value' => 'Store',
+					'#type' => 'submit',
+					'#value' => 'Store',
 	);
-	
+
 	return $form;
 }
 
-function efed_character_admin_create_form_submit($form,&$form_state){
+function efed_character_admin_create_form_submit($form,&$form_state) {
 	$obj = (object)$form_state['values'];
-	
+
 	$c = efed_character_load($obj->cid);
 	$c->uid = $obj->uid;
 	$c->status = $obj->status;
-	
+
 	efed_character_store($c);
-	
+
 	drupal_set_message('<em>'.$c->name . '</em> updated.');
 }
 
 function efed_character_node_info() {
-  return array(
-    'efed_character' => array(
-	    'name' => t('E-Fed character'), // Human readable name. Required.
-	    'module' => 'efed_character',  // Machine readable name. (alphanueric, '_' only) Required.
-	    'description' => t('character profile, assigned by site administrator.'), // Required.
-	    'has_title' => TRUE,
-	    'title_label' => t('Name'),
-	    'has_body' => TRUE,
-	    'body_label' => t('Notes'),
-	    'min_word_count' => 0,
-	    'locked' => TRUE
-    )
-  );
+	return array(
+					'efed_character' => array(
+									'name' => t('E-Fed character'), // Human readable name. Required.
+									'module' => 'efed_character',  // Machine readable name. (alphanueric, '_' only) Required.
+									'description' => t('character profile, assigned by site administrator.'), // Required.
+									'has_title' => TRUE,
+									'title_label' => t('Name'),
+									'has_body' => TRUE,
+									'body_label' => t('Notes'),
+									'min_word_count' => 0,
+									'locked' => TRUE
+					)
+	);
 }
 
 function efed_character_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
-	if($node->type=='efed_character'){
+	if($node->type=='efed_character') {
 		switch ($op) {
 			case 'load':
 				$node->stable_info = efed_character_load_by_nid($node->nid);
-			break;
+				break;
 			case 'prepare':
-			
-			break;
+
+				break;
 			case 'delete':
-			
-			break;
+
+				break;
 		}
 	}
 }
 
-function efed_character_status_types(){
+function efed_character_status_types() {
 	return array(
-		0 => 'Active',
-		1 => 'Injuried',
-		2 => 'Fired',
-		3 => 'Retired',
-		4 => 'Deceased',
+					0 => 'Active',
+					1 => 'Injuried',
+					2 => 'Fired',
+					3 => 'Retired',
+					4 => 'Deceased',
 	);
 }
 
-function efed_character_view_all(){	
+function efed_character_view_all() {
 	$limit = 10;
-	
+
 	global $user;
 	$user = user_load($user->uid);
 
 	$characters = efed_character_load_by_uid($user->uid);
-	
-	if($characters){
-	
+
+	if($characters) {
+
 		$header = array(
-			array('data' => t('Name')),
-			array('data' => t('Roster')),
-			array('data' => t('Balance')),
-			array('data' => t('Wage')),
-			array('data' => t('Signed')),
-			array('data' => t('')),
+						array('data' => t('Name')),
+						array('data' => t('Roster')),
+						array('data' => t('Balance')),
+						array('data' => t('Wage')),
+						array('data' => t('Signed')),
+						array('data' => t('')),
 		);
-		
-		foreach($characters as $c){
+
+		foreach($characters as $c) {
 			$roster = efed_roster_load($c->roster->roster_id);
 			$on_roster = ($c->roster->roster_id)? TRUE : FALSE;
 			$has_contract = ($c->contract->contract_id) ? TRUE : FALSE;
-			
+
 			$status = '----';
-			
+
 			$wage = $status;
 			$link = 'Out of contract.';
 			$date = $status;
 			$roster_name =  $status;
-			
-			if($on_roster){
-				$date = format_date($c->contract->date_end,'custom','M d Y');	
-				
-				if($c->contract->signed){
+
+			if($on_roster) {
+				$date = format_date($c->contract->date_end,'custom','M d Y');
+
+				if($c->contract->signed) {
 					$wage = '<span style="color: green">$'.number_format($c->contract->wage,2).'</span>';
 					$status = '<span style="color: green">Yes</span>';
-				}else{					
+				}else {
 					$wage = '<span style="color: red"><em>$'.number_format($c->contract->wage,2).'</em></span>';
 					$status = '<span style="color: red">No</span>';
 				}
-				
+
 				$link = l('Manage Contract','contract/'.$c->contract->contract_id);
-				
-				if($roster->roster_id){
+
+				if($roster->roster_id) {
 					$roster_name =  $roster->name;
 				}
 			}
-					
+
 			$rows[] = array(
-				array('data' => l(t($c->name),'character-profiles/store/'.$c->character_id)),
-				array('data' => $roster_name),
-				array('data' => '$'.number_format($c->balance->balance,2)),
-				array('data' => $wage),
-				array('data' => t($status)),
-				array('data' => t($link)),
+							array('data' => l(t($c->name),'character-profiles/store/'.$c->character_id)),
+							array('data' => $roster_name),
+							array('data' => '$'.number_format($c->balance->balance,2)),
+							array('data' => $wage),
+							array('data' => t($status)),
+							array('data' => t($link)),
 			);
-		}	
-		
-		$output .= theme('table', $header, $rows);
-		
-		if(count($user->profiles)>0){
-			$output .= drupal_get_form('efed_character_default_form');
 		}
-		
-	}else{
-	
+
+		$output .= theme('table', $header, $rows);
+
+	}else {
+
 	}
-	
-		
+
+
 	$output .= l('Create Character','character-profiles/store');
 
 	return $output;
 }
 
-function efed_character_default_form($form){
+function efed_character_default_form($form) {
 
 	$form = array();
 
 	global $user;
-	
+
 	$user = user_load($user->uid);
 
-	$characters[-1] = '---- select ----';
-	
-	foreach($user->profiles as $profile){
+	if(!$user->profiles) return $form;
+
+	foreach($user->profiles as $profile) {
 		$characters[$profile->character_id] = $profile->name;
 	}
-	
+
 	$form['uid'] = array(
-		'#type' => 'hidden',
-		'#value' => $user->uid,
+					'#type' => 'hidden',
+					'#value' => $user->uid,
 	);
-		
+
 	$cid = variable_get($user->uid.'_default_character',0);
-		
+
 	$c = efed_character_load($cid);
-	
+
 	$form['cid'] = array(
-		'#type' => 'select',
-		'#title' => 'Character',
-		'#default_value' => $cid,
-		'#description' => 'Current default character <em>'.$c->name.'</em>.',
-		'#options' => $characters,
+					'#type' => 'select',
+					'#title' => 'Character',
+					'#default_value' => $cid,
+					'#description' => 'Current default character <em>'.$c->name.'</em>.',
+					'#options' => $characters,
 	);
 
 	$form['submit'] = array(
-		'#type' => 'submit',
-		'#value' => 'Store',
+					'#type' => 'submit',
+					'#value' => 'Change',
 	);
 
 	return $form;
 }
 
-function efed_character_default_form_submit($form,&$form_state){
-	$object = (object)$form_state['values'];	
-	$c = efed_character_load($object->cid);	
-	variable_set($object->uid.'_default_character',$object->cid);	
-	drupal_set_message('Default character <em>'.$c->name.'</em>');
+function efed_character_default_form_submit($form,&$form_state) {
+	$object = (object)$form_state['values'];
+	$c = efed_character_load($object->cid);
+	variable_set($object->uid.'_default_character',$object->cid);
+	drupal_set_message('Character <em>'.$c->name.'</em> selected.');
 }
 
-function efed_character_overview($p){	
-	menu_set_active_item('character-profiles');	
-	$output = theme('efed_character_item',$p,TRUE);	
+function efed_character_overview($p) {
+	menu_set_active_item('character-profiles');
+	$output = theme('efed_character_item',$p,TRUE);
 	return $output;
 }
 
-function efed_character_create_form($form_state){
+function efed_character_create_form($form_state) {
 	$form = array();
-	
+
 	global $user;
-	
+
 	$form['#attributes'] = array(
-		'enctype' => "multipart/form-data"
-	);
-	
-	for($i=200;$i<900;$i++){
-		$options[$i] = $i;
-	}
-	
-	$c = efed_character_load(arg(2));
-	
-	$exists = (isset($c->character_id))? TRUE : FALSE;
-	
-	$form['details'] = array(
-		'#type' => 'fieldset',
-		'#title' => t('Details'),
-		'#collapsible' => TRUE,
-		'#collapsed' => $exists,
-	);	
-	
-	$form['details']['character_id'] = array(
-	  	'#type' => 'hidden',
-		'#default_value' => $c->character_id,
-	);
-	
-	$form['details']['nid'] = array(
-	  	'#type' => 'hidden',
-		'#default_value' => $c->nid,
-	);
-	
-	$form['details']['uid'] = array(
-	  	'#type' => 'hidden',
-		'#default_value' => $user->uid,
-	);
-			
-	$form['details']['name'] = array(
-	  	'#title' => t('Character Name'),
-	  	'#type' => 'textfield',
-		'#default_value' => $c->name,
-		'#size' => 60,
-		'#maxlength' => 128,
-  		'#required' => TRUE,
-	);
-			
-	$form['details']['forename'] = array(
-	  	'#title' => t('Forename'),
-	  	'#type' => 'textfield',
-		'#default_value' => $c->forename,
-		'#size' => 60,
-		'#maxlength' => 128,
-  		'#required' => TRUE,
-	);	
-			
-	$form['details']['surname'] = array(
-	  	'#title' => t('Surname'),
-	  	'#type' => 'textfield',
-		'#default_value' => $c->surname,
-		'#size' => 60,
-		'#maxlength' => 128,
-  		'#required' => TRUE,
-	);	
-			
-	$form['details']['home_town'] = array(
-	  	'#title' => t('Home Town'),
-	  	'#type' => 'textfield',
-		'#default_value' => $c->home_town,
-		'#size' => 60,
-		'#maxlength' => 128,
-  		'#required' => TRUE,
-	);	
-	
-	$form['details']['height'] = array(
-		'#title' => t('Height'),
-		'#description' => t('6ft would be 600.'),
-		'#type' => 'select',
-		'#default_value' => ($c->height)? $c->height : 511,
-		'#options' => $options,
-	);
-	
-	$form['details']['weight'] = array(
-		'#title' => t('Weight'),
-		'#description' => t('Weight is in pounds.'),
-		'#type' => 'select',
-		'#default_value' => ($c->weight)? $c->weight : 231,
-		'#options' => $options,
-	);
-	
-	$form['details']['alignment'] = array(
-		'#title' => t('Alignment'),
-		'#type' => 'select',
-		'#default_value' => ($c->alignment)? $c->alignment : 'neutral',
-		'#options' => array(
-			'face'=>'Face',
-			'neutral'=>'Neutral',
-			'heel'=>'Heel'
-		),
-	);
-	
-	$form['details']['gender'] = array(
-		'#title' => t('Gender'),
-		'#type' => 'select',
-		'#default_value' => $c->gender,
-		'#options' => array(
-			'male'=>'Male',
-			'female'=>'Female'
-		),
-	);
-	
-	$s_types = efed_character_status_types();
-	
-	$form['details']['status'] = array(
-		'#title' => t('Status'),
-		'#type' => 'select',
-		'#default_value' => $s_types[$c->status],
-		'#options' => $s_types,
-	);
-	
-	if($exists){		
-		
-		$form['image'] = array(
-			'#type' => 'fieldset',
-			'#title' => t('Character Image'),
-			'#collapsible' => TRUE,
-			'#collapsed' => $exists,
-		);	
-	
-		$form['image']['img_main_new'] = array(
-			'#type' => 'file',
-			'#size' => 30,
-			'#title' => t('Main'),
-			'#description' => '<p>Image Size: 100x100</p>'.$c->img_main_render,
-		);
-		
-		$form['image']['img_main'] = array(
-			'#type' => 'hidden',
-			'#value' => $c->img_main,
-		);	
-	
-		$form['image']['img_thumbnail_new'] = array(
-			'#type' => 'file',
-			'#size' => 30,
-			'#title' => t('Thumbnail'),
-			'#description' => '<p>Image Size: 300 width max</p>'.$c->img_thumbnail_render,
-		);
-		
-		$form['image']['img_thumbnail'] = array(
-			'#type' => 'hidden',
-			'#value' => $c->img_thumbnail,
-		);
-		
-		$form['image']['upload'] = array(
-			'#type' => 'submit', 
-			'#value' => t('Upload'),
-		);
-		
-		$form['details']['info_id'] = array(
-			'#type' => 'hidden',
-			'#default_value' => $c->info->info_id,
-		);			
-		
-		$form['biography'] = array(
-			'#type' => 'fieldset',
-			'#title' => t('Biography'),
-			'#collapsible' => TRUE,
-			'#collapsed' => $exists,
-		);	
-		
-		$form['biography']['biography'] = array(
-			'#type' => 'textarea',
-			'#default_value' => $c->info->biography,
-		);		
-		
-		$form['personality'] = array(
-			'#type' => 'fieldset',
-			'#title' => t('Personality'),
-			'#collapsible' => TRUE,
-			'#collapsed' => $exists,
-		);	
-		
-		$form['personality']['personality'] = array(
-			'#type' => 'textarea',
-			'#title' => t('Personality'),
-			'#default_value' => $c->info->personality,
-		);	
-		
-		$form['accomplishments'] = array(
-			'#type' => 'fieldset',
-			'#title' => t('Accomplishments'),
-			'#collapsible' => TRUE,
-			'#collapsed' => $exists,
-		);	
-		
-		$form['accomplishments']['accomplishments'] = array(
-			'#type' => 'textarea',
-			'#title' => t('Accomplishments'),
-			'#default_value' => $c->info->accomplishments,
-		);		
-		
-		$form['moves'] = array(
-			'#type' => 'fieldset',
-			'#title' => t('Moves'),
-			'#description' => '<p>To edit moves list click '.l('here','character-profiles/store/move/'.$c->character_id).'</p>',
-			'#collapsible' => TRUE,
-			'#collapsed' => $exists,
-		);
-		
-		$form['moves']['list'] = array(
-			'#value' => efed_character_render_moves($c->moves),
-		);	
-		
-		$form['overview'] = array(
-			'#type' => 'fieldset',
-			'#title' => t('Overview'),
-			'#weight' => -90,
-			'#collapsible' => TRUE,
-			'#collapsed' => FALSE,
-		);
-		
-		$form['overview']['render'] = array(
-			'#value' => efed_character_overview($c),
-		);
-		
-	}
-	
-	$form['cancel'] = array(
-		'#type' => 'submit', 
-		'#value' => t('Cancel'),
-	);
-	
-	$form['store'] = array(
-		'#type' => 'submit', 
-		'#value' => t('Store'),
+					'enctype' => "multipart/form-data"
 	);
 
-	if($c->locked){
-		$temp = $form['overview'];		
+	for($i=200;$i<900;$i++) {
+		$options[$i] = $i;
+	}
+
+	$c = efed_character_load(arg(2));
+
+	$exists = (isset($c->character_id))? TRUE : FALSE;
+
+	$form['details'] = array(
+					'#type' => 'fieldset',
+					'#title' => t('Details'),
+					'#collapsible' => TRUE,
+					'#collapsed' => $exists,
+	);
+
+	$form['details']['character_id'] = array(
+					'#type' => 'hidden',
+					'#default_value' => $c->character_id,
+	);
+
+	$form['details']['nid'] = array(
+					'#type' => 'hidden',
+					'#default_value' => $c->nid,
+	);
+
+	$form['details']['uid'] = array(
+					'#type' => 'hidden',
+					'#default_value' => $user->uid,
+	);
+
+	$form['details']['name'] = array(
+					'#title' => t('Character Name'),
+					'#type' => 'textfield',
+					'#default_value' => $c->name,
+					'#size' => 60,
+					'#maxlength' => 128,
+					'#required' => TRUE,
+	);
+
+	$form['details']['forename'] = array(
+					'#title' => t('Forename'),
+					'#type' => 'textfield',
+					'#default_value' => $c->forename,
+					'#size' => 60,
+					'#maxlength' => 128,
+					'#required' => TRUE,
+	);
+
+	$form['details']['surname'] = array(
+					'#title' => t('Surname'),
+					'#type' => 'textfield',
+					'#default_value' => $c->surname,
+					'#size' => 60,
+					'#maxlength' => 128,
+					'#required' => TRUE,
+	);
+
+	$form['details']['home_town'] = array(
+					'#title' => t('Home Town'),
+					'#type' => 'textfield',
+					'#default_value' => $c->home_town,
+					'#size' => 60,
+					'#maxlength' => 128,
+					'#required' => TRUE,
+	);
+
+	$form['details']['height'] = array(
+					'#title' => t('Height'),
+					'#description' => t('6ft would be 600.'),
+					'#type' => 'select',
+					'#default_value' => ($c->height)? $c->height : 511,
+					'#options' => $options,
+	);
+
+	$form['details']['weight'] = array(
+					'#title' => t('Weight'),
+					'#description' => t('Weight is in pounds.'),
+					'#type' => 'select',
+					'#default_value' => ($c->weight)? $c->weight : 231,
+					'#options' => $options,
+	);
+
+	$form['details']['alignment'] = array(
+					'#title' => t('Alignment'),
+					'#type' => 'select',
+					'#default_value' => ($c->alignment)? $c->alignment : 'neutral',
+					'#options' => array(
+									'face'=>'Face',
+									'neutral'=>'Neutral',
+									'heel'=>'Heel'
+					),
+	);
+
+	$form['details']['gender'] = array(
+					'#title' => t('Gender'),
+					'#type' => 'select',
+					'#default_value' => $c->gender,
+					'#options' => array(
+									'male'=>'Male',
+									'female'=>'Female'
+					),
+	);
+
+	$s_types = efed_character_status_types();
+
+	$form['details']['status'] = array(
+					'#title' => t('Status'),
+					'#type' => 'select',
+					'#default_value' => $s_types[$c->status],
+					'#options' => $s_types,
+	);
+
+	if($exists) {
+
+		$form['image'] = array(
+						'#type' => 'fieldset',
+						'#title' => t('Character Image'),
+						'#collapsible' => TRUE,
+						'#collapsed' => $exists,
+		);
+
+		$form['image']['img_main_new'] = array(
+						'#type' => 'file',
+						'#size' => 30,
+						'#title' => t('Main'),
+						'#description' => '<p>Image Size: 100x100</p>'.$c->img_main_render,
+		);
+
+		$form['image']['img_main'] = array(
+						'#type' => 'hidden',
+						'#value' => $c->img_main,
+		);
+
+		$form['image']['img_thumbnail_new'] = array(
+						'#type' => 'file',
+						'#size' => 30,
+						'#title' => t('Thumbnail'),
+						'#description' => '<p>Image Size: 300 width max</p>'.$c->img_thumbnail_render,
+		);
+
+		$form['image']['img_thumbnail'] = array(
+						'#type' => 'hidden',
+						'#value' => $c->img_thumbnail,
+		);
+
+		$form['image']['upload'] = array(
+						'#type' => 'submit',
+						'#value' => t('Upload'),
+		);
+
+		$form['details']['info_id'] = array(
+						'#type' => 'hidden',
+						'#default_value' => $c->info->info_id,
+		);
+
+		$form['biography'] = array(
+						'#type' => 'fieldset',
+						'#title' => t('Biography'),
+						'#collapsible' => TRUE,
+						'#collapsed' => $exists,
+		);
+
+		$form['biography']['biography'] = array(
+						'#type' => 'textarea',
+						'#default_value' => $c->info->biography,
+		);
+
+		$form['personality'] = array(
+						'#type' => 'fieldset',
+						'#title' => t('Personality'),
+						'#collapsible' => TRUE,
+						'#collapsed' => $exists,
+		);
+
+		$form['personality']['personality'] = array(
+						'#type' => 'textarea',
+						'#title' => t('Personality'),
+						'#default_value' => $c->info->personality,
+		);
+
+		$form['accomplishments'] = array(
+						'#type' => 'fieldset',
+						'#title' => t('Accomplishments'),
+						'#collapsible' => TRUE,
+						'#collapsed' => $exists,
+		);
+
+		$form['accomplishments']['accomplishments'] = array(
+						'#type' => 'textarea',
+						'#title' => t('Accomplishments'),
+						'#default_value' => $c->info->accomplishments,
+		);
+
+		$form['moves'] = array(
+						'#type' => 'fieldset',
+						'#title' => t('Moves'),
+						'#description' => '<p>To edit moves list click '.l('here','character-profiles/store/move/'.$c->character_id).'</p>',
+						'#collapsible' => TRUE,
+						'#collapsed' => $exists,
+		);
+
+		$form['moves']['list'] = array(
+						'#value' => efed_character_render_moves($c->moves),
+		);
+
+		$form['overview'] = array(
+						'#type' => 'fieldset',
+						'#title' => t('Overview'),
+						'#weight' => -90,
+						'#collapsible' => TRUE,
+						'#collapsed' => FALSE,
+		);
+
+		$form['overview']['render'] = array(
+						'#value' => efed_character_overview($c),
+		);
+
+	}
+
+	$form['cancel'] = array(
+					'#type' => 'submit',
+					'#value' => t('Cancel'),
+	);
+
+	$form['store'] = array(
+					'#type' => 'submit',
+					'#value' => t('Store'),
+	);
+
+	if($c->locked) {
+		$temp = $form['overview'];
 		unset($form);
 		$form['overview'] = $temp;
 		$form['overview']['#description'] = 'This character profile is <b>locked</b>';
 	}
-					
+
 	return $form;
 }
 
-function efed_character_render_moves($moves){
+function efed_character_render_moves($moves) {
 	$type = efed_character_move_types();
-		
+
 	$header = array(
-		array('data' => t('Name')),
-		array('data' => t('Type')),
-		array('data' => t('Description')),
+					array('data' => t('Name')),
+					array('data' => t('Type')),
+					array('data' => t('Description')),
 	);
-	
-	foreach($moves as $move_id => $name){
-			
+
+	foreach($moves as $move_id => $name) {
+
 		$move = efed_character_move_load($move_id);
-				
+
 		$rows[] = array(
-			array('data' => $move->name),
-			array('data' => $type[$move->type]),
-			array('data' => $move->description),
+						array('data' => $move->name),
+						array('data' => $type[$move->type]),
+						array('data' => $move->description),
 		);
-	}	
-		
+	}
+
 	$output .= theme('table', $header, $rows);
-	
+
 	return $output;
 }
 
-function efed_character_create_form_submit($form, &$form_state){	
+function efed_character_create_form_submit($form, &$form_state) {
 	$object = (object)$form_state['values'];
-		
-	switch($object->op){
-		case 'Store':			
-				$object = efed_character_store($object);
-				efed_character_info_store($object);
-				drupal_set_message(t('Charactor profile ##NAME## stored.',array('##NAME##'=>$object->name)),'status');
-				drupal_goto('character-profiles/store/'.$object->character_id);
-			break;	
-			
+
+	switch($object->op) {
+		case 'Store':
+			$object = efed_character_store($object);
+			efed_character_info_store($object);
+			drupal_set_message(t('Charactor profile ##NAME## stored.',array('##NAME##'=>$object->name)),'status');
+			drupal_goto('character-profiles/store/'.$object->character_id);
+			break;
+
 		case 'Upload':
-				
+
 			$uploaded = FALSE;
-				
-			if($_FILES['files']['name']['img_main_new']!=''){
-				$img = file_save_upload('img_main_new',NULL,file_directory_path());	
+
+			if($_FILES['files']['name']['img_main_new']!='') {
+				$img = file_save_upload('img_main_new',NULL,file_directory_path());
 				$object->img_main = $img->filepath;
 				$uploaded = TRUE;
 			}
-			if($_FILES['files']['name']['img_thumbnail_new']!=''){
-				$img  = file_save_upload('img_thumbnail_new',NULL,file_directory_path());	
+			if($_FILES['files']['name']['img_thumbnail_new']!='') {
+				$img  = file_save_upload('img_thumbnail_new',NULL,file_directory_path());
 				$object->img_thumbnail = $img->filepath;
 				$uploaded = TRUE;
 			}
-			
+
 			$object = efed_character_store($object);
-			
-			if($uploaded){
+
+			if($uploaded) {
 				drupal_set_message(t('Character profile image(s) uploaded for ##NAME##.',array('##NAME##'=>$object->name)),'status');
-			}else{
+			}else {
 				drupal_set_message('Character profile image(s) upload failed','error');
 			}
 			drupal_goto('character-profiles/store/'.$object->character_id);
@@ -762,112 +792,112 @@ function efed_character_create_form_submit($form, &$form_state){
 	}
 }
 
-function efed_character_move_form($form){
+function efed_character_move_form($form) {
 	$form = array();
-	
+
 	$c = efed_character_load(arg(3));
-		
+
 	$form['overview'] = array(
-		'#type' => 'fieldset',
-		'#title' => t('Overview'),
-		'#weight' => -90,
-		'#collapsible' => TRUE,
-		'#collapsed' => FALSE,
+					'#type' => 'fieldset',
+					'#title' => t('Overview'),
+					'#weight' => -90,
+					'#collapsible' => TRUE,
+					'#collapsed' => FALSE,
 	);
-		
+
 	$form['overview']['render'] = array(
-		'#value' => efed_character_overview($c),
+					'#value' => efed_character_overview($c),
 	);
-	
+
 	$form['character_id'] = array(
-	  	'#type' => 'hidden',
-		'#default_value' => $c->character_id,
+					'#type' => 'hidden',
+					'#default_value' => $c->character_id,
 	);
-		
+
 	$types = efed_character_move_types();
-	
+
 	$form['moves'] = array(
-		'#type' => 'fieldset',
-		'#title' => t('Moves'),
-		'#collapsible' => TRUE,
-		'#collapsed' => $exists,
+					'#type' => 'fieldset',
+					'#title' => t('Moves'),
+					'#collapsible' => TRUE,
+					'#collapsed' => $exists,
 	);
-		
+
 	$form['moves']['moves'] = array(
-		'#title' => t('Moves'),
-		'#type' => 'checkboxes',
-		'#options' => $c->moves,
-		'#description' => t('Check to remove from list.'),
+					'#title' => t('Moves'),
+					'#type' => 'checkboxes',
+					'#options' => $c->moves,
+					'#description' => t('Check to remove from list.'),
 	);
-		
+
 	$form['moves']['update'] = array(
-		'#type' => 'submit', 
-		'#value' => t('Update'),
+					'#type' => 'submit',
+					'#value' => t('Update'),
 	);
-		
+
 	$form['move'] = array(
-		'#type' => 'fieldset',
-		'#title' => t('Add Move'),
-		'#collapsible' => TRUE,
-		'#collapsed' => $exists,
+					'#type' => 'fieldset',
+					'#title' => t('Add Move'),
+					'#collapsible' => TRUE,
+					'#collapsed' => $exists,
 	);
-	
+
 	$form['move']['name'] = array(
-		'#title' => t('Name'),
-		'#type' => 'textfield',
+					'#title' => t('Name'),
+					'#type' => 'textfield',
 	);
-	
+
 	$form['move']['description'] = array(
-		'#type' => 'textarea',
-		'#title' => t('Description'),
+					'#type' => 'textarea',
+					'#title' => t('Description'),
 	);
-		
+
 	$form['move']['type'] = array(
-		'#type' => 'select',
-		'#title' => t('Move Type'),
-		'#options' => efed_character_move_types(),
+					'#type' => 'select',
+					'#title' => t('Move Type'),
+					'#options' => efed_character_move_types(),
 	);
 	$form['move']['add_move'] = array(
-		'#type' => 'submit', 
-		'#value' => t('Create'),
+					'#type' => 'submit',
+					'#value' => t('Create'),
 	);
-	
+
 	return $form;
 }
 
-function efed_character_move_form_validate($form, &$form_state){
+function efed_character_move_form_validate($form, &$form_state) {
 	$object = (object)$form_state['values'];
-	
-	switch($object->op){
+
+	switch($object->op) {
 		case 'Create':
-			if(empty($object->name)){
+			if(empty($object->name)) {
 				form_set_error('name','<em>Name</em> is a required field.');
 			}
-		break;
+			break;
 	}
 
 }
-function efed_character_move_form_submit($form, &$form_state){	
+function efed_character_move_form_submit($form, &$form_state) {
 	$object = (object)$form_state['values'];
-		
-	switch($object->op){
-		case 'Update':	
-			foreach($object->moves as $move_id){
-				if($move_id){
+
+	switch($object->op) {
+		case 'Update':
+			foreach($object->moves as $move_id) {
+				if($move_id) {
 					$move = efed_character_move_load($move_id);
 					efed_character_move_delete($move_id);
 					drupal_set_message(t('Move ##NAME## deleted.',array('##NAME##'=>$move->name)),'status');
 				}
 			}
-			
-			drupal_goto('character-profiles/store/move/'.$object->character_id);	
-		break;
+
+			drupal_goto('character-profiles/store/move/'.$object->character_id);
+			break;
 
 		case 'Create':
 			$object = efed_character_move_store($object);
 			drupal_set_message(t('Move ##NAME## stored.',array('##NAME##'=>$object->name)),'status');
-			drupal_goto('character-profiles/store/move/'.$object->character_id);	
-		break;
+			drupal_goto('character-profiles/store/move/'.$object->character_id);
+			break;
 	}
 }
 
@@ -875,101 +905,101 @@ function efed_character_move_form_submit($form, &$form_state){
  * 
  * BASE STORE(CREATE/UPDATE), READ & DELETE FUNCTION,  * 
  * 
- */
- 
-function efed_character_load_all(){		
-	$items = NULL;
-	
-	$sql = "SELECT * FROM {efed_character}";	
-	$result = db_query($sql);	
+*/
 
-	while($data = db_fetch_object($result)){
+function efed_character_load_all() {
+	$items = NULL;
+
+	$sql = "SELECT * FROM {efed_character}";
+	$result = db_query($sql);
+
+	while($data = db_fetch_object($result)) {
 		$items[$data->character_id] = $data->name;
 	}
 
 	return $items;
 }	
 
-function efed_character_load_by_cid($cid){		
+function efed_character_load_by_cid($cid) {
 	$items = NULL;
-	
-	$sql = "SELECT character_id FROM {efed_character} WHERE cid = %d";	
-	$result = db_query($sql,$cid);	
 
-	while($data = db_fetch_object($result)){
+	$sql = "SELECT character_id FROM {efed_character} WHERE cid = %d";
+	$result = db_query($sql,$cid);
+
+	while($data = db_fetch_object($result)) {
 		$items[] = efed_character_load($data->character_id);
 	}
 
 	return $items;
 }	
 
-function efed_character_load_by_uid($uid){		
+function efed_character_load_by_uid($uid) {
 	$items = NULL;
-	
-	$sql = "SELECT character_id FROM {efed_character} WHERE uid = %d";	
-	$result = db_query($sql,$uid);	
 
-	while($data = db_fetch_object($result)){
+	$sql = "SELECT character_id FROM {efed_character} WHERE uid = %d";
+	$result = db_query($sql,$uid);
+
+	while($data = db_fetch_object($result)) {
 		$items[$data->character_id] = efed_character_load($data->character_id);
 	}
 
 	return $items;
 }	
 
-function efed_character_load($character_id){		
-	$sql = "SELECT * FROM {efed_character} WHERE character_id = %d";	
-	$result = db_query($sql,$character_id);		
-	$data = db_fetch_object($result);	
+function efed_character_load($character_id) {
+	$sql = "SELECT * FROM {efed_character} WHERE character_id = %d";
+	$result = db_query($sql,$character_id);
+	$data = db_fetch_object($result);
 	$data->roster = efed_character_load_roster($character_id);
 	$data->info = efed_character_info_load_by_character_id($character_id);
 	$data->moves = efed_character_move_load_by_character_id($character_id);
 	$data->contract = efed_contract_load_for_character_id($character_id);
 	$data->balance = efed_balance_load_by_character_id($character_id);
 	$data->cart_history = efed_shop_load_cart_history($character_id);
-	
-	if($data->img_main){
+
+	if($data->img_main) {
 		$data->img_main_render = '<div class="character_main">'.theme('imagecache','efed_character_main',$data->img_main).'</div>';
 	}
-	
-	if($data->img_thumbnail){
-		$data->img_thumbnail_render = '<div class="character_thumb">'.theme('imagecache','efed_character_thumbail',$data->img_thumbnail).'</div>';	
-	}elseif($data->img_main){
+
+	if($data->img_thumbnail) {
+		$data->img_thumbnail_render = '<div class="character_thumb">'.theme('imagecache','efed_character_thumbail',$data->img_thumbnail).'</div>';
+	}elseif($data->img_main) {
 		$data->img_thumbnail_render = '<div class="character_thumb">'.theme('imagecache','efed_character_thumbail',$data->img_main).'</div>';
-	
+
 	}
-	
+
 	return $data;
 }
 
-function efed_character_load_roster($cid){	
+function efed_character_load_roster($cid) {
 	$items = array();
 	$result = db_query("SELECT roster_id FROM {efed_roster_member} WHERE cid = %d",$cid);
-	$data = db_fetch_object($result); 
-	
-	if($data){
-		return efed_roster_load($data->roster_id);	
-	}else{
+	$data = db_fetch_object($result);
+
+	if($data) {
+		return efed_roster_load($data->roster_id);
+	}else {
 		return NULL;
 	}
-	
+
 }
 
-function efed_character_store($object){	
-	if($object->character_id > 0){	
+function efed_character_store($object) {
+	if($object->character_id > 0) {
 		drupal_write_record('efed_character',$object,'character_id');
-	}else{		
+	}else {
 		drupal_write_record('efed_character',$object);
 	}
-	
+
 	$cid = variable_get($user->uid.'_default_character',0);
-	
-	if(!$cid){
+
+	if(!$cid) {
 		variable_set($user->uid.'_default_character',$object->character_id);
 	}
-	
+
 	$balance = efed_contract_load_for_character_id($object->character_id);
-		
-	if(empty($balance->balance)){
+
+	if(empty($balance->balance)) {
 		$balance->cid = $object->character_id;
 		$balance->balance = 0;
 		efed_balance_store($balance);
@@ -977,85 +1007,85 @@ function efed_character_store($object){
 	return $object;
 }
 
-function efed_character_delete($character_id){		
-	$sql = "DELETE FROM {efed_character} WHERE character_id = %d";			
-	db_query($sql,$character_id);	
+function efed_character_delete($character_id) {
+	$sql = "DELETE FROM {efed_character} WHERE character_id = %d";
+	db_query($sql,$character_id);
 }
 
-function efed_character_move_load_by_character_id($character_id){
+function efed_character_move_load_by_character_id($character_id) {
 	$items = array();
-	
-	$sql = "SELECT move_id FROM {efed_character_move} WHERE character_id = %d";	
+
+	$sql = "SELECT move_id FROM {efed_character_move} WHERE character_id = %d";
 	$result = db_query($sql,$character_id);
-	
-	while($data = db_fetch_object($result)){
+
+	while($data = db_fetch_object($result)) {
 		$move = efed_character_move_load($data->move_id);
 		$items[$move->move_id] = $move->name;
-	}	
-	
+	}
+
 	return $items;
 }
 
-function efed_character_move_load($move_id){		
-	$sql = "SELECT * FROM {efed_character_move} WHERE move_id = %d";	
-	$result = db_query($sql,$move_id);		
+function efed_character_move_load($move_id) {
+	$sql = "SELECT * FROM {efed_character_move} WHERE move_id = %d";
+	$result = db_query($sql,$move_id);
 	$data = db_fetch_object($result);
 	$types = efed_character_move_types();
 	$data->move_type = $types[$data->type];
-	
+
 	return $data;
 }
 
-function efed_character_move_types(){
+function efed_character_move_types() {
 	return array(
-		0 => 'Standard',
-		1 => 'Trademark',
-		2 => 'Finisher',
+					0 => 'Standard',
+					1 => 'Trademark',
+					2 => 'Finisher',
 	);
 }
 
-function efed_character_move_store($object){	
-	if($object->move_id > 0){	
+function efed_character_move_store($object) {
+	if($object->move_id > 0) {
 		drupal_write_record('efed_character_move',$object,'move_id');
-	}else{		
+	}else {
 		drupal_write_record('efed_character_move',$object);
 	}
-	
+
 	return $object;
 }
 
-function efed_character_move_delete($move_id){		
-	$sql = "DELETE FROM {efed_character_move} WHERE move_id = %d";			
-	db_query($sql,$move_id);	
+function efed_character_move_delete($move_id) {
+	$sql = "DELETE FROM {efed_character_move} WHERE move_id = %d";
+	db_query($sql,$move_id);
 }
 
-function efed_character_info_load_by_character_id($character_id){
-	$sql = "SELECT info_id FROM {efed_character_info} WHERE character_id = %d";	
-	$result = db_query($sql,$character_id);		
-	$data = db_fetch_object($result);	
-	
+function efed_character_info_load_by_character_id($character_id) {
+	$sql = "SELECT info_id FROM {efed_character_info} WHERE character_id = %d";
+	$result = db_query($sql,$character_id);
+	$data = db_fetch_object($result);
+
 	return efed_character_info_load($data->info_id);
 }
 
-function efed_character_info_load($info_id){		
-	$sql = "SELECT * FROM {efed_character_info} WHERE info_id = %d";	
-	$result = db_query($sql,$info_id);		
-	$data = db_fetch_object($result);	
-	
+function efed_character_info_load($info_id) {
+	$sql = "SELECT * FROM {efed_character_info} WHERE info_id = %d";
+	$result = db_query($sql,$info_id);
+	$data = db_fetch_object($result);
+
 	return $data;
 }
 
-function efed_character_info_store($object){	
-	if($object->info_id > 0){	
+function efed_character_info_store($object) {
+	if($object->info_id > 0) {
 		drupal_write_record('efed_character_info',$object,'info_id');
-	}else{		
+	}else {
 		drupal_write_record('efed_character_info',$object);
 	}
-	
+
 	return $object;
 }
 
-function efed_character_info_delete($info_id){		
-	$sql = "DELETE FROM {efed_character_info} WHERE info_id = %d";			
-	db_query($sql,$info_id);	
+function efed_character_info_delete($info_id) {
+	$sql = "DELETE FROM {efed_character_info} WHERE info_id = %d";
+	db_query($sql,$info_id);
 }

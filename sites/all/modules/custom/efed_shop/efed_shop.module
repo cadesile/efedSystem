@@ -17,6 +17,10 @@ function efed_shop_block($op = 'list', $delta = 0, $edit = array()) {
     return $blocks;
   }
   else if ($op == 'view') {
+		$cart = efed_shop_block_0();
+
+		if(!$cart) return FALSE;
+
     switch($delta) {
       case 0:
         $block = array('subject' => t('Shopping Cart'),
@@ -32,7 +36,10 @@ function efed_shop_block($op = 'list', $delta = 0, $edit = array()) {
 function efed_shop_block_0(){	
 	$items = array();
 	$cart = efed_cart_load();
-	return '<div class="jcarousel-skin-efedsystem_right_block">'.theme('efed_cart',$cart).'</div>';
+
+	if(!$cart) return FALSE;
+
+	return theme('efed_cart',$cart);
 }
 
 function efed_shop_theme() {
@@ -97,7 +104,7 @@ function efed_shop_cart_form_submit($form,$form_state){
 	
 }
 
-function efed_shop_buy_form($form,$shop_id){
+function efed_shop_buy_form($form, $shop_id){
 	$form = array();
 	
 	global $user;
@@ -106,13 +113,9 @@ function efed_shop_buy_form($form,$shop_id){
 	if(in_array(EFED_DEFAULT_ROLE,$user->roles)){
 		
 		$p = efed_shop_load($shop_id);
-		
-		$options = array();
-		
-		foreach($user->profiles as $c){
-			$options[$c->character_id] = $c->name;
-			$balances .= '<div class="balance" id="balance_'.$c->character_id.'">Current Balance: '.efed_price($c->balance->balance).'</div>';
-		}
+		$c = efed_character();
+
+		$balances .= '<div class="balance" id="balance_'.$c->character_id.'">Current Balance: '.efed_price($c->balance->balance).'</div>';
 		
 		$form['nid'] = array(
 			'#type' => 'hidden',
@@ -120,10 +123,8 @@ function efed_shop_buy_form($form,$shop_id){
 		);	
 		
 		$form['cid'] = array(
-			'#title' => 'Character',
-			'#description' => 'Select the character account you want to use',
-			'#type' => 'select',
-			'#options' => $options,
+			'#type' => 'hidden',
+			'#value' => $c->character_id,
 		);	
 		
 		$form['balances'] = array(

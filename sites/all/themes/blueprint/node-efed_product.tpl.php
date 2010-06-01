@@ -14,6 +14,6 @@
   <div class="content clear-block">
     <?php //print $content ?>
   </div>
-  <p><?php print drupal_get_form('efed_shop_buy_form',$node->shop_id); ?></p>
+  <p><?php print drupal_get_form('efed_shop_buy_form', $node->shop_id); ?></p>
 
 </div>
