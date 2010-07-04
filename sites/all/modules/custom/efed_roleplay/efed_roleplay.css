@@ -1,24 +1,42 @@
 #efed-roleplay-view-filter-form{
-	margin-bottom: 0 !important;
-	border-bottom: solid 1px #e3e3e3;
-	padding: 10px 0px 10px 0px; 
+				margin-bottom: 0 !important;
+				border-bottom: solid 1px #e3e3e3;
+				padding: 10px 0px 10px 0px;
 }
 
 #efed-roleplay-view-filter-form #edit-submit{
-	margin: 0 !important;
+				margin: 0 !important;
 }
 .block-efed_roleplay .content{
-	padding: 0px !important;
+				padding: 0px !important;
 }
 
 .info{
-	font-size: 11px;
-	border-bottom: solid 1px #e3e3e3;
-	padding: 10px 0px 10px 0px;
+				font-size: 11px;
+				border-bottom: solid 1px #e3e3e3;
+				padding: 10px 0px 10px 0px;
+}
+
+#efed-roleplay-page-archive-filter {
+				-moz-border-radius:5px 5px 5px 5px;
+				background-color:#E3E3E3;
+				margin-bottom:10px;
+				padding:10px;
+}
+
+#efed-roleplay-page-archive-filter .form-item {
+				float: left;
+				margin: 0px 10px 0px 0px;
+}
+
+#efed-roleplay-page-archive-filter,
+#efed-roleplay-page-archive-filter select,
+#efed-roleplay-page-archive-filter input {
+				font-size:10px;
 }
 
 .character_thumb{
-	float: right;
-	margin-left: 10px;
-	margin-bottom: 10px;
+				float: right;
+				margin-left: 10px;
+				margin-bottom: 10px;
 }

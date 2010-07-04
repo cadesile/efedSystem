@@ -63,11 +63,12 @@ function efed_character_menu() {
 	);
 
 	$items['character-profiles/store'] = array(
-					'title' => 'Character Profile',
+					'title' => 'Create Character',
 					'page callback'    => 'drupal_get_form',
 					'page arguments'   => array('efed_character_create_form'),
 					'access arguments' => array('manage profile'),
-					'type' => MENU_CALLBACK,
+					'type' => MENU_LOCAL_TASK,
+					'weight' => 3,
 	);
 
 	$items['character-profiles/store/move'] = array(
@@ -421,9 +422,6 @@ function efed_character_view_all() {
 	}else {
 
 	}
-
-
-	$output .= l('Create Character','character-profiles/store');
 
 	return $output;
 }

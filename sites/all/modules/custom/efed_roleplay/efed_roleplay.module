@@ -5,69 +5,83 @@ efed_base();
 define('EFED_ROLEPLAY_TITLE','Roleplay');
 
 function efed_roleplay_init() {
-	drupal_add_js(drupal_get_path('module','efed_roleplay').'/efed_roleplay.js');
-	drupal_add_css(drupal_get_path('module','efed_roleplay').'/efed_roleplay.css');
+				drupal_add_js(drupal_get_path('module','efed_roleplay').'/efed_roleplay.js');
+				drupal_add_css(drupal_get_path('module','efed_roleplay').'/efed_roleplay.css');
 }
 
 function efed_roleplay_perm() {
-	return array('roleplayer','roleplay administrator');
+				return array('roleplayer','roleplay administrator');
 }
 
 function efed_roleplay_menu() {
-	$items['roleplay/sketchbook'] = array(
-					'title' => 'Latest Match',
-					'page callback' => 'efed_roleplay_view',
-					'access arguments' => array('roleplayer'),
-					'type' => MENU_CALLBOOK,
-	);
+				$items['roleplay/sketchbook'] = array(
+												'title' => 'Latest Match',
+												'page callback' => 'efed_roleplay_view',
+												'access arguments' => array('roleplayer'),
+												'type' => MENU_CALLBOOK,
+				);
 
-	$items['roleplay/sketchbook/view'] = array(
-					'title' => 'Latest Match',
-					'page callback' => 'efed_roleplay_view',
-					'access arguments' => array('roleplayer'),
-					'type' => MENU_DEFAULT_LOCAL_TASK,
-					'weight' => 1,
-	);
+				$items['roleplay/sketchbook/view'] = array(
+												'title' => 'Latest Match',
+												'page callback' => 'efed_roleplay_view',
+												'access arguments' => array('roleplayer'),
+												'type' => MENU_DEFAULT_LOCAL_TASK,
+												'weight' => 1,
+				);
 
-	$items['roleplay/sketchbook/match'] = array(
-					'title' => 'Match',
-					'page callback' => 'efed_roleplay_view',
-					'access arguments' => array('roleplayer'),
-					'type' => MENU_LOCAL_TASK,
-					'weight' => 2,
-	);
+				$items['roleplay/sketchbook/match'] = array(
+												'title' => 'Match',
+												'page callback' => 'efed_roleplay_view',
+												'access arguments' => array('roleplayer'),
+												'type' => MENU_LOCAL_TASK,
+												'weight' => 2,
+				);
 
-	$items['roleplay/sketchbook/creative'] = array(
-					'title' => 'Creative',
-					'page callback' => 'efed_roleplay_view',
-					'access arguments' => array('roleplayer'),
-					'type' => MENU_LOCAL_TASK,
-					'weight' => 3,
-	);
-	
-	$items['roleplay/sketchbook/%/create'] = array(
-					'title'			   => EFED_ROLEPLAY_TITLE,
-					'page callback'    => 'drupal_get_form',
-					'page arguments'   => array('efed_roleplay_form'),
-					'access arguments' => array('roleplayer'),
-					'type' => MENU_CALLBACK,
-	);
+				$items['roleplay/sketchbook/creative'] = array(
+												'title' => 'Creative',
+												'page callback' => 'efed_roleplay_view',
+												'access arguments' => array('roleplayer'),
+												'type' => MENU_LOCAL_TASK,
+												'weight' => 3,
+				);
 
-	$items['roleplay/sketchbook/match/edit'] = array(
-					'title' => EFED_ROLEPLAY_TITLE . ' Edit',
-					'page callback' => 'efed_roleplay_edit_view',
-					'access arguments' => array('roleplayer'),
-					'type' => MENU_CALLBACK,
-	);
+				$items['roleplay/sketchbook/%/create'] = array(
+												'title'			   => EFED_ROLEPLAY_TITLE,
+												'page callback'    => 'drupal_get_form',
+												'page arguments'   => array('efed_roleplay_form'),
+												'access arguments' => array('roleplayer'),
+												'type' => MENU_CALLBACK,
+				);
 
-	$items['roleplay'] = array(
-					'title'			   => 'Latest Roleplays',
-					'page callback' => 'efed_roleplay_page',
-					'access arguments' => array('access content'),
-					'type' => MENU_CALLBACK,
-	);
+				$items['roleplay/sketchbook/match/edit'] = array(
+												'title' => EFED_ROLEPLAY_TITLE . ' Edit',
+												'page callback' => 'efed_roleplay_edit_view',
+												'access arguments' => array('roleplayer'),
+												'type' => MENU_CALLBACK,
+				);
 
-	return $items;
+				$items['roleplay'] = array(
+												'title'			   => 'Latest Roleplays',
+												'page callback' => 'efed_roleplay_page',
+												'access arguments' => array('access content'),
+												'type' => MENU_CALLBACK,
+				);
+
+				$items['roleplay/latest'] = array(
+												'title'			   => 'Latest Roleplays',
+												'page callback' => 'efed_roleplay_page',
+												'access arguments' => array('access content'),
+												'type' => MENU_DEFAULT_LOCAL_TASK,
+				);
+
+				$items['roleplay/archive'] = array(
+												'title'			   => 'Roleplay Archive',
+												'page callback' => 'efed_roleplay_page_archive',
+												'access arguments' => array('access content'),
+												'type' => MENU_LOCAL_TASK,
+				);
+
+				return $items;
 }
 /*
 function efed_roleplay_node_info() {
@@ -88,695 +102,779 @@ function efed_roleplay_node_info() {
 */
 
 function efed_roleplay_page() {
-
-	$sql = "SELECT * FROM efed_roleplay,node WHERE efed_roleplay.nid = node.nid ORDER BY node.changed DESC";
-
-	switch(arg(1)) {
-		case 'match':
-			$sql = "SELECT * FROM efed_roleplay,node WHERE efed_roleplay.nid = node.nid AND efed_roleplay.type = 'match' ORDER BY node.changed DESC";
-			break;
-		case 'creative':
-			$sql = "SELECT * FROM efed_roleplay,node WHERE efed_roleplay.nid = node.nid AND efed_roleplay.type = 'creative' ORDER BY node.changed DESC";
-			break;
-	}
-
-	$output .= efed_roleplay_render_roleplays($sql);
-
-	return $output;
+				return '';
 }
 
-function efed_roleplay_render_roleplays($sql) {
+function efed_roleplay_page_archive_filter($form) {
+				$form = array();
 
-	$limit = 10;
-	
-	$results = pager_query($sql,$limit);
+				if(module_exists('efed_character')) {
 
-	$header = array(
-					array('data' => t('Title')),
-					array('data' => t('Author')),
-					array('data' => t('Card')),
-					array('data' => t('Created')),
-	);
-	
-	$count = 0;
+								$default[0] = '--------------- select ---------------';
+								$characters = array_merge($default, efed_character_load_all());
 
-	while($data = db_fetch_object($results)) {
-		$author = efed_character_load($data->cid);
-		$roleplay = efed_roleplay_load($data->roleplay_id);
-		$node = node_load($data->nid);
-		$match = efed_match_load($data->match_id);
-		$card = efed_card_load($match->card_id);
-		$show = efed_show_load($card->show_id);
+								$form['cid'] = array(
+																'#type' => 'select',
+																'#title' => t('Character'),
+																'#options' => $characters,
+																'#default_value' => $_SESSION['roleplay_filter']['cid'],
+								);
 
-		$title = 'Creative Roleplay';
+								$type = array_merge($default, array('match' => 'Match', 'creative' => 'Creative'));
 
-		switch($roleplay->type) {
-			case 'match':
-				$title = t($show->title).' '.format_date($card->card_date,'custom','m/d/Y - H:i');
-				break;
-		}
+								$form['type'] = array(
+																'#type' => 'select',
+																'#title' => t('Type'),
+																'#options' => $type,
+																'#default_value' => $_SESSION['roleplay_filter']['type'],
+								);
+				}
+
+				$form['submit'] = array(
+												'#value' => t('Search'),
+				);
+
+				$form['submit'] = array(
+								'#prefix' => '<div class="clear"></div>',
+												'#name' => 'search',
+												'#type' => 'submit',
+												'#value' => t('Search'),
+				);
+
+				$form['clear'] = array(
+												'#name' => 'clear',
+												'#type' => 'submit',
+												'#value' => t('Clear'),
+				);
+
+				return $form;
+}
+
+function efed_roleplay_page_archive_filter_submit($form, &$form_state) {
+
+				$obj = (object)$form_state['values'];
+
+				switch($form_state['clicked_button']['#name']) {
+								case 'search':
+
+												$_SESSION['roleplay_filter'] = array(
+																				'cid' => $obj->cid,
+																				'type' => $obj->type,
+																				'sql' => efed_roleplay_page_archive_generate_sql($obj)
+												);
+
+												drupal_set_message('Roleplays filtered.');
+
+												break;
+
+								case 'clear':
+
+												unset($_SESSION['roleplay_filter']);
+
+												drupal_set_message('Filter cleared.');
+				}
 
 
-		$rows[] = array(
-						array('data' => l(t($node->title),'node/'.$data->nid)),
-						array('data' => t($author->name)),
-						array('data' => $title),
-						array('data' => format_date($node->changed,'custom','m/d/Y')),
-		);
 
-		$count++;
-	}
+}
 
-	if($count>0) {
-		$output .= theme('table', $header, $rows);
-		$output .= theme('pager', NULL, $limit, 0);
-	}else {
-		$output .= '<p>Empty</p>';
-	}
+function efed_roleplay_page_archive_generate_sql($obj) {
+				$sql = "SELECT * FROM {efed_roleplay}, {node} WHERE {efed_roleplay}.nid = {node}.nid";
 
-	return $output;
+				if($obj->cid) {
+								$sql .= " AND {efed_roleplay}.cid = " . $obj->cid;
+				}
+
+				if($obj->type) {
+								$sql .= " AND {efed_roleplay}.type = '" . $obj->type . "'";
+				}
+
+				$sql .= " ORDER BY {node}.changed DESC";
+
+				return $sql;
+}
+
+function efed_roleplay_page_archive() {
+
+				if(!$_SESSION['roleplay_filter']['sql']) {
+								$sql = "SELECT * FROM efed_roleplay,node WHERE efed_roleplay.nid = node.nid ORDER BY node.changed DESC";
+				}
+				else {
+								$sql = $_SESSION['roleplay_filter']['sql'];
+				}
+
+				$limit = 10;
+
+				$results = pager_query($sql,$limit);
+
+				$header = array(
+												array('data' => t('Title')),
+												array('data' => t('Author')),
+												array('data' => t('Card')),
+												array('data' => t('Created')),
+				);
+
+				$count = 0;
+
+				while($data = db_fetch_object($results)) {
+								$author = efed_character_load($data->cid);
+								$roleplay = efed_roleplay_load($data->roleplay_id);
+								$node = node_load($data->nid);
+								$match = efed_match_load($data->match_id);
+								$card = efed_card_load($match->card_id);
+								$show = efed_show_load($card->show_id);
+
+								$title = 'Creative Roleplay';
+
+								switch($roleplay->type) {
+												case 'match':
+																$title = t($show->title).' '.format_date($card->card_date,'custom','m/d/Y - H:i');
+																break;
+								}
+
+
+								$rows[] = array(
+																array('data' => l(t($node->title),'node/'.$data->nid)),
+																array('data' => t($author->name)),
+																array('data' => $title),
+																array('data' => format_date($node->changed,'custom','m/d/Y')),
+								);
+
+								$count++;
+				}
+
+				$output .= drupal_get_form('efed_roleplay_page_archive_filter');
+
+				if($count>0) {
+								$output .= theme('table', $header, $rows);
+								$output .= theme('pager', NULL, $limit, 0);
+				}else {
+								$output .= '<div><em>No results found.</em></div>';
+				}
+
+				return $output;
 }
 
 function efed_roleplay_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
-	if($node->type=='efed_roleplay_match'||$node->type=='efed_roleplay_creative') {
-		switch ($op) {
-			case 'load':
-				$node->roleplay_info = efed_roleplay_load_by_nid($node->nid);
-				$node->match_info = efed_match_load($node->roleplay_info->match_id);
-				break;
-			case 'submit':
-				break;
-			case 'insert':
-				break;
-			case 'update':
-				break;
-			case 'view':
-				break;
-			case 'delete':
-				efed_roleplay_delete_by_nid($node->nid);
-				break;
-		}
-	}
+				if($node->type=='efed_roleplay_match'||$node->type=='efed_roleplay_creative') {
+								switch ($op) {
+												case 'load':
+																$node->roleplay_info = efed_roleplay_load_by_nid($node->nid);
+																$node->match_info = efed_match_load($node->roleplay_info->match_id);
+																break;
+												case 'submit':
+																break;
+												case 'insert':
+																break;
+												case 'update':
+																break;
+												case 'view':
+																break;
+												case 'delete':
+																efed_roleplay_delete_by_nid($node->nid);
+																break;
+								}
+				}
 }
 
 function efed_roleplay_view() {
-	global $user;
-	$user = user_load($user->uid);
-	
-	$cid = cid();
+				global $user;
+				$user = user_load($user->uid);
 
-	switch(arg(2)) {
-		case 'match':
-			drupal_set_title('Match');
-			$output .= efed_roleplay_view_all_match($cid);
-			break;
-		case 'creative':
-			drupal_set_title('Creative');
-			$output .= efed_roleplay_view_all_creative($cid);
-			$output .= '<p>'.l('Create','roleplay/sketchbook/creative/create').'</p>';
-			break;
-		default:
-			drupal_set_title('Latest Match');
-			$output .= efed_roleplay_view_next_match();
-			break;
-	}
+				$cid = cid();
 
-	return $output;
+				switch(arg(2)) {
+								case 'match':
+												drupal_set_title('Match');
+												$output .= efed_roleplay_view_all_match($cid);
+												break;
+								case 'creative':
+												drupal_set_title('Creative');
+												$output .= efed_roleplay_view_all_creative($cid);
+												$output .= '<p>'.l('Create','roleplay/sketchbook/creative/create').'</p>';
+												break;
+								default:
+												drupal_set_title('Latest Match');
+												$output .= efed_roleplay_view_next_match();
+												break;
+				}
+
+				return $output;
 }
 
 function efed_roleplay_view_filter_form($form) {
 
-	$form = array();
+				$form = array();
 
-	global $user;
+				global $user;
 
-	$user = user_load($user->uid);
+				$user = user_load($user->uid);
 
-	$characters[-1] = '---- select ----';
+				$characters[-1] = '---- select ----';
 
-	foreach($user->profiles as $profile) {
-		$characters[$profile->character_id] = $profile->name;
-	}
+				foreach($user->profiles as $profile) {
+								$characters[$profile->character_id] = $profile->name;
+				}
 
-	$form['uid'] = array(
-					'#type' => 'hidden',
-					'#value' => $user->uid,
-	);
+				$form['uid'] = array(
+												'#type' => 'hidden',
+												'#value' => $user->uid,
+				);
 
-	$cid = variable_get($user->uid.'_character',0);
+				$cid = variable_get($user->uid.'_character',0);
 
-	$c = efed_character_load($cid);
+				$c = efed_character_load($cid);
 
-	$form['cid'] = array(
-					'#type' => 'select',
-					'#title' => 'Character',
-					'#description' => 'Currently filtered by character <em>'.$c->name.'</em>.',
-					'#options' => $characters
-	);
+				$form['cid'] = array(
+												'#type' => 'select',
+												'#title' => 'Character',
+												'#description' => 'Currently filtered by character <em>'.$c->name.'</em>.',
+												'#options' => $characters
+				);
 
-	$form['submit'] = array(
-					'#type' => 'submit',
-					'#value' => 'Filter',
-	);
+				$form['submit'] = array(
+												'#type' => 'submit',
+												'#value' => 'Filter',
+				);
 
-	return $form;
+				return $form;
 }
 
 function efed_roleplay_view_filter_form_submit($form,&$form_state) {
-	$object = (object)$form_state['values'];
+				$object = (object)$form_state['values'];
 
-	$c = efed_character_load($object->cid);
+				$c = efed_character_load($object->cid);
 
-	variable_set($object->uid.'_character',$object->cid);
+				variable_set($object->uid.'_character',$object->cid);
 
-	drupal_set_message('Filtered by <em>'.$c->name.'</em>');
+				drupal_set_message('Filtered by <em>'.$c->name.'</em>');
 }
 
 function efed_roleplay_view_all_match($cid = 0) {
 
-	$header = array(
-					array('data' => t('Title')),
-					array('data' => t('Card')),
-					array('data' => t('Created')),
-					array('data' => t('Last Modified')),
-	);
+				$header = array(
+												array('data' => t('Title')),
+												array('data' => t('Card')),
+												array('data' => t('Created')),
+												array('data' => t('Last Modified')),
+				);
 
-	global $user;
+				global $user;
 
-	$count = 0;
-	$limit = 10;
+				$count = 0;
+				$limit = 10;
 
-	$results = pager_query("SELECT match_id,nid FROM {efed_roleplay} WHERE type = 'match' AND cid = ".$cid,$limit);
+				$results = pager_query("SELECT match_id,nid FROM {efed_roleplay} WHERE type = 'match' AND cid = ".$cid,$limit);
 
-	while($data = db_fetch_object($results)) {
-		$match = efed_match_load($data->match_id);
-		$card = efed_card_load($match->card_id);
-		$show = efed_show_load($card->show_id);
-		$roleplay = node_load($data->nid);
+				while($data = db_fetch_object($results)) {
+								$match = efed_match_load($data->match_id);
+								$card = efed_card_load($match->card_id);
+								$show = efed_show_load($card->show_id);
+								$roleplay = node_load($data->nid);
 
-		$rows[] = array(
-						array('data' => l(t($roleplay->title),'node/'.$roleplay->nid)),
-						array('data' => l(t($show->title).' '.format_date($card->card_date,'custom','m/d/Y'),'node/'.$card->nid)),
-						array('data' => format_date($roleplay->created,'custom','m/d/Y')),
-						array('data' => format_date($roleplay->changed,'custom','m/d/Y')),
-		);
+								$rows[] = array(
+																array('data' => l(t($roleplay->title),'node/'.$roleplay->nid)),
+																array('data' => l(t($show->title).' '.format_date($card->card_date,'custom','m/d/Y'),'node/'.$card->nid)),
+																array('data' => format_date($roleplay->created,'custom','m/d/Y')),
+																array('data' => format_date($roleplay->changed,'custom','m/d/Y')),
+								);
 
-		$count++;
-	}
+								$count++;
+				}
 
-	if($count>0) {
-		$output .= theme('table', $header, $rows);
-		$output .= theme('pager', NULL, $limit, 0);
-	}else {
-		$output .= '<p>Empty</p>';
-	}
+				if($count>0) {
+								$output .= theme('table', $header, $rows);
+								$output .= theme('pager', NULL, $limit, 0);
+				}else {
+								$output .= '<p>Empty</p>';
+				}
 
-	return $output;
+				return $output;
 }
 
 function efed_roleplay_view_all_creative($cid = 0) {
 
-	$header = array(
-					array('data' => t('Title')),
-					array('data' => t('Last Modified')),
-					array('data' => t('')),
-	);
+				$header = array(
+												array('data' => t('Title')),
+												array('data' => t('Last Modified')),
+												array('data' => t('')),
+				);
 
-	global $user;
+				global $user;
 
-	$count = 0;
-	$limit = 10;
-	$results = pager_query("SELECT match_id,nid FROM {efed_roleplay} WHERE type = 'creative' AND cid = ".$cid,$limit);
+				$count = 0;
+				$limit = 10;
+				$results = pager_query("SELECT match_id,nid FROM {efed_roleplay} WHERE type = 'creative' AND cid = ".$cid,$limit);
 
-	while($data = db_fetch_object($results)) {
-		$roleplay = node_load($data->nid);
+				while($data = db_fetch_object($results)) {
+								$roleplay = node_load($data->nid);
 
-		$rows[] = array(
-						array('data' => l(t($roleplay->title),'node/'.$roleplay->nid)),
-						array('data' => format_date($roleplay->changed,'custom','m/d/Y')),
-						array('data' => l('Edit','roleplay/sketchbook/creative/create/edit/'.$roleplay->roleplay_info->roleplay_id.'/')),
-		);
+								$rows[] = array(
+																array('data' => l(t($roleplay->title),'node/'.$roleplay->nid)),
+																array('data' => format_date($roleplay->changed,'custom','m/d/Y')),
+																array('data' => l('Edit','roleplay/sketchbook/creative/create/edit/'.$roleplay->roleplay_info->roleplay_id.'/')),
+								);
 
-		$count++;
-	}
+								$count++;
+				}
 
-	if($count>0) {
-		$output .= theme('table', $header, $rows);
-		$output .= theme('pager', NULL, $limit, 0);
-	}else {
-		$output .= '<p>Empty</p>';
-	}
+				if($count>0) {
+								$output .= theme('table', $header, $rows);
+								$output .= theme('pager', NULL, $limit, 0);
+				}else {
+								$output .= '<p>Empty</p>';
+				}
 
-	return $output;
+				return $output;
 }
 
 function efed_roleplay_view_next_match() {
 
-	$header = array(
-					array('data' => t('Card')),
-					array('data' => t('Competitors')),
-					array('data' => t('Deadline')),
-					array('data' => t('Limit')),
-					array('data' => t('')),
-					array('data' => t('')),
-	);
+				$header = array(
+												array('data' => t('Card')),
+												array('data' => t('Competitors')),
+												array('data' => t('Deadline')),
+												array('data' => t('Limit')),
+												array('data' => t('')),
+												array('data' => t('')),
+				);
 
-	global $user;
+				global $user;
 
-	$matches = efed_roleplay_get_next_match(cid());
+				$matches = efed_roleplay_get_next_match(cid());
 
-	$count = 0;
+				$count = 0;
 
-	foreach($matches as $match) {
-		$card = efed_card_load($match->card_id);
-		$show = efed_show_load($card->show_id);
+				foreach($matches as $match) {
+								$card = efed_card_load($match->card_id);
+								$show = efed_show_load($card->show_id);
 
-		$rows[] = array(
-						array('data' => l(t($show->title),'node/'.$card->nid)),
-						array('data' => $match->match_title),
-						array('data' => format_date($card->card_deadline,'medium')),
-						array('data' => $match->user_roleplay_count.'/'.$card->roleplay_limit),
-						array('data' => l('Edit','roleplay/sketchbook/match/edit/'.$match->match_id.'/')),
-						array('data' => l('Create','roleplay/sketchbook/match/create/'.$match->match_id.'/')),
-		);
+								$rows[] = array(
+																array('data' => l(t($show->title),'node/'.$card->nid)),
+																array('data' => $match->match_title),
+																array('data' => format_date($card->card_deadline,'medium')),
+																array('data' => $match->user_roleplay_count.'/'.$card->roleplay_limit),
+																array('data' => l('Edit','roleplay/sketchbook/match/edit/'.$match->match_id.'/')),
+																array('data' => l('Create','roleplay/sketchbook/match/create/'.$match->match_id.'/')),
+								);
 
-		$count++;
-	}
+								$count++;
+				}
 
-	if($count>0) {
-		$output .= theme('table', $header, $rows);
-		$output .= theme('pager', NULL, $limit, 0);
-	}else {
-		$output .= '<p>Empty</p>';
-	}
+				if($count>0) {
+								$output .= theme('table', $header, $rows);
+								$output .= theme('pager', NULL, $limit, 0);
+				}else {
+								$output .= '<p>Empty</p>';
+				}
 
-	return $output;
+				return $output;
 }
 
 function efed_roleplay_info($show,$card,$match) {
 
-	$output .= '<div class="info">';
-	$output .= '<h3>' . $match->match_title.'</h3>';
-	$output .= '<div><b>Card</b>: '.$show->title . ' - ' . format_date($card->card_date,'medum').'</div>';
-	$output .= '<div><b>Roleplay Limit</b>*: ' . $match->user_roleplay_count.'/'.$card->roleplay_limit;
+				$output .= '<div class="info">';
+				$output .= '<h3>' . $match->match_title.'</h3>';
+				$output .= '<div><b>Card</b>: '.$show->title . ' - ' . format_date($card->card_date,'medum').'</div>';
+				$output .= '<div><b>Roleplay Limit</b>*: ' . $match->user_roleplay_count.'/'.$card->roleplay_limit;
 
-	$left = $card->roleplay_limit - $match->user_roleplay_count;
+				$left = $card->roleplay_limit - $match->user_roleplay_count;
 
-	if($match->user_roleplay_count) {
-		$output .= ' - ' . $left . ' remaining';
-	}
+				if($match->user_roleplay_count) {
+								$output .= ' - ' . $left . ' remaining';
+				}
 
-	$output .= '</div>';
-	$output .= '<div><b>Deadline</b>: ' . format_date($card->card_deadline,'medium').'</div>';
-	$output .= '<div><b>Time Left</b>: ' . efed_base_time_between(time(),$card->card_deadline).'</div>';
+				$output .= '</div>';
+				$output .= '<div><b>Deadline</b>: ' . format_date($card->card_deadline,'medium').'</div>';
+				$output .= '<div><b>Time Left</b>: ' . efed_base_time_between(time(),$card->card_deadline).'</div>';
 
-	$output .= '<span style="font-size: 80%">* only <em>live</em> roleplays count.</span>';
-	$output .= '</div>';
+				$output .= '<span style="font-size: 80%">* only <em>live</em> roleplays count.</span>';
+				$output .= '</div>';
 
 
-	return $output;
+				return $output;
 }
 
 function efed_roleplay_user_access($match) {
-	$card = efed_card_load($match->card_id);
-	$left = $card->roleplay_limit - $match->user_roleplay_count;
-	return ($left>0)?TRUE:FALSE;
+				$card = efed_card_load($match->card_id);
+				$left = $card->roleplay_limit - $match->user_roleplay_count;
+				return ($left>0)?TRUE:FALSE;
 }
 
 function efed_roleplay_edit_view() {
-	global $user;
+				global $user;
 
-	$match = efed_match_load(arg(4));
-	$match->user_roleplays = efed_roleplay_load_user_match(cid(),$match->match_id);
-	$match->user_roleplay_count = efed_roleplay_count_user_match(cid(),$match->match_id);
-	$match->user_roleplay_access = efed_roleplay_user_access($match);
-	$card = efed_card_load($match->card_id);
-	$show = efed_show_load($card->show_id);
+				$match = efed_match_load(arg(4));
+				$match->user_roleplays = efed_roleplay_load_user_match(cid(),$match->match_id);
+				$match->user_roleplay_count = efed_roleplay_count_user_match(cid(),$match->match_id);
+				$match->user_roleplay_access = efed_roleplay_user_access($match);
+				$card = efed_card_load($match->card_id);
+				$show = efed_show_load($card->show_id);
 
-	$output .= efed_roleplay_info($show,$card,$match);
+				$output .= efed_roleplay_info($show,$card,$match);
 
-	$header = array(
-					array('data' => t('Title')),
-					array('data' => t('Created')),
-					array('data' => t('Live')),
-					array('data' => t('Edit')),
-	);
+				$header = array(
+												array('data' => t('Title')),
+												array('data' => t('Created')),
+												array('data' => t('Live')),
+												array('data' => t('Edit')),
+				);
 
-	$rps = efed_roleplay_load_user_match(cid(),$match->match_id);
+				$rps = efed_roleplay_load_user_match(cid(),$match->match_id);
 
-	$count = 0;
+				$count = 0;
 
-	foreach($rps as $rp) {
-		$rp->node = node_load($rp->nid);
+				foreach($rps as $rp) {
+								$rp->node = node_load($rp->nid);
 
-		if($rp->live) {
-			$link = '<em>locked</em>';
-		}else {
-			$link = l('Edit','roleplay/sketchbook/match/create/'.$rp->match_id.'/'.$rp->roleplay_id);
-		}
+								if($rp->live) {
+												$link = '<em>locked</em>';
+								}else {
+												$link = l('Edit','roleplay/sketchbook/match/create/'.$rp->match_id.'/'.$rp->roleplay_id);
+								}
 
-		$rows[] = array(
-						array('data' => l($rp->node->title,'node/'.$rp->nid)),
-						array('data' => format_date($rp->node->changed,'custom','m/d/Y')),
-						array('data' => ($rp->live)?'Yes':'No'),
-						array('data' => $link),
-		);
+								$rows[] = array(
+																array('data' => l($rp->node->title,'node/'.$rp->nid)),
+																array('data' => format_date($rp->node->changed,'custom','m/d/Y')),
+																array('data' => ($rp->live)?'Yes':'No'),
+																array('data' => $link),
+								);
 
-		$count++;
-	}
+								$count++;
+				}
 
-	if($count>0) {
-		$output .= theme('table', $header, $rows);
-	}else {
-		$output .= '<p>Empty</p>';
-	}
+				if($count>0) {
+								$output .= theme('table', $header, $rows);
+				}else {
+								$output .= '<p>Empty</p>';
+				}
 
-	if($match->user_roleplay_access) {
-		$output .= '<p>'.l('Create Roleplay','roleplay/sketchbook/match/create/'.$match->match_id).'</p>';
-	}
+				if($match->user_roleplay_access) {
+								$output .= '<p>'.l('Create Roleplay','roleplay/sketchbook/match/create/'.$match->match_id).'</p>';
+				}
 
-	return $output;
+				return $output;
 }
 
 function efed_roleplay_form($form_state) {
-	global $user;
+				global $user;
 
-	$user = user_load($user->uid);
+				$user = user_load($user->uid);
 
-	$type = arg(2);
+				$type = arg(2);
 
-	$form['tabs'] = array(
-					'#value' => efed_roleplay_tabs(),
-	);
+				$form['tabs'] = array(
+												'#value' => efed_roleplay_tabs(),
+				);
 
-	switch($type) {
+				switch($type) {
 
-		case 'match':
-			$match = efed_match_load(arg(4));
-			$match->user_roleplays = efed_roleplay_load_user_match(cid(),$match->match_id);
-			$match->user_roleplay_count = efed_roleplay_count_user_match(cid(),$match->match_id);
-			$match->user_roleplay_access = efed_roleplay_user_access($match);
-			$card = efed_card_load($match->card_id);
-			$show = efed_show_load($card->show_id);
-			$roleplay = efed_roleplay_load(arg(5));
+								case 'match':
+												$match = efed_match_load(arg(4));
+												$match->user_roleplays = efed_roleplay_load_user_match(cid(),$match->match_id);
+												$match->user_roleplay_count = efed_roleplay_count_user_match(cid(),$match->match_id);
+												$match->user_roleplay_access = efed_roleplay_user_access($match);
+												$card = efed_card_load($match->card_id);
+												$show = efed_show_load($card->show_id);
+												$roleplay = efed_roleplay_load(arg(5));
 
-			if(!$match->user_roleplay_access) {
-				$message = '
+												if(!$match->user_roleplay_access) {
+																$message = '
 					You have already submitted '.$match->user_roleplay_count.' roleplay(s) for 
 					<em>'.$show->title . ' - ' . format_date($card->card_date,'medum').'</em>, 
 					and the roleplay count for this match is <b>'.$card->roleplay_limit.'</b>. Contact the 
 					administrator if there is an issue.
 				';
 
-				drupal_set_message($message,'error');
-				drupal_goto('roleplay/sketchbook/match/edit/'.$match->match_id);
-			}
+																drupal_set_message($message,'error');
+																drupal_goto('roleplay/sketchbook/match/edit/'.$match->match_id);
+												}
 
-			$exists = ($roleplay->roleplay_id)? TRUE : FALSE;
+												$exists = ($roleplay->roleplay_id)? TRUE : FALSE;
 
-			$node = node_load($roleplay->nid);
+												$node = node_load($roleplay->nid);
 
-			$output .= efed_roleplay_info($show,$card,$match);
+												$output .= efed_roleplay_info($show,$card,$match);
 
-			$form['info'] = array(
-							'#value' => $output,
-			);
+												$form['info'] = array(
+																				'#value' => $output,
+												);
 
-			break;
+												break;
 
-		case 'creative':
-			$roleplay = efed_roleplay_load(arg(5));
+								case 'creative':
+												$roleplay = efed_roleplay_load(arg(5));
 
-			$exists = ($roleplay->roleplay_id)? TRUE : FALSE;
+												$exists = ($roleplay->roleplay_id)? TRUE : FALSE;
 
-			$node = node_load($roleplay->nid);
+												$node = node_load($roleplay->nid);
 
-			break;
+												break;
 
-	}
+				}
 
-	$form['nid'] = array(
-					'#type' => 'hidden',
-					'#value' => $roleplay->nid,
-	);
+				$form['nid'] = array(
+												'#type' => 'hidden',
+												'#value' => $roleplay->nid,
+				);
 
-	$form['type'] = array(
-					'#type' => 'hidden',
-					'#value' => $type,
-	);
+				$form['type'] = array(
+												'#type' => 'hidden',
+												'#value' => $type,
+				);
 
-	$form['uid'] = array(
-					'#type' => 'hidden',
-					'#value' => $user->uid,
-	);
+				$form['uid'] = array(
+												'#type' => 'hidden',
+												'#value' => $user->uid,
+				);
 
-	$form['roleplay_id'] = array(
-					'#type' => 'hidden',
-					'#value' => $roleplay->roleplay_id,
-	);
+				$form['roleplay_id'] = array(
+												'#type' => 'hidden',
+												'#value' => $roleplay->roleplay_id,
+				);
 
-	$form['match_id'] = array(
-					'#type' => 'hidden',
-					'#value' => $match->match_id,
-	);
+				$form['match_id'] = array(
+												'#type' => 'hidden',
+												'#value' => $match->match_id,
+				);
 
-	$form['title'] = array(
-					'#type' => 'textfield',
-					'#default_value' => $node->title,
-					'#required' => TRUE,
-					'#title' => t('Roleplay Title'),
-	);
+				$form['title'] = array(
+												'#type' => 'textfield',
+												'#default_value' => $node->title,
+												'#required' => TRUE,
+												'#title' => t('Roleplay Title'),
+				);
 
-	$c = efed_character_load(cid());
+				$c = efed_character_load(cid());
 
-	$form['character'] = array(
-					'#value' => '<b>Character:</b> '. $c->name,
-	);
+				$form['character'] = array(
+												'#value' => '<b>Character:</b> '. $c->name,
+				);
 
-	$form['cid'] = array(
-					'#type' => 'hidden',
-					'#value' => cid(),
-	);
+				$form['cid'] = array(
+												'#type' => 'hidden',
+												'#value' => cid(),
+				);
 
-	$form['live'] = array(
-					'#type' => 'checkbox',
-					'#default_value' => $roleplay->live,
-					'#title' => t('Live'),
-					'#description' => 'Tick the box if you want the roleplay to be viewable to other members, once live the roleplay can no longer be edited.',
-	);
+				$form['live'] = array(
+												'#type' => 'checkbox',
+												'#default_value' => $roleplay->live,
+												'#title' => t('Live'),
+												'#description' => 'Tick the box if you want the roleplay to be viewable to other members, once live the roleplay can no longer be edited.',
+				);
 
-	$form['body'] = array(
-					'#type' => 'textarea',
-					'#default_value' => $node->body,
-					'#required' => TRUE,
-					'#rows' => 25,
-					'#title' => t('Body'),
-	);
+				$form['body'] = array(
+												'#type' => 'textarea',
+												'#default_value' => $node->body,
+												'#required' => TRUE,
+												'#rows' => 25,
+												'#title' => t('Body'),
+				);
 
-	$form['store'] = array(
-					'#type' => 'submit',
-					'#value' => t('Store')
-	);
+				$form['store'] = array(
+												'#type' => 'submit',
+												'#value' => t('Store')
+				);
 
-	if($exists) {
-		$form['delete'] = array(
-						'#type' => 'submit',
-						'#value' => t('Delete')
-		);
-	}
+				if($exists) {
+								$form['delete'] = array(
+																'#type' => 'submit',
+																'#value' => t('Delete')
+								);
+				}
 
-	switch($type) {
-		case 'match':
-			$cancel = l('Cancel','roleplay/sketchbook/'.$type.'/edit/'.$match->match_id);
-			break;
-		case 'creative':
-			$cancel = l('Cancel','roleplay/sketchbook/'.$type);
-			break;
-	}
+				switch($type) {
+								case 'match':
+												$cancel = l('Cancel','roleplay/sketchbook/'.$type.'/edit/'.$match->match_id);
+												break;
+								case 'creative':
+												$cancel = l('Cancel','roleplay/sketchbook/'.$type);
+												break;
+				}
 
-	$form['cancel'] = array(
-					'#value' => $cancel,
-	);
+				$form['cancel'] = array(
+												'#value' => $cancel,
+				);
 
-	return $form;
+				return $form;
 }
 
 function efed_roleplay_form_submit($form, &$form_state) {
-	$roleplay = (object)$form_state['values'];
+				$roleplay = (object)$form_state['values'];
 
-	switch($roleplay->op) {
-		case 'Store':
-			$roleplay = efed_roleplay_store($roleplay);
-			drupal_set_message('Roleplay <em>'.$roleplay->title.'</em> stored.','status',TRUE);
+				switch($roleplay->op) {
+								case 'Store':
+												$roleplay = efed_roleplay_store($roleplay);
+												drupal_set_message('Roleplay <em>'.$roleplay->title.'</em> stored.','status',TRUE);
 
-			switch($roleplay->type) {
-				case 'match':
-					drupal_goto('roleplay/sketchbook/'.$roleplay->type.'/edit/'.$roleplay->match_id);
-					break;
-				case 'creative':
-					drupal_goto('roleplay/sketchbook/'.$roleplay->type);
-					break;
-			}
+												switch($roleplay->type) {
+																case 'match':
+																				drupal_goto('roleplay/sketchbook/'.$roleplay->type.'/edit/'.$roleplay->match_id);
+																				break;
+																case 'creative':
+																				drupal_goto('roleplay/sketchbook/'.$roleplay->type);
+																				break;
+												}
 
-			break;
-		case 'Delete':
-			db_query('DELETE FROM {node} WHERE nid = %d', $roleplay->nid);
-			db_query('DELETE FROM {node_revisions} WHERE nid = %d', $roleplay->nid);
-			efed_roleplay_delete_by_nid($roleplay->nid);
+												break;
+								case 'Delete':
+												db_query('DELETE FROM {node} WHERE nid = %d', $roleplay->nid);
+												db_query('DELETE FROM {node_revisions} WHERE nid = %d', $roleplay->nid);
+												efed_roleplay_delete_by_nid($roleplay->nid);
 
-			switch($roleplay->type) {
-				case 'match':
-					drupal_goto('roleplay/sketchbook/'.$roleplay->type.'/edit/'.$roleplay->match_id);
-					break;
-				case 'creative':
-					drupal_goto('roleplay/sketchbook/'.$roleplay->type);
-					break;
-			}
+												switch($roleplay->type) {
+																case 'match':
+																				drupal_goto('roleplay/sketchbook/'.$roleplay->type.'/edit/'.$roleplay->match_id);
+																				break;
+																case 'creative':
+																				drupal_goto('roleplay/sketchbook/'.$roleplay->type);
+																				break;
+												}
 
-			break;
-	}
+												break;
+				}
 }
 
 function efed_roleplay_block($op = 'list', $delta = 0, $edit = array()) {
-	if ($op == 'list') {
-		$blocks[0] = array(
-						'info' => t('Latest Roleplay')
-		);
-		return $blocks;
-	}
-	else if ($op == 'configure') {
-		switch($delta) {
-			case 0:
-				for($i = 5; $i<=100;$i++) {
-					$options[] = $i;
+				if ($op == 'list') {
+								$blocks[0] = array(
+																'info' => t('Latest Roleplay')
+								);
+								return $blocks;
 				}
+				else if ($op == 'configure') {
+								switch($delta) {
+												case 0:
+																for($i = 5; $i<=100;$i++) {
+																				$options[] = $i;
+																}
 
-				$form['efed_roleplay_latest_roleplays_block_amount'] = array(
-								'#type' => 'select',
-								'#title' => t('Number of roleplays'),
-								'#default_value' => variable_get('efed_roleplay_latest_roleplays_block_amount', 5),
-								'#options' => $options,
-				);
+																$form['efed_roleplay_latest_roleplays_block_amount'] = array(
+																								'#type' => 'select',
+																								'#title' => t('Number of roleplays'),
+																								'#default_value' => variable_get('efed_roleplay_latest_roleplays_block_amount', 5),
+																								'#options' => $options,
+																);
 
-				break;
-		}
+																break;
+								}
 
-		return $form;
-	}
-	else if ($op == 'save') {
-		switch($delta) {
-			case 0:
-				variable_set('efed_roleplay_latest_roleplays_block_amount', $edit['efed_roleplay_latest_roleplays_block_amount']);
-				break;
-		}
-	}
-	else if ($op == 'view') {
-		switch($delta) {
-			case 0:
-				$block = array('subject' => t('Latest Roleplay'),
-								'content' => efed_roleplay_latest_roleplays_block(variable_get('efed_roleplay_latest_roleplays_block_amount', 5)));
-				break;
-		}
-		return $block;
-	}
+								return $form;
+				}
+				else if ($op == 'save') {
+								switch($delta) {
+												case 0:
+																variable_set('efed_roleplay_latest_roleplays_block_amount', $edit['efed_roleplay_latest_roleplays_block_amount']);
+																break;
+								}
+				}
+				else if ($op == 'view') {
+								switch($delta) {
+												case 0:
+																$block = array('subject' => t('Latest Roleplay'),
+																								'content' => efed_roleplay_latest_roleplays_block(variable_get('efed_roleplay_latest_roleplays_block_amount', 5)));
+																break;
+								}
+								return $block;
+				}
 }
 
 function efed_roleplay_latest_roleplays_block($amount) {
-	$items = array();
+				$items = array();
 
-	$sql = "SELECT node.nid
+				$sql = "SELECT node.nid
 			FROM efed_roleplay
 			LEFT JOIN node
 			ON node.nid=efed_roleplay.nid WHERE efed_roleplay.live = TRUE 
 			ORDER BY node.changed DESC
 			LIMIT 0, ".$amount;	
 
-	$result = db_query($sql,$roleplay_id);
+				$result = db_query($sql,$roleplay_id);
 
-	while($data = db_fetch_object($result)) {
-		$node = node_load($data->nid);
-		$rp = $node->roleplay_info;
-		$c = efed_character_load($rp->cid);
+				while($data = db_fetch_object($result)) {
+								$node = node_load($data->nid);
+								$rp = $node->roleplay_info;
+								$c = efed_character_load($rp->cid);
 
-		switch($node->roleplay_info->type) {
-			case 'match':
-				$m = efed_match_load($rp->match_id);
-				$card = efed_card_load($m->card_id);
-				$show = efed_show_load($card->show_id);
+								switch($node->roleplay_info->type) {
+												case 'match':
+																$m = efed_match_load($rp->match_id);
+																$card = efed_card_load($m->card_id);
+																$show = efed_show_load($card->show_id);
 
-				$info = $show->title . ' - ' . format_date($card->card_date);
-				break;
+																$info = $show->title . ' - ' . format_date($card->card_date);
+																break;
 
-			default:
-				$info = 'Creative Roleplay';
-				break;
-		}
+												default:
+																$info = 'Creative Roleplay';
+																break;
+								}
 
-		$items[] .= '<div>'.l($node->title,'node/'.$node->nid).'</div>
+								$items[] .= '<div>'.l($node->title,'node/'.$node->nid).'</div>
 		<div><em>'.$c->name.'</em></div>
 		<div>'.$info.'</div>
 		';
-	}
+				}
 
-	return '<div class="jcarousel-skin-efedsystem_right_block">'.theme('item_list',$items).'</div>';
+				return '<div class="jcarousel-skin-efedsystem_right_block">'.theme('item_list',$items).'</div>';
 }
 
 function efed_roleplay_wrestler_next_match_block($amount) {
-	$items = array();
+				$items = array();
 
-	global $user;
+				global $user;
 
-	$matches = efed_roleplay_get_next_match($user->uid,$amount);
+				$matches = efed_roleplay_get_next_match($user->uid,$amount);
 
-	foreach($matches as $match) {
-		$card = efed_card_load($match->card_id);
-		$show = efed_show_load($card->show_id);
+				foreach($matches as $match) {
+								$card = efed_card_load($match->card_id);
+								$show = efed_show_load($card->show_id);
 
-		$out .= '<div class="Title">' .l($show->title,'roleplay/sketchbook/match/create/'.$match->match_id). '</div>';
-		$out .= '<div>' . format_date($card->card_deadline,'custom','m/d/Y') . ', ' . format_date($card->card_deadline,'custom','i:H') . '</div>';
-		$out .= '<div><em>' . efed_roleplay_opponent($match) . '</em></div>';
+								$out .= '<div class="Title">' .l($show->title,'roleplay/sketchbook/match/create/'.$match->match_id). '</div>';
+								$out .= '<div>' . format_date($card->card_deadline,'custom','m/d/Y') . ', ' . format_date($card->card_deadline,'custom','i:H') . '</div>';
+								$out .= '<div><em>' . efed_roleplay_opponent($match) . '</em></div>';
 
-		$items[] = $out;
-		unset($out);
-	}
+								$items[] = $out;
+								unset($out);
+				}
 
-	$items[] = l('Roleplay Sketchbook','roleplay/sketchbook');
+				$items[] = l('Roleplay Sketchbook','roleplay/sketchbook');
 
-	return theme('item_list',$items);
+				return theme('item_list',$items);
 }
 
 function efed_roleplay_opponent($match) {
-	global $user;
+				global $user;
 
-	$out = '';
+				$out = '';
 
-	switch($match->type) {
-		case 'singles':
-			foreach($match->comps as $comp) {
-				$opp = user_load($comp->id);
-				$out .= $opp->name . ', ';
-			}
-			break;
-		case 'tag-team':
-			foreach($match->teams as $key=>$team) {
-				$opp = efed_stable_load($key);
-				$out .= $opp->name . ', ';
-			}
-			break;
-	}
+				switch($match->type) {
+								case 'singles':
+												foreach($match->comps as $comp) {
+																$opp = user_load($comp->id);
+																$out .= $opp->name . ', ';
+												}
+												break;
+								case 'tag-team':
+												foreach($match->teams as $key=>$team) {
+																$opp = efed_stable_load($key);
+																$out .= $opp->name . ', ';
+												}
+												break;
+				}
 
-	return $out;
+				return $out;
 }
 
 function cid() {
-	global $user;
-	return variable_get($user->uid.'_character',0);
+				global $user;
+				return variable_get($user->uid.'_character',0);
 }
 
 function efed_roleplay_get_next_match($cid = 0,$amount = 1) {
-	$matches = array();
+				$matches = array();
 
-	$sql = "SELECT efed_match.match_id FROM efed_comp, efed_match, efed_card
+				$sql = "SELECT efed_match.match_id FROM efed_comp, efed_match, efed_card
 			WHERE 
 			efed_comp.id = %d
 			AND efed_comp.match_id = efed_match.match_id 
@@ -784,116 +882,116 @@ function efed_roleplay_get_next_match($cid = 0,$amount = 1) {
 			AND efed_card.card_date > %d
 			LIMIT 0,%d";
 
-	$result = db_query($sql,$cid,$_SERVER['REQUEST_TIME'],$amount);
+				$result = db_query($sql,$cid,$_SERVER['REQUEST_TIME'],$amount);
 
-	while($data = db_fetch_object($result)) {
-		$match = efed_match_load($data->match_id);
-		$match->user_roleplays = efed_roleplay_load_user_match($cid,$data->match_id);
-		$match->user_roleplay_count = efed_roleplay_count_user_match(cid(),$match->match_id);
-		$match->user_roleplay_access = efed_roleplay_user_access($match);
-		$matches[] = $match;
-	}
+				while($data = db_fetch_object($result)) {
+								$match = efed_match_load($data->match_id);
+								$match->user_roleplays = efed_roleplay_load_user_match($cid,$data->match_id);
+								$match->user_roleplay_count = efed_roleplay_count_user_match(cid(),$match->match_id);
+								$match->user_roleplay_access = efed_roleplay_user_access($match);
+								$matches[] = $match;
+				}
 
-	return $matches;
+				return $matches;
 }
 
 function efed_roleplay_load_user_match($cid,$match_id) {
-	$rps = array();
-	$sql = "SELECT roleplay_id FROM {efed_roleplay} WHERE cid = %d AND match_id = %d";
-	$result = db_query($sql,$cid,$match_id);
-	while($data = db_fetch_object($result)) {
-		$rps[] = efed_roleplay_load($data->roleplay_id);
-	}
-	return $rps;
+				$rps = array();
+				$sql = "SELECT roleplay_id FROM {efed_roleplay} WHERE cid = %d AND match_id = %d";
+				$result = db_query($sql,$cid,$match_id);
+				while($data = db_fetch_object($result)) {
+								$rps[] = efed_roleplay_load($data->roleplay_id);
+				}
+				return $rps;
 }
 
 function efed_roleplay_count_user_match($cid,$match_id) {
-	$rps = array();
-	$sql = "SELECT COUNT(roleplay_id) as count FROM {efed_roleplay} WHERE cid = %d AND match_id = %d AND live = TRUE";
-	$result = db_query($sql,$cid,$match_id);
-	$data = db_fetch_object($result);
-	return $data->count;
+				$rps = array();
+				$sql = "SELECT COUNT(roleplay_id) as count FROM {efed_roleplay} WHERE cid = %d AND match_id = %d AND live = TRUE";
+				$result = db_query($sql,$cid,$match_id);
+				$data = db_fetch_object($result);
+				return $data->count;
 }
 
 function efed_roleplay_load_all() {
-	$rps = array();
+				$rps = array();
 
-	$sql = "SELECT * FROM {efed_roleplay}";
-	$result = db_query($sql);
+				$sql = "SELECT * FROM {efed_roleplay}";
+				$result = db_query($sql);
 
-	while($data = db_fetch_object($result)) {
-		$data->node = node_load($data->nid);
-		$rps[] = $data;
-	}
+				while($data = db_fetch_object($result)) {
+								$data->node = node_load($data->nid);
+								$rps[] = $data;
+				}
 
-	return $rps;
+				return $rps;
 }
 
 function efed_roleplay_load($roleplay_id) {
-	$sql = "SELECT * FROM {efed_roleplay} WHERE roleplay_id = %d";
-	$result = db_query($sql,$roleplay_id);
-	$data = db_fetch_object($result);
+				$sql = "SELECT * FROM {efed_roleplay} WHERE roleplay_id = %d";
+				$result = db_query($sql,$roleplay_id);
+				$data = db_fetch_object($result);
 
-	return $data;
+				return $data;
 }
 function efed_roleplay_load_by_nid($nid) {
-	$sql = "SELECT roleplay_id FROM {efed_roleplay} WHERE nid = %d";
-	$result = db_query($sql,$nid);
-	$data = db_fetch_object($result);
-	return efed_roleplay_load($data->roleplay_id);
+				$sql = "SELECT roleplay_id FROM {efed_roleplay} WHERE nid = %d";
+				$result = db_query($sql,$nid);
+				$data = db_fetch_object($result);
+				return efed_roleplay_load($data->roleplay_id);
 }
 function efed_roleplay_load_by_match_id($match_id) {
-	$rps = array();
+				$rps = array();
 
-	$sql = "SELECT nid FROM {efed_roleplay} WHERE match_id = %d AND live = TRUE";
-	$result = db_query($sql,$match_id);
+				$sql = "SELECT nid FROM {efed_roleplay} WHERE match_id = %d AND live = TRUE";
+				$result = db_query($sql,$match_id);
 
-	while($data = db_fetch_object($result)) {
-		$data = node_load($data->nid);
-		$rps[] = $data;
-	}
+				while($data = db_fetch_object($result)) {
+								$data = node_load($data->nid);
+								$rps[] = $data;
+				}
 
-	return $rps;
+				return $rps;
 }
 
 function efed_roleplay_store($object) {
 
-	$node = array(
-					'nid'     => ($object->nid)? $object->nid : 0,
-					'title'   => $object->title,
-					'body' 	  => $object->body,
-					'changed' => time(),
-					'created' => time(),
-	);
+				$node = array(
+												'nid'     => ($object->nid)? $object->nid : 0,
+												'title'   => $object->title,
+												'body' 	  => $object->body,
+												'changed' => time(),
+												'created' => time(),
+				);
 
-	switch($object->type) {
-		case 'creative':
-			$node = efed_base_create_node('efed_roleplay_creative',$node);
-			break;
+				switch($object->type) {
+								case 'creative':
+												$node = efed_base_create_node('efed_roleplay_creative',$node);
+												break;
 
-		case 'match':
-			$node = efed_base_create_node('efed_roleplay_match',$node);
-			break;
-	}
+								case 'match':
+												$node = efed_base_create_node('efed_roleplay_match',$node);
+												break;
+				}
 
-	$object->nid = $node->nid;
+				$object->nid = $node->nid;
 
-	if($object->roleplay_id > 0) {
-		drupal_write_record('efed_roleplay',$object,'roleplay_id');
-	}else {
-		drupal_write_record('efed_roleplay',$object);
-	}
+				if($object->roleplay_id > 0) {
+								drupal_write_record('efed_roleplay',$object,'roleplay_id');
+				}else {
+								drupal_write_record('efed_roleplay',$object);
+				}
 
-	return $object;
+				return $object;
 }
 
 function efed_roleplay_delete_by_nid($nid) {
-	$sql = "DELETE FROM {efed_roleplay} WHERE nid = %d";
-	db_query($sql,$nid);
+				$sql = "DELETE FROM {efed_roleplay} WHERE nid = %d";
+				db_query($sql,$nid);
 }
 
 function efed_roleplay_delete($roleplay_id) {
-	$sql = "DELETE FROM {efed_roleplay} WHERE roleplay_id = %d";
-	db_query($sql,$roleplay_id);
+				$sql = "DELETE FROM {efed_roleplay} WHERE roleplay_id = %d";
+				db_query($sql,$roleplay_id);
 }
 ?>

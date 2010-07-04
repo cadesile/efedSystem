@@ -2,7 +2,7 @@
 
 body{
 	color: #0C1F2C;
-	background-color: #000;
+	background-color: #3B6AA0;
 }
 
 h1, h2, h3, h4, h5, h6, p {
@@ -30,6 +30,11 @@ a:visited{
 a:hover{
 	color: #02243C;
 	text-decoration: underline;
+}
+
+.messages {
+	margin-bottom: 10px !important;
+	-moz-border-radius: 5px;
 }
 
 #header {
@@ -286,20 +291,3 @@ div.node {
 /**
 * News home page
 */
-
-.view-efed-news .view-content .views-row {
-	height: 25px;
-}
-.view-efed-news .views-row .views-field-title {
-	float: left;
-}
-.view-efed-news .views-row .views-field-title h3{
-	margin-bottom: 0px;
-}
-
-.view-efed-news .views-row .views-field-changed {
-	color:#616161;
-	font-size:9px;
-	font-style:italic;
-	float: right;
-}

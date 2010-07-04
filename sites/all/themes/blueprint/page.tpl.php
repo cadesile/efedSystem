@@ -38,7 +38,13 @@
       <?php print theme('links', $secondary_links, array('id' => 'subnav', 'class' => 'links')) ?>
     <?php endif; ?>    
   </div>
-  
+
+    <?php
+      if ($messages != '') {
+        print '<div id="messages">'. $messages .'</div>';
+      }
+			?>
+      
   <div class="<?php print $center_classes; ?>">
     <?php
       if ($breadcrumb != '') {
@@ -49,10 +55,6 @@
         print '<div class="tabs">'. $tabs .'</div>';
       }
 
-      if ($messages != '') {
-        print '<div id="messages">'. $messages .'</div>';
-      }
-      
       if ($title != '') {
         print '<h2>'. $title .'</h2>';
       }      
