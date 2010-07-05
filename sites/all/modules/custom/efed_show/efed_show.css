@@ -17,6 +17,11 @@ div.show img {
 	margin-right: 10px;
 }
 
+div.show div.next-card {
+    margin-top: 10px;
+    font-size: 11px;
+}
+
 div.show_scroller {
 	position: relative;
 }

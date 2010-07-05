@@ -1,0 +1,8 @@
+name = "E-fed Forum Styles"
+description = Additional Advanced Forum Styles
+version = "Version"
+package = "E-Fed"
+dependencies[] = advanced_forum
+core = 6.x
+
+

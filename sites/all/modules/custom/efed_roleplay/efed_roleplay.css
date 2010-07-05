@@ -1,42 +1,148 @@
 #efed-roleplay-view-filter-form{
-				margin-bottom: 0 !important;
-				border-bottom: solid 1px #e3e3e3;
-				padding: 10px 0px 10px 0px;
+    margin-bottom: 0 !important;
+    border-bottom: solid 1px #e3e3e3;
+    padding: 10px 0px 10px 0px;
 }
 
 #efed-roleplay-view-filter-form #edit-submit{
-				margin: 0 !important;
+    margin: 0 !important;
 }
 .block-efed_roleplay .content{
-				padding: 0px !important;
+    padding: 0px !important;
 }
 
 .info{
-				font-size: 11px;
-				border-bottom: solid 1px #e3e3e3;
-				padding: 10px 0px 10px 0px;
+    font-size: 11px;
+    border-bottom: solid 1px #e3e3e3;
+    padding: 10px 0px 10px 0px;
 }
 
 #efed-roleplay-page-archive-filter {
-				-moz-border-radius:5px 5px 5px 5px;
-				background-color:#E3E3E3;
-				margin-bottom:10px;
-				padding:10px;
+    -moz-border-radius:5px 5px 5px 5px;
+    background-color:#E3E3E3;
+    margin-bottom:10px;
+    padding:10px;
 }
 
 #efed-roleplay-page-archive-filter .form-item {
-				float: left;
-				margin: 0px 10px 0px 0px;
+    float: left;
+    margin: 0px 10px 0px 0px;
 }
 
 #efed-roleplay-page-archive-filter,
 #efed-roleplay-page-archive-filter select,
 #efed-roleplay-page-archive-filter input {
-				font-size:10px;
+    font-size:10px;
 }
 
 .character_thumb{
-				float: right;
-				margin-left: 10px;
-				margin-bottom: 10px;
+    float: right;
+    margin-left: 10px;
+    margin-bottom: 10px;
+}
+
+/**
+ROLEPLAY LATEST PAGE
+**/
+
+.latest-roleplays .roleplay .character {
+    width: 80px;
+}
+
+.latest-roleplays .main,
+.latest-roleplays .second_left,
+.latest-roleplays .second_right,
+.latest-roleplays .other {
+    -moz-border-radius-bottomleft:5px;
+    -moz-border-radius-bottomright:5px;
+    -moz-border-radius-topleft:5px;
+    -moz-border-radius-topright:5px;
+    background-color:#E3E3E3;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.latest-roleplays .second_left,
+.latest-roleplays .second_right {
+    float: left;
+    width: 319px;
+}
+
+.latest-roleplays .other {
+    margin-right: 10px;
+    float: left;
+    width: 202px;
+}
+
+.latest-roleplays .other h3 {
+    font-size: 11px;
+}
+
+.latest-roleplays .other .character,
+.latest-roleplays .other .details{
+    display: none;
+}
+
+.latest-roleplays .other.last {
+    margin-right: 0px;
+}
+
+.latest-roleplays .second_left {
+    margin-right: 10px;
+}
+
+.latest-roleplays .roleplay h3 {
+    margin-bottom: 3px;
+}
+.latest-roleplays .main {
+    background-color: #B9C0C0;
+}
+.latest-roleplays .main .author {
+    background-color: #586A7E;
+    color: #B9C0C0;
+}
+.latest-roleplays .main .author em {
+    color: #B9C0C0;
+}
+.latest-roleplays .main .roleplay h3 {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.latest-roleplays .main .roleplay .character {
+    width: 120px;
+}
+
+.latest-roleplays .main .roleplay p {
+    font-size: 12px;
+}
+
+/**
+ROLEPLAY ITEM
+**/
+
+.roleplay {
+
+
+}
+
+.roleplay p {
+    font-size: 10px;
+    margin-bottom: 0px;
+}
+
+.roleplay .details {
+    font-size: 9px;
+    color: #282828;
+}
+
+.roleplay .character {
+    background-color: #B6B6B6;
+    float: left;
+    margin-right: 10px;
+}
+
+.roleplay .character .author{
+    font-size: 9px;
+    padding: 2px 5px;
 }

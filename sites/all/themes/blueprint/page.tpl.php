@@ -64,6 +64,16 @@
       print $content;
       print $feed_icons;
     ?>
+  </div>
+
+  <?php if ($right): ?>
+    <div class="<?php print $right_classes; ?>"><?php print $right; ?></div>
+  <?php endif ?>
+  
+
+  <?php print $scripts ?>
+  <?php print $closure; ?>
+
 
     <?php if ($footer_message | $footer): ?>
       <div id="footer" class="clear">
@@ -75,16 +85,6 @@
         <?php endif; ?>
       </div>
     <?php endif; ?>
-  </div>
-
-  <?php if ($right): ?>
-    <div class="<?php print $right_classes; ?>"><?php print $right; ?></div>
-  <?php endif ?>
-  
-
-  <?php print $scripts ?>
-  <?php print $closure; ?>
-
 </div>
 
 </body>

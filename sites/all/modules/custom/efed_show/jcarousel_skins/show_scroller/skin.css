@@ -1,4 +1,9 @@
 .jcarousel-skin-show_scrollable .jcarousel-container-horizontal {
+    -moz-border-radius-bottomleft:5px;
+    -moz-border-radius-bottomright:5px;
+    -moz-border-radius-topleft:5px;
+    -moz-border-radius-topright:5px;
+    background-color: #fff;
     width: 710px;
 }
 
@@ -6,33 +11,29 @@
     width:  710px;
 }
 .jcarousel-skin-show_scrollable li {
-	background-image: none;
-	padding: 0px;
+    background-image: none;
+    padding: 0px;
 
 }
 .jcarousel-skin-show_scrollable  ul li.jcarousel-item{
-	margin: 0px;
-	padding: 0px;
+    margin: 0px;
+    padding: 0px;
 }
 .jcarousel-skin-show_scrollable  ul li.jcarousel-item .image{
-    height: 200px;
+    height: 245px;
 }
 .jcarousel-skin-show_scrollable  ul li.jcarousel-item .content{
-	font-weight: bold;
-	color: #fff;
-	width: 690px;
-	position: absolute;
-	bottom: 0px;
-	padding: 5px 10px;
-}
-.jcarousel-skin-show_scrollable  ul li.jcarousel-item .content a{
-	color: #e3e3e3;
+    font-weight: bold;
+    width: 690px;
+    position: absolute;
+    bottom: 0px;
+    padding: 5px 10px;
 }
 
 .jcarousel-skin-show_scrollable .jcarousel-item {
-	position: relative;
+    position: relative;
     width: 710px;
-    height: 200px;
+    height: 245px;
 }
 
 .jcarousel-skin-show_scrollable .jcarousel-item-placeholder {
@@ -42,15 +43,15 @@
 
 /**
  *  Horizontal Buttons
- */
+*/
 .jcarousel-skin-show_scrollable .jcarousel-prev-horizontal,
 .jcarousel-skin-show_scrollable .jcarousel-next-horizontal {
-	position: absolute;
-	top: 162px;
+    position: absolute;
+    top: 162px;
 
 }
 .jcarousel-skin-show_scrollable .jcarousel-next-horizontal {
-	right: 10px;
+    right: 10px;
     width: 32px;
     height: 32px;
     cursor: pointer;
@@ -73,7 +74,7 @@
 }
 
 .jcarousel-skin-show_scrollable .jcarousel-prev-horizontal {
-		right: 40px;
+    right: 40px;
     width: 32px;
     height: 32px;
     cursor: pointer;
