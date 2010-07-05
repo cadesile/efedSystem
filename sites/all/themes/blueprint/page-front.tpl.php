@@ -46,14 +46,9 @@
 			?>
       
   <div class="<?php print $center_classes; ?>">
-      <div class="main-content">
     <?php
       if ($breadcrumb != '') {
         print $breadcrumb;
-      }
-
-      if ($tabs != '') {
-        print '<div class="tabs">'. $tabs .'</div>';
       }
 
       if ($title != '') {
@@ -66,7 +61,6 @@
       print $feed_icons;
     ?>
 
-      </div>
   </div>
 
   <?php if ($right): ?>

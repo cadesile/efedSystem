@@ -2,6 +2,8 @@
 
 efed_base();
 
+define('efed_character_role', 'Character');
+
 function efed_character_init() {
     drupal_add_css(drupal_get_path('module', 'efed_character') . '/efed_character.css');
     drupal_add_js(drupal_get_path('module', 'efed_character') . '/efed_character.js');
@@ -12,20 +14,7 @@ function efed_character_menu() {
     /*
      * Adminstration menu callbacks
      */
-    /*
-      $items[EFED_ADMIN_AREA .'/stable'] = array(
-      'title' => 'Stables',
-      'page callback'    => 'efed_character_admin_view_all',
-      'access arguments' => array('administer efed stable'),
-      );
-      $items[EFED_ADMIN_AREA .'/stable/store'] = array(
-      'title' => 'Create Stable',
-      'page callback'    => 'drupal_get_form',
-      'page arguments'   => array('efed_character_admin_create_form'),
-      'access arguments' => array('administer efed stable'),
-      'type' => MENU_CALLBACK,
-      );
-     */
+
     $items[EFED_ADMIN_AREA . '/characters'] = array(
         'title' => 'Characters',
         'page callback' => 'efed_character_admin_view_all',
@@ -141,8 +130,16 @@ function efed_character_theme() {
     );
 }
 
+function efed_character_redirect_to_create() {
+    if(!cid()) {
+        drupal_goto('character-profiles/store');
+    }
+}
+
 function efed_character_cart_history() {
     $limit = 10;
+
+    efed_character_redirect_to_create();
 
     drupal_set_title('Cart History');
 
@@ -360,6 +357,8 @@ function efed_character_status_types() {
 }
 
 function efed_character_view_all() {
+    efed_character_redirect_to_create();
+
     $limit = 10;
 
     global $user;
@@ -494,11 +493,17 @@ function efed_character_create_form($form_state) {
 
     $c = efed_character_load(arg(2));
 
+    $desc = (!cid())? "
+        In order to roleplay you must character at least one character.
+        Once you have successfully created your first character
+        you'll be able to join a roster." : NULL;
+
     $exists = (isset($c->character_id)) ? TRUE : FALSE;
 
     $form['details'] = array(
         '#type' => 'fieldset',
         '#title' => t('Details'),
+        '#description' => $desc,
         '#collapsible' => TRUE,
         '#collapsed' => $exists,
     );

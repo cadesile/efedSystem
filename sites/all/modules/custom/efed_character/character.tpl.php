@@ -5,11 +5,15 @@ if(!$roster) {
 
 $balance = $character->balance;
 $contract = $character->contract;
+
+$hasCharacter = ($character->character_id)? TRUE : FALSE;
+
 $types = efed_character_status_types();
 
 ?>
 
 <div class="character-small">
+        <?php if($hasCharacter): ?>
 	<div class="options">
 		<?= l('edit', 'character-profiles/store/' . $character->character_id); ?> |
 		<?= l('roleplay', 'roleplay/sketchbook'); ?> |
@@ -30,5 +34,10 @@ $types = efed_character_status_types();
 	<div class="balance"><b>Balance:</b> <?=efed_price($balance->balance)?></div>
 	<?php endif; ?>
 	<?php print drupal_get_form('efed_character_default_form'); ?>
+        <?php else: ?>
+        You're yet to create a character, <?php print l('click here', 'character-profiles/store'); ?> to create one.
+        
+        <?php endif; ?>
+
 	<div class="clear"></div>
 </div>

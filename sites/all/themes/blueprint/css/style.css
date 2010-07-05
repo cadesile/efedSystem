@@ -11,7 +11,7 @@ h1, h2, h3, h4, h5, h6, p {
 }
 
 div.container {
-    margin-top: 10px;
+    margin-top:0px;
     margin-bottom: 10px;
 }
 
@@ -35,16 +35,13 @@ a:hover{
 
 .messages {
     margin-bottom: 10px !important;
-    -moz-border-radius: 5px;
+    -moz-border-radius: 3px;
 }
 
 #header {
     background-image: url(../images/wallpaper.jpg);
     background-position: top left;
-    margin-bottom: 10px;
     height: 150px;
-    border: solid 1px #e3e3e3;
-    -moz-border-radius: 5px;
 }
 
 #header h1 {
@@ -96,23 +93,22 @@ a:hover{
 }
 
 #primary-links {
-    background-color: #02243C;
-    margin-bottom: 10px;
+    background-color: #fff;
     padding: 5px 10px;
-    border: solid 1px #e3e3e3;
-    -moz-border-radius: 5px;
+    margin-bottom: 10px;
+    -moz-border-radius: 0px 0px 3px 3px;
 }
 
 #primary-links ul li{
-    margin: 0px 6px 0px 0px;
-    padding: 0px 10px 0px 0px;
-    border-right: solid 1px #e3e3e3;
+    padding: 0px 5px 0px 0px;
+    margin: 0px;
 }
 
 #primary-links ul li a{
-    font-size: 13px;
+    font-size: 20px;
     font-weight: bold;
-    color: #fff;
+    color: #3B6AA0;
+    text-transform:uppercase;
 }
 
 #primary-links ul li a:hover{
@@ -132,26 +128,12 @@ a:hover{
     color: #fff;
 }
 
-ul.primary{
-    margin: 0px;
-}
-
-ul.primary li a{
-    color: #B6B9BB;
-    padding-top: 0px;
-    padding-bottom: 1px;
-}
-
-ul.primary li.active a{
-    color: #0A324E;
-}
 .col-left .block,
 .col-center .block,
 .col-right .block {
     background-color: #F9F9F9;
     margin-bottom: 10px;
-    border: solid 1px #e3e3e3;
-    -moz-border-radius: 5px;
+    -moz-border-radius: 3px;
 }
 
 .col-left .block h3,
@@ -169,7 +151,7 @@ ul.primary li.active a{
 .col-right .block-menu{
     background-color: #BBDAB8;
     border: solid 1px #A7C2A4;
-    -moz-border-radius: 5px;
+    -moz-border-radius: 3px;
 
 }
 
@@ -195,14 +177,13 @@ ul.primary li.active a{
     margin-bottom: 10px;
 }
 
-.col-center {
+.col-center .main-content {
     background-color: #fff;
-    border: solid 1px #E3E3E3;
-    -moz-border-radius: 5px;
+    -moz-border-radius: 3px;
     padding: 10px;
-    width: 688px !important;
     margin-bottom: 10px;
 }
+
 
 div.node {
     border-bottom:0px;
@@ -221,7 +202,7 @@ div.node {
 .page-home .panel-col-first .panel-pane,
 .page-home .panel-col-last .panel-pane {
     background: #eaeaea url(../images/block-bg.gif) 0 0 repeat-x;
-    -moz-border-radius: 5px;
+    -moz-border-radius: 3px;
     margin-bottom: 10px;
 }
 
@@ -308,5 +289,28 @@ div.node {
 }
 
 /**
-* News home page
+* TABS
 */
+
+div.tabs {
+    margin-bottom: 10px;
+}
+
+ul.tabs.primary {
+    margin: 0px;
+}
+
+ul.primary li a {
+    padding-bottom: 1px;
+}
+
+ul.primary li.active a {
+    color:#0A324E;
+}
+
+ul.primary li.active a {
+    background-color:#FFFFFF;
+    border-color:#BBBBBB #BBBBBB #FFFFFF;
+    border-style:solid;
+    border-width:1px;
+}

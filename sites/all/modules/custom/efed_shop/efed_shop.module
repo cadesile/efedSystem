@@ -110,7 +110,7 @@ function efed_shop_buy_form($form, $shop_id){
 	global $user;
 	$user = user_load($user->uid);
 
-	if(in_array(EFED_DEFAULT_ROLE,$user->roles)){
+	if(in_array(EFED_DEFAULT_ROLE,$user->roles) && cid()){
 		
 		$p = efed_shop_load($shop_id);
 		$c = efed_character();
