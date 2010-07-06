@@ -1,42 +1,58 @@
 .belt {
--moz-border-radius:5px 5px 5px 5px;
-background-color:#E3E3E3;
-display:block;
-margin-bottom:10px;
-padding:10px;
+    -moz-border-radius:5px 5px 5px 5px;
+    background-color:#E3E3E3;
+    display:block;
+    margin-bottom:10px;
+    padding:10px;
 }
 
-.belt .belt-name {
-	font-size: 14px;
-	font-weight: bold;
-	margin-bottom: 10px;
-}
-
-.belt .current-champion {
-	margin-bottom: 10px;
+.belt .belt-info {
+    width: 330px;
+    float: left;
 }
 
 .belt .history {
-	font-size: 9px;
+    width: 330px;
+    float: right;
+}
+
+.belt .belt-info h3 {
+    font-size: 24px;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+
+.belt .history h3 {
+    font-size: 14px;
+}
+
+.belt .belt-info .character-pane {
+    margin-right: 10px;
+    float: left;
+}
+
+.belt .belt-info .current-champion {
+    margin-bottom: 10px;
 }
 
 .belt .history .past-champion {
-	margin-bottom: 10px;
+    font-size: 11px;
+    margin-bottom: 5px;
 }
 
 .belt .date {
-	font-style:italic;
-	color:#616161;
+    font-style:italic;
+    color:#616161;
 }
 
 .block-efed_belt .belt {
--moz-border-radius: 0px;
-background-color:transparent;
-display:block;
-margin-bottom:0px;
-padding:0px;
+    -moz-border-radius: 0px;
+    background-color:transparent;
+    display:block;
+    margin-bottom:0px;
+    padding:0px;
 }
 
 .block-efed_belt .content {
-padding:0 !important;
+    padding:0 !important;
 }

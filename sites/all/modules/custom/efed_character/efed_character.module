@@ -125,6 +125,7 @@ function efed_character_theme() {
             'template' => 'character_item',
         ),
         'efed_author_pane' => array(
+            'arguments' => array('character' => NULL),
             'template' => 'author_pane',
         ),
     );

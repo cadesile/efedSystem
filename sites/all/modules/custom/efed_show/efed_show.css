@@ -56,3 +56,83 @@ div.show_scroller div.match p{
 .imagecache-efed_show_max {
 				margin-bottom: 10px;
 }
+
+
+/**
+show LATEST PAGE
+**/
+
+.latest-shows .show .character {
+    width: 80px;
+}
+
+.latest-shows .main,
+.latest-shows .second_left,
+.latest-shows .second_right,
+.latest-shows .other {
+    -moz-border-radius-bottomleft:5px;
+    -moz-border-radius-bottomright:5px;
+    -moz-border-radius-topleft:5px;
+    -moz-border-radius-topright:5px;
+    background-color:#E3E3E3;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.latest-shows .second_left,
+.latest-shows .second_right {
+    float: left;
+    width: 319px;
+}
+
+.latest-shows .other {
+    margin-right: 10px;
+    float: left;
+    width: 202px;
+}
+
+.latest-shows .other h3 {
+    font-size: 11px;
+}
+
+.latest-shows .other .character,
+.latest-shows .other .details{
+    display: none;
+}
+
+.latest-shows .other.last {
+    margin-right: 0px;
+}
+
+.latest-shows .second_left {
+    margin-right: 10px;
+}
+
+.latest-shows .show-item h3 {
+    margin-bottom: 3px;
+}
+.latest-shows .main {
+    background-color: #B9C0C0;
+}
+.latest-shows .main .show-item h3 {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.latest-shows .main .show-item .image {
+    margin-right: 10px;
+    float: left;
+}
+
+.latest-shows .main .show-item .title {
+    font-size: 14px;
+}
+
+.latest-shows .main .show-item .card-info {
+    font-size: 10px;
+}
+
+.latest-shows .main .show-item .main-event {
+    font-size: 24px;
+    letter-spacing: 1px;
+}

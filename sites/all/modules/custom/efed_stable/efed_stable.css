@@ -1,23 +1,27 @@
 .stable {
--moz-border-radius:5px 5px 5px 5px;
-background-color:#E3E3E3;
-display:block;
-margin-bottom:10px;
-padding:10px;
+    -moz-border-radius:2px 2px 2px 2px;
+    background-color:#E3E3E3;
+    display:block;
+    margin-bottom:10px;
+    padding:10px;
 }
 
 .stable .stable-name {
-	font-size: 14px;
-	font-weight: bold;
-	margin-bottom: 10px;
+    font-size: 28px;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+
+.stable .leader{
+    border-bottom: solid 1px #C6C6C6;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
 }
 
 .stable .members {
-	margin-top: 10px;
-	font-size: 9px;
 }
 
-.stable .member {
-	font-style:italic;
-	color:#616161;
+.stable .members .member {
+    float: left;
+    margin-right: 10px;
 }

@@ -15,13 +15,13 @@ $roster->shows = efed_roster_load_show($roster->roster_id);
 		</p>
 		<?php endif; ?>
 		<?php if($type == 'champions'): ?>
-			<?php drupal_set_title($roster->name . ' title history'); ?>
+			<?php drupal_set_title('Title History'); ?>
 			<?php foreach($roster->belts as $belt): ?>
 				<?= theme('efed_belt',$belt); ?>
 			<?php endforeach; ?>
 		<?php endif; ?>
 		<?php if($type == 'members'): ?>
-			<?php drupal_set_title($roster->name . ' members'); ?>
+			<?php drupal_set_title('Members'); ?>
 			<?php if(is_array($roster->members)): ?>
 				<?php foreach($roster->members as $c): ?>
 					<?php $class = ($class)? FALSE : TRUE; ?>
@@ -30,7 +30,7 @@ $roster->shows = efed_roster_load_show($roster->roster_id);
 			<?php endif; ?>
 		<?php endif; ?>
 		<?php if($type == 'stables'): ?>
-			<?php drupal_set_title($roster->name . ' stables'); ?>
+			<?php drupal_set_title('Stables'); ?>
 			<?php if(is_array($roster->stables)): ?>
 				<?php foreach($roster->stables as $stable_id => $name): ?>
 					<?= theme('stable_template', efed_stable_load($stable_id)); ?>

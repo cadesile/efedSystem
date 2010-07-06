@@ -97,26 +97,9 @@ function efed_roleplay_theme() {
     );
 }
 
-/*
-  function efed_roleplay_node_info() {
-  return array(
-  'efed_roleplay' => array(
-  'name' => t('E-Fed Roleplay'),
-  'module' => 'efed_roleplay',
-  'description' => t('Roleplay created by the users with Wrestler role.'),
-  'has_title' => TRUE,
-  'title_label' => t('Title'),
-  'has_body' => TRUE,
-  'body_label' => t('Content'),
-  'min_word_count' => 0,
-  'locked' => TRUE
-  )
-  );
-  }
- */
-
 function efed_roleplay_page() {
-    $sql = "SELECT {node}.nid FROM {node} INNER JOIN {efed_roleplay} ON {node}.nid = {efed_roleplay}.nid ORDER BY created LIMIT 0,9";
+    $sql = "SELECT {node}.nid FROM {node} INNER JOIN {efed_roleplay}
+        ON {node}.nid = {efed_roleplay}.nid ORDER BY created LIMIT 0,9";
 
     $result = db_query($sql);
 

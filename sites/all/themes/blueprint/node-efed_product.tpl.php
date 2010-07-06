@@ -9,10 +9,10 @@
   <h2><a href="<?php print $node_url ?>" title="<?php print $title ?>"><?php print $title ?></a></h2>
 <?php endif; ?>
 
-  <p><b>Price</b>: $<?php print number_format($node->price,2)?></p>
+  <p><b>Price</b>: $<?php print number_format($node->price, 2)?></p>
 
   <div class="content clear-block">
-    <?php //print $content ?>
+    <?php print $content ?>
   </div>
   <p><?php print drupal_get_form('efed_shop_buy_form', $node->shop_id); ?></p>
 

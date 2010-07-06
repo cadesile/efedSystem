@@ -84,3 +84,15 @@ color:#2A5026 !important;
 	color:#616161;
 }
 
+
+.character-pane {
+    width: 100px;
+}
+.character-pane .author {
+    padding: 1px 3px;
+    background-color: #586A7E;
+    color: #B9C0C0;
+}
+.character-pane .author em {
+    color: #B9C0C0;
+}
