@@ -55,7 +55,7 @@ function efed_roleplay_menu() {
         'type' => MENU_NORMAL_ITEM,
     );
 
-    $items['roleplay/sketchbook/match/edit'] = array(
+    $items['roleplay/sketchbook/match/edit/%'] = array(
         'title' => EFED_ROLEPLAY_TITLE . ' Edit',
         'page callback' => 'efed_roleplay_edit_view',
         'access arguments' => array('roleplayer'),
@@ -447,11 +447,15 @@ function efed_roleplay_archive() {
         $roleplay = node_load($data->nid);
 
         switch($roleplay->roleplay_info->type) {
-            case 'match' :
-                $edit = l(t('Edit'), 'roleplay/sketchbook/match/create/' . $roleplay->roleplay_info->match_id . '/' . $roleplay->roleplay_info->roleplay_id);
 
-            default:
+            case 'match':
+                $edit = l(t('Edit'), 'roleplay/sketchbook/match/create/' . $roleplay->roleplay_info->match_id . '/' . $roleplay->roleplay_info->roleplay_id);
+            break;
+
+            case 'creative':
                 $edit = l(t('Edit'), 'roleplay/sketchbook/creative/create/' . $roleplay->roleplay_info->roleplay_id);
+            break;
+        
         }
         
         $rows[] = array(
@@ -757,11 +761,12 @@ function efed_roleplay_form_submit($form, &$form_state) {
     switch ($form_state['clicked_button']['#name']) {
         case 'store':
             $roleplay = efed_roleplay_store($roleplay);
+            
             drupal_set_message('Roleplay <em>' . $roleplay->title . '</em> stored.', 'status', TRUE);
 
             switch ($roleplay->type) {
                 case 'match':
-                    drupal_goto('roleplay/sketchbook/' . $roleplay->type . '/edit/' . $roleplay->match_id);
+                    //drupal_goto('roleplay/sketchbook/' . $roleplay->type . '/edit/' . $roleplay->match_id);
                     break;
                 case 'creative':
                     drupal_goto('roleplay/sketchbook/archive');
@@ -1004,11 +1009,17 @@ function efed_roleplay_store($object) {
     $node = efed_base_create_node('efed_roleplay', $node);
 
     $object->nid = $node->nid;
-   
+
+    $object->type = 'creative';
+
     if ($object->roleplay_id > 0) {
+
         drupal_write_record('efed_roleplay', $object, 'roleplay_id');
+
     } else {
+
         drupal_write_record('efed_roleplay', $object);
+        
     }
 
     return $object;

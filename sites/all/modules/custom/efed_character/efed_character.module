@@ -490,6 +490,11 @@ function efed_character_overview($p) {
 function efed_character_create_form($form_state) {
     $form = array();
 
+    /*
+     * Set page title
+     */
+    drupal_set_title('Create Character');
+
     global $user;
 
     $form['#attributes'] = array(
@@ -648,7 +653,7 @@ function efed_character_create_form($form_state) {
         );
 
         $form['image']['upload'] = array(
-            '#name' => 'name',
+            '#name' => 'upload',
             '#type' => 'submit',
             '#value' => t('Upload'),
         );

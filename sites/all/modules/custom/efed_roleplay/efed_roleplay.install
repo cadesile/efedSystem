@@ -3,10 +3,9 @@
 /**
  * Implementation of hook_install().
  */
-
 function efed_roleplay_install() {
-  // Create tables.
-  drupal_install_schema('efed_roleplay');
+    // Create tables.
+    drupal_install_schema('efed_roleplay');
 }
 
 /**
@@ -14,49 +13,53 @@ function efed_roleplay_install() {
  */
 function efed_roleplay_schema() {
 
-	$schema['efed_roleplay'] = array(
-	    'fields' => array(
-			'roleplay_id' => array(
-			 	'type' => 'serial',
-	  			'unsigned' => TRUE,
-	        	'not null' => TRUE,
-			),
-			'match_id' => array(
-				'type' => 'int', 
-				'not null' => 1, 
-				'default' => 0, 
-				'disp-width' => '11'
-			),			
-	        'cid' => array(
-				'type' => 'int', 
-				'not null' => 1, 
-				'default' => 0, 
-				'disp-width' => '11'
-			),
-	        'live' => array(
-				'type' => 'int', 
-				'not null' => 1, 
-				'default' => 0, 
-				'disp-width' => '1'
-			),
-	        'nid' => array(
-				'type' => 'int', 
-				'not null' => 1, 
-				'default' => 0, 
-				'disp-width' => '11'
-			),
-		),
-	    'primary key' => array('roleplay_id'),
-	);
+    $schema['efed_roleplay'] = array(
+        'fields' => array(
+            'roleplay_id' => array(
+                'type' => 'serial',
+                'unsigned' => TRUE,
+                'not null' => TRUE,
+            ),
+            'match_id' => array(
+                'type' => 'int',
+                'not null' => 1,
+                'default' => 0,
+                'disp-width' => '11'
+            ),
+            'type' => array(
+                'type' => 'text',
+                'size' => 'medium',
+                'default' => ''
+            ),
+            'cid' => array(
+                'type' => 'int',
+                'not null' => 1,
+                'default' => 0,
+                'disp-width' => '11'
+            ),
+            'live' => array(
+                'type' => 'int',
+                'not null' => 1,
+                'default' => 0,
+                'disp-width' => '1'
+            ),
+            'nid' => array(
+                'type' => 'int',
+                'not null' => 1,
+                'default' => 0,
+                'disp-width' => '11'
+            ),
+        ),
+        'primary key' => array('roleplay_id'),
+    );
 
-  	return $schema;
-
+    return $schema;
 }
 
 /**
  * Implementation of hook_uninstall().
  */
 function efed_roleplay_uninstall() {
-  // Remove tables.
-  drupal_uninstall_schema('efed_roleplay');
+    // Remove tables.
+    drupal_uninstall_schema('efed_roleplay');
 }
