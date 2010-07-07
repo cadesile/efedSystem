@@ -4,6 +4,16 @@ efed_base();
 
 define('efed_character_role', 'Character');
 
+/**
+ *
+ * @global <type> $user
+ * @return <type> Current selected character for user
+ */
+function cid() {
+    global $user;
+    return variable_get($user->uid . '_default_character', 0);
+}
+
 function efed_character_init() {
     drupal_add_css(drupal_get_path('module', 'efed_character') . '/efed_character.css');
     drupal_add_js(drupal_get_path('module', 'efed_character') . '/efed_character.js');
@@ -99,8 +109,7 @@ function efed_character_block($op='list', $delta=0, $edit=array()) {
 }
 
 function efed_character() {
-    global $user;
-    return efed_character_load(variable_get($user->uid . '_default_character', 0));
+    return efed_character_load(cid());
 }
 
 function efed_character_block_0() {
@@ -132,7 +141,7 @@ function efed_character_theme() {
 }
 
 function efed_character_redirect_to_create() {
-    if(!cid()) {
+    if (!cid()) {
         drupal_goto('character-profiles/store');
     }
 }
@@ -335,7 +344,6 @@ function efed_character_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
     if ($node->type == 'efed_character') {
         switch ($op) {
             case 'load':
-                $node->stable_info = efed_character_load_by_nid($node->nid);
                 break;
             case 'prepare':
 
@@ -494,8 +502,8 @@ function efed_character_create_form($form_state) {
 
     $c = efed_character_load(arg(2));
 
-    $desc = (!cid())? "
-        In order to roleplay you must character at least one character.
+    $desc = (!cid()) ? "
+        In order to roleplay you must create at least one character.
         Once you have successfully created your first character
         you'll be able to join a roster." : NULL;
 
@@ -640,6 +648,7 @@ function efed_character_create_form($form_state) {
         );
 
         $form['image']['upload'] = array(
+            '#name' => 'name',
             '#type' => 'submit',
             '#value' => t('Upload'),
         );
@@ -712,15 +721,27 @@ function efed_character_create_form($form_state) {
         );
     }
 
+    $form['store'] = array(
+        '#name' => 'store',
+        '#type' => 'submit',
+        '#value' => t('Store'),
+    );
+
     $form['cancel'] = array(
+        '#name' => 'cancel',
         '#type' => 'submit',
         '#value' => t('Cancel'),
     );
 
-    $form['store'] = array(
-        '#type' => 'submit',
-        '#value' => t('Store'),
-    );
+
+    if ($exists) {
+
+        $form['delete'] = array(
+            '#name' => 'delete',
+            '#type' => 'submit',
+            '#value' => t('Delete'),
+        );
+    }
 
     if ($c->locked) {
         $temp = $form['overview'];
@@ -760,15 +781,24 @@ function efed_character_render_moves($moves) {
 function efed_character_create_form_submit($form, &$form_state) {
     $object = (object) $form_state['values'];
 
-    switch ($object->op) {
-        case 'Store':
+    switch ($form_state['clicked_button']['#name']) {
+        case 'store':
             $object = efed_character_store($object);
             efed_character_info_store($object);
             drupal_set_message(t('Charactor profile ##NAME## stored.', array('##NAME##' => $object->name)), 'status');
             drupal_goto('character-profiles/store/' . $object->character_id);
             break;
 
-        case 'Upload':
+        case 'delete':
+
+            efed_character_delete($object->character_id);
+            drupal_goto('character-profiles');
+
+        case 'cancel':
+
+            drupal_goto('character-profiles');
+
+        case 'upload':
 
             $uploaded = FALSE;
 
@@ -955,6 +985,7 @@ function efed_character_load($character_id) {
     $result = db_query($sql, $character_id);
     $data = db_fetch_object($result);
     $data->roster = efed_character_load_roster($character_id);
+    $data->roleplays = efed_character_load_roleplays($character_id);
     $data->info = efed_character_info_load_by_character_id($character_id);
     $data->moves = efed_character_move_load_by_character_id($character_id);
     $data->contract = efed_contract_load_for_character_id($character_id);
@@ -984,18 +1015,28 @@ function efed_character_load_roster($cid) {
     }
 }
 
+function efed_character_load_roleplays($cid) {
+    $items = array();
+
+    $result = db_query("SELECT nid FROM {efed_roleplay} WHERE cid = %d", $cid);
+
+    while ($data = db_fetch_object($result)) {
+        $items[] = $data->nid;
+    }
+
+    return $items;
+}
+
 function efed_character_store($object) {
+    global $user;
+
     if ($object->character_id > 0) {
         drupal_write_record('efed_character', $object, 'character_id');
     } else {
         drupal_write_record('efed_character', $object);
     }
 
-    $cid = variable_get($user->uid . '_default_character', 0);
-
-    if (!$cid) {
-        variable_set($user->uid . '_default_character', $object->character_id);
-    }
+    variable_set($user->uid . '_default_character', $object->character_id);
 
     $balance = efed_contract_load_for_character_id($object->character_id);
 
@@ -1008,8 +1049,40 @@ function efed_character_store($object) {
 }
 
 function efed_character_delete($character_id) {
+    global $user;
+
+    $c = efed_character_load($character_id);
+
+    /*
+     * Load user object pull all related characters/profiles
+     */
+
+    $user = user_load($user->uid);
+
+    /*
+     * Unset profile being deleted
+     */
+
+    unset($user->profiles[$character_id]);
+
+    /*
+     * Set default character to ANY other available character profile
+     */
+
+    variable_set($user->uid . '_default_character', (is_object(end($user->profiles)) ? end($user->profiles)->character_id : 0));
+
+
     $sql = "DELETE FROM {efed_character} WHERE character_id = %d";
     db_query($sql, $character_id);
+
+    /*
+     * Delete roleplays
+     */
+
+    foreach($c->roleplays as $nid) {
+        node_delete($nid);
+    }
+
 }
 
 function efed_character_move_load_by_character_id($character_id) {

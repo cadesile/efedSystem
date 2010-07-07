@@ -3,72 +3,90 @@
 efed_base();
 
 function efed_base_init() {
-	drupal_add_js(drupal_get_path('module','efed_base').'/js/jquery.tools.min.js');
-	drupal_add_css(drupal_get_path('module','efed_base').'/js/jcarousel/jquery.jcarousel.css');
-	drupal_add_css(drupal_get_path('module','efed_base').'/js/jcarousel/skins/right_block/skin.css');
-	drupal_add_js(drupal_get_path('module','efed_base').'/js/jcarousel/jquery.jcarousel.pack.js');
-	drupal_add_js(drupal_get_path('module','efed_base').'/js/cufon/cufon.js');
-	drupal_add_js(drupal_get_path('module','efed_base').'/js/cufon/cufon-settings.js');
-	drupal_add_js(drupal_get_path('module','efed_base').'/js/cufon/cufon-font.js');
-	drupal_add_css(drupal_get_path('module','efed_base').'/efed_base.css');
+    drupal_add_js(drupal_get_path('module', 'efed_base') . '/js/jquery.tools.min.js');
+    drupal_add_css(drupal_get_path('module', 'efed_base') . '/js/jcarousel/jquery.jcarousel.css');
+    drupal_add_css(drupal_get_path('module', 'efed_base') . '/js/jcarousel/skins/right_block/skin.css');
+    drupal_add_js(drupal_get_path('module', 'efed_base') . '/js/jcarousel/jquery.jcarousel.pack.js');
+    drupal_add_js(drupal_get_path('module', 'efed_base') . '/js/cufon/cufon.js');
+    drupal_add_js(drupal_get_path('module', 'efed_base') . '/js/cufon/cufon-settings.js');
+    drupal_add_js(drupal_get_path('module', 'efed_base') . '/js/cufon/cufon-font.js');
+    drupal_add_css(drupal_get_path('module', 'efed_base') . '/efed_base.css');
 }
 
 function efed_base_perm() {
-  return array('administer efed');
+    return array('administer efed');
 }
 
-function efed_price($price){
-	$cost = '$'.number_format($price,2);
-	
-	if($price>0){
-		return '<span style="color:green">'.$cost.'</span>';		
-	}elseif($price<0){
-		return '<span style="color:red">'.$cost.'</span>';
-	}else{ 
-		return $cost;
-	}
+function efed_live($live) {
+    if ($live) {
+        return '<span style="color:green">Yes</span>';
+    } else {
+        return '<span style="color:red">No</span>';
+    }
 }
 
-function efed_base_time_between($start_date,$end_date){  
-         $diff = $end_date-$start_date;  
-         $seconds = 0;  
-         $hours   = 0;  
-         $minutes = 0;  
-   
-         if($diff % 86400 <= 0){$days = $diff / 86400;}  // 86,400 seconds in a day  
-         if($diff % 86400 > 0)  
-         {  
-             $rest = ($diff % 86400);  
-             $days = ($diff - $rest) / 86400;  
-             if($rest % 3600 > 0)  
-             {  
-                 $rest1 = ($rest % 3600);  
-                 $hours = ($rest - $rest1) / 3600;  
-                 if($rest1 % 60 > 0)  
-                 {  
-                     $rest2 = ($rest1 % 60);  
-                 $minutes = ($rest1 - $rest2) / 60;  
-                 $seconds = $rest2;  
-                 }  
-                 else{$minutes = $rest1 / 60;}  
-             }  
-             else{$hours = $rest / 3600;}  
-         }  
-   
-         if($days > 0){$days = $days.' days, ';}  
-         else{$days = false;}  
-         if($hours > 0){$hours = $hours.' hours, ';}  
-         else{$hours = false;}  
-         if($minutes > 0){$minutes = $minutes.' minutes, ';}  
-         else{$minutes = false;}  
-         $seconds = $seconds.' seconds'; // always be at least one second  
-   
-         return $days.''.$hours.''.$minutes.''.$seconds;  
-}  
+function efed_price($price) {
+    $cost = '$' . number_format($price, 2);
 
-function efed_base_create_node_type($obj){
-	
-	$sql = "INSERT INTO {node_type} 
+    if ($price > 0) {
+        return '<span style="color:green">' . $cost . '</span>';
+    } elseif ($price < 0) {
+        return '<span style="color:red">' . $cost . '</span>';
+    } else {
+        return $cost;
+    }
+}
+
+function efed_base_time_between($start_date, $end_date) {
+    $diff = $end_date - $start_date;
+    $seconds = 0;
+    $hours = 0;
+    $minutes = 0;
+
+    if ($diff % 86400 <= 0) {
+        $days = $diff / 86400;
+    }  // 86,400 seconds in a day
+    if ($diff % 86400 > 0) {
+        $rest = ($diff % 86400);
+        $days = ($diff - $rest) / 86400;
+        if ($rest % 3600 > 0) {
+            $rest1 = ($rest % 3600);
+            $hours = ($rest - $rest1) / 3600;
+            if ($rest1 % 60 > 0) {
+                $rest2 = ($rest1 % 60);
+                $minutes = ($rest1 - $rest2) / 60;
+                $seconds = $rest2;
+            } else {
+                $minutes = $rest1 / 60;
+            }
+        } else {
+            $hours = $rest / 3600;
+        }
+    }
+
+    if ($days > 0) {
+        $days = $days . ' days, ';
+    } else {
+        $days = false;
+    }
+    if ($hours > 0) {
+        $hours = $hours . ' hours, ';
+    } else {
+        $hours = false;
+    }
+    if ($minutes > 0) {
+        $minutes = $minutes . ' minutes, ';
+    } else {
+        $minutes = false;
+    }
+    $seconds = $seconds . ' seconds'; // always be at least one second
+
+    return $days . '' . $hours . '' . $minutes . '' . $seconds;
+}
+
+function efed_base_create_node_type($obj) {
+
+    $sql = "INSERT INTO {node_type}
 		(type, 
 		name, 
 		module, 
@@ -98,114 +116,114 @@ function efed_base_create_node_type($obj){
 		%d, 
 		'%s'
 		)";
-		
-	db_query($sql,
-		$obj->name,
-		$obj->module,
-		$obj->description,
-		$obj->help,
-		$obj->has_title,
-		$obj->title_label,
-		$obj->has_body,
-		$obj->body_label,
-		$obj->custom,
-		$obj->modified,
-		$obj->locked,
-		$obj->orig_type
-	);
+
+    db_query($sql,
+            $obj->name,
+            $obj->module,
+            $obj->description,
+            $obj->help,
+            $obj->has_title,
+            $obj->title_label,
+            $obj->has_body,
+            $obj->body_label,
+            $obj->custom,
+            $obj->modified,
+            $obj->locked,
+            $obj->orig_type
+    );
 }
 
-function efed_base_create_node_type_default($name = 'name',$module = 'module'){
-	$obj = new stdClass();
-	
-	$obj->name = $name;
-	$obj->module = $module;
-	$obj->help = '';
-	$obj->has_title = TRUE;
-	$obj->title_label = 'Title';
-	$obj->has_body = TRUE;
-	$obj->body_label = 'Body';
-	$obj->custom = TRUE;
-	$obj->modified = FALSE;
-	$obj->locked = TRUE;
-	$obj->orig_type = $module;
-	
-	return $obj;
+function efed_base_create_node_type_default($name = 'name', $module = 'module') {
+    $obj = new stdClass();
+
+    $obj->name = $name;
+    $obj->module = $module;
+    $obj->help = '';
+    $obj->has_title = TRUE;
+    $obj->title_label = 'Title';
+    $obj->has_body = TRUE;
+    $obj->body_label = 'Body';
+    $obj->custom = TRUE;
+    $obj->modified = FALSE;
+    $obj->locked = TRUE;
+    $obj->orig_type = $module;
+
+    return $obj;
 }
 
-function efed_base_menu(){
-	$items[EFED_ADMIN_AREA] = array(
-	   	'title' => EFED_APP_TITLE,
-    	'description' => 'Administer E-Fed modules and settings',
-		'weight' => -30,
-	    'page callback'    => 'efed_base_page',
-    	'access arguments' => array('administer efed'),
-  	); 
-	
-	$items[EFED_ADMIN_AREA .'/settings'] = array(
-    	'title' => 'Settings',
-    	'description' => 'Administer E-Fed modules and settings',
-    	'position' => 'right',
-    	'weight' => -30,
-	    'page callback'    => 'drupal_get_form',
-	    'page arguments'   => array('efed_base_settings_form'),
-    	'access arguments' => array('administer efed'),
-  	);  
-	
-	return $items;
+function efed_base_menu() {
+    $items[EFED_ADMIN_AREA] = array(
+        'title' => EFED_APP_TITLE,
+        'description' => 'Administer E-Fed modules and settings',
+        'weight' => -30,
+        'page callback' => 'efed_base_page',
+        'access arguments' => array('administer efed'),
+    );
+
+    $items[EFED_ADMIN_AREA . '/settings'] = array(
+        'title' => 'Settings',
+        'description' => 'Administer E-Fed modules and settings',
+        'position' => 'right',
+        'weight' => -30,
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('efed_base_settings_form'),
+        'access arguments' => array('administer efed'),
+    );
+
+    return $items;
 }
 
-function efed_base_page(){
-	return EFED_INFO;
+function efed_base_page() {
+    return EFED_INFO;
 }
 
-function efed_base(){		
-	$efed_base_path = drupal_get_path('module', 'efed_base') . '/';
-	include($efed_base_path . 'efed_base.inc');
+function efed_base() {
+    $efed_base_path = drupal_get_path('module', 'efed_base') . '/';
+    include($efed_base_path . 'efed_base.inc');
 }
 
-function efed_base_create_node($type = '',$values = array()){
-	global $user;
+function efed_base_create_node($type = '', $values = array()) {
+    global $user;
 
-	if($values['nid']==0){
-		$node = new StdClass();
-		$node->type = $type;
-		$node->title = t($values['title']);
-		$node->body = $values['body'];
-		$node->teaser = $values['body'];
-		$node->created = $values['created'];
-		$node->changed = $values['changed'];
-		$node->uid = $user->uid;
-		$node->status = 1;
-		$node->active = 1;	
-	}else{		
-		$node = node_load($values['nid']);
-		$node->title = t($values['title']);
-		$node->body = $values['body'];
-		$node->teaser = $values['body'];
-		$node->created = $values['created'];
-		$node->changed = $values['changed'];
-	}
-	
-	node_save($node);
+    if ($values['nid'] == 0) {
+        $node = new StdClass();
+        $node->type = $type;
+        $node->title = t($values['title']);
+        $node->body = $values['body'];
+        $node->teaser = $values['body'];
+        $node->created = $values['created'];
+        $node->changed = $values['changed'];
+        $node->uid = $user->uid;
+        $node->status = 1;
+        $node->active = 1;
+    } else {
+        $node = node_load($values['nid']);
+        $node->title = t($values['title']);
+        $node->body = $values['body'];
+        $node->teaser = $values['body'];
+        $node->created = $values['created'];
+        $node->changed = $values['changed'];
+    }
 
-	return $node;
+    node_save($node);
+
+    return $node;
 }
 
-function efed_base_default_role(){	
-	$sql = "SELECT * FROM {role} WHERE name = '%s'";			
-	$data = db_fetch_object(db_query($sql,EFED_DEFAULT_ROLE));	
-	return $data;
+function efed_base_default_role() {
+    $sql = "SELECT * FROM {role} WHERE name = '%s'";
+    $data = db_fetch_object(db_query($sql, EFED_DEFAULT_ROLE));
+    return $data;
 }
 
-function efed_base_load_role($name = ''){	
-	$sql = "SELECT * FROM {role} WHERE name = '%s'";			
-	$data = db_fetch_object(db_query($sql,$name));	
-	return $data;
+function efed_base_load_role($name = '') {
+    $sql = "SELECT * FROM {role} WHERE name = '%s'";
+    $data = db_fetch_object(db_query($sql, $name));
+    return $data;
 }
- 
-function efed_print_r($array){	
-	drupal_set_message('<pre style="font-size: 75%">'. print_r($array, true) .'</pre>');
+
+function efed_print_r($array) {
+    drupal_set_message('<pre style="font-size: 75%">' . print_r($array, true) . '</pre>');
 }
 
 /*
@@ -213,295 +231,295 @@ function efed_print_r($array){
  * Load all users with 'DEFAULT ROLE'
  */
 
-function efed_base_load_users(){	
-	$users = array();
-	$role = efed_base_default_role();
-	$sql = "SELECT * FROM {users_roles} WHERE rid = %d";
-	$result = db_query($sql,$role->rid);	
-	while($data = db_fetch_object($result)){
-		$user = user_load($data->uid);
-		$users[$user->uid] = $user->name;
-	}	
-	return $users;
+function efed_base_load_users() {
+    $users = array();
+    $role = efed_base_default_role();
+    $sql = "SELECT * FROM {users_roles} WHERE rid = %d";
+    $result = db_query($sql, $role->rid);
+    while ($data = db_fetch_object($result)) {
+        $user = user_load($data->uid);
+        $users[$user->uid] = $user->name;
+    }
+    return $users;
 }
 
-function efed_base_load_category($id){
-	$category = array();
-	$items = taxonomy_get_tree($id);
-	foreach($items as $item){
-		$category[$item->tid] = $item->name;
-	}
-	
-	return $category;
+function efed_base_load_category($id) {
+    $category = array();
+    $items = taxonomy_get_tree($id);
+    foreach ($items as $item) {
+        $category[$item->tid] = $item->name;
+    }
+
+    return $category;
 }
 
-function efed_base_load_category_options(){
-	$options = array();
-	$sql = "SELECT * FROM {vocabulary}";
-	$result = db_query($sql);
-	while($data = db_fetch_object($result)){
-		$options[$data->vid] = $data->name;
-	}
-	return $options;
+function efed_base_load_category_options() {
+    $options = array();
+    $sql = "SELECT * FROM {vocabulary}";
+    $result = db_query($sql);
+    while ($data = db_fetch_object($result)) {
+        $options[$data->vid] = $data->name;
+    }
+    return $options;
 }
 
-function efed_base_roleplay_limit(){
-	for($i = 1; $i < 100; $i++){
-		$limit[$i] = $i;
-	}
-	
-	return $limit;
+function efed_base_roleplay_limit() {
+    for ($i = 1; $i < 100; $i++) {
+        $limit[$i] = $i;
+    }
+
+    return $limit;
 }
 
-function efed_base_date_array($timestamp){
-	return array(			
-			'year' => (int)format_date($timestamp,'custom','Y'),
-			'month' => (int)format_date($timestamp,'custom','n'),
-			'day' => (int)format_date($timestamp,'custom','d'),
-			'hour' => (int)format_date($timestamp,'custom','H'),
-			'minute' => (int)format_date($timestamp,'custom','i'),
-		);
+function efed_base_date_array($timestamp) {
+    return array(
+        'year' => (int) format_date($timestamp, 'custom', 'Y'),
+        'month' => (int) format_date($timestamp, 'custom', 'n'),
+        'day' => (int) format_date($timestamp, 'custom', 'd'),
+        'hour' => (int) format_date($timestamp, 'custom', 'H'),
+        'minute' => (int) format_date($timestamp, 'custom', 'i'),
+    );
 }
 
-function efed_base_date_timestamp($date = array()){
-	return mktime($date['hour'],$date['minute'],0,$date['month'],$date['day'],$date['year']);
+function efed_base_date_timestamp($date = array()) {
+    return mktime($date['hour'], $date['minute'], 0, $date['month'], $date['day'], $date['year']);
 }
 
-function efed_base_weight(){
-	$weight = array();
-	for($i = -50; $i < 51; $i++) $weight[$i] = $i;
-	return $weight;
+function efed_base_weight() {
+    $weight = array();
+    for ($i = -50; $i < 51; $i++)
+        $weight[$i] = $i;
+    return $weight;
 }
 
-function efed_base_match_types(){
-	return array(
-		'singles' => 'Singles',
-		'tag-team' => 'Tag Team',
-	);
+function efed_base_match_types() {
+    return array(
+        'singles' => 'Singles',
+        'tag-team' => 'Tag Team',
+    );
 }
 
-function efed_base_settings_form(){	
-	$title = EFED_APP_TITLE;
-	$stitle = EFED_APP_TITLE_SAFE;
+function efed_base_settings_form() {
+    $title = EFED_APP_TITLE;
+    $stitle = EFED_APP_TITLE_SAFE;
 
-	$form['info_field'] = array(
-	  	'#type' => 'fieldset',
-	  	'#title' => t('Base Settings'),
-	  	'#collapsible' => TRUE,
-	  	'#collapsed' => FALSE,
-	);
-	
-  	$form['info_field']['name'] = array(
-  		'#type'=>'textfield',
-    	'#title'=>t('Name'),
-    	'#default_value'=> variable_get('name','My ' . $title),
-	  	'#required' => true,
-	);
-	
-  	$form['info_field']['owner'] = array(
-  		'#type'=>'textfield',
-    	'#title' =>t('Owner'),
-    	'#default_value'=> variable_get('owner',$title . 'Owner'),
-	  	'#required' => true,
-	);
-	
-  	$form['info_field']['desc'] = array(
-  		'#type'=>'textarea',
-    	'#title'=>t('Brief History'),
-    	'#default_value'=> variable_get('desc','My ' . $title),
-	  	'#required' => true,
-	);
-	
-	$fields['info_field']['founded'] = array(
-	  	'#type' => 'date',
-    	'#title'=>t('Date Founded'),
-	  	'#required' => true,
-	);
+    $form['info_field'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Base Settings'),
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+    );
 
-	$form['sitting_settings'] = array(
-	  	'#type' => 'fieldset',
-	  	'#title' => t('Category Settings'),
-	  	'#collapsible' => TRUE,
-	  	'#collapsed' => TRUE,
-	);
-	
-  	$form['sitting_settings']['default_roleplay_limit'] = array(
-  		'#type'=>'select',
-    	'#title' =>t('Default Roleplay Limit'),
-		'#options' => efed_base_roleplay_limit(),
-    	'#default_value'=> variable_get('default_roleplay_limit',4),
-	  	'#required' => true,
-	);
-	
-  	$form['sitting_settings']['rules_category'] = array(
-  		'#type'=>'select',
-    	'#title' =>t('Rules Category'),
-		'#options' => efed_base_load_category_options(),
-    	'#default_value'=> variable_get('rules_category',0),
-	  	'#required' => true,
-	);
-	
-	if(variable_get('rules_category',0)){
-	
-		$form['sitting_settings']['rules_default'] = array(
-			'#type'=>'select',
-			'#title' =>t('Rules Default'),
-			'#description' => t('e.g. a match without any extra rules, a <em>standard match</em>'),
-			'#options' => efed_base_load_category(variable_get('rules_category',0)),
-			'#default_value'=> variable_get('rules_default',0),
-			'#required' => true,
-		);
-	
-	}
-	
-  	$form['sitting_settings']['referee_category'] = array(
-  		'#type'=>'select',
-    	'#title' =>t('Referee Category'),
-		'#options' => efed_base_load_category_options(),
-    	'#default_value'=> variable_get('referee_category',0),
-	  	'#required' => true,
-	);
-	
-  	$form['sitting_settings']['title_category'] = array(
-  		'#type'=>'select',
-    	'#title' =>t('Title Category'),
-		'#options' => efed_base_load_category_options(),
-    	'#default_value'=> variable_get('title_category',0),
-	  	'#required' => true,
-	);
-	
-  	$form['sitting_settings']['show_type'] = array(
-  		'#type'=>'select',
-    	'#title' =>t('Show Type Category'),
-		'#options' => efed_base_load_category_options(),
-    	'#default_value'=> variable_get('show_type',0),
-	  	'#required' => true,
-	);
+    $form['info_field']['name'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Name'),
+        '#default_value' => variable_get('name', 'My ' . $title),
+        '#required' => true,
+    );
 
-  return system_settings_form($form);
+    $form['info_field']['owner'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Owner'),
+        '#default_value' => variable_get('owner', $title . 'Owner'),
+        '#required' => true,
+    );
+
+    $form['info_field']['desc'] = array(
+        '#type' => 'textarea',
+        '#title' => t('Brief History'),
+        '#default_value' => variable_get('desc', 'My ' . $title),
+        '#required' => true,
+    );
+
+    $fields['info_field']['founded'] = array(
+        '#type' => 'date',
+        '#title' => t('Date Founded'),
+        '#required' => true,
+    );
+
+    $form['sitting_settings'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Category Settings'),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+    );
+
+    $form['sitting_settings']['default_roleplay_limit'] = array(
+        '#type' => 'select',
+        '#title' => t('Default Roleplay Limit'),
+        '#options' => efed_base_roleplay_limit(),
+        '#default_value' => variable_get('default_roleplay_limit', 4),
+        '#required' => true,
+    );
+
+    $form['sitting_settings']['rules_category'] = array(
+        '#type' => 'select',
+        '#title' => t('Rules Category'),
+        '#options' => efed_base_load_category_options(),
+        '#default_value' => variable_get('rules_category', 0),
+        '#required' => true,
+    );
+
+    if (variable_get('rules_category', 0)) {
+
+        $form['sitting_settings']['rules_default'] = array(
+            '#type' => 'select',
+            '#title' => t('Rules Default'),
+            '#description' => t('e.g. a match without any extra rules, a <em>standard match</em>'),
+            '#options' => efed_base_load_category(variable_get('rules_category', 0)),
+            '#default_value' => variable_get('rules_default', 0),
+            '#required' => true,
+        );
+    }
+
+    $form['sitting_settings']['referee_category'] = array(
+        '#type' => 'select',
+        '#title' => t('Referee Category'),
+        '#options' => efed_base_load_category_options(),
+        '#default_value' => variable_get('referee_category', 0),
+        '#required' => true,
+    );
+
+    $form['sitting_settings']['title_category'] = array(
+        '#type' => 'select',
+        '#title' => t('Title Category'),
+        '#options' => efed_base_load_category_options(),
+        '#default_value' => variable_get('title_category', 0),
+        '#required' => true,
+    );
+
+    $form['sitting_settings']['show_type'] = array(
+        '#type' => 'select',
+        '#title' => t('Show Type Category'),
+        '#options' => efed_base_load_category_options(),
+        '#default_value' => variable_get('show_type', 0),
+        '#required' => true,
+    );
+
+    return system_settings_form($form);
 }
 
 function efed_base_theme() {
-  	return array(
-    	'datetime' => array(
-       	'arguments' => array('element' => NULL))
-	);
+    return array(
+        'datetime' => array(
+            'arguments' => array('element' => NULL))
+    );
 }
- 
+
 function efed_base_elements() {
-	return array(
-		'datetime' => array(
-     	        '#input' => TRUE,
-     	        '#process' => array('efed_base_datetime_expand'),     	
-				'#element_validate' => array('datetime_validate'),
-  		),
-  	);
+    return array(
+        'datetime' => array(
+            '#input' => TRUE,
+            '#process' => array('efed_base_datetime_expand'),
+            '#element_validate' => array('datetime_validate'),
+        ),
+    );
 }
 
 function efed_base_datetime_expand($element) {
-	$day = date('d');
-	$month = date('n');
-	$year = date('Y');
-	$hour = date('H');
-	$minute = date('i');
-	
-	$year_max = $year + 50;
-	
-	$element['#tree'] = TRUE;
- 
-	if (empty($element['#value'])) {
-		$element['#value'] = array(
-      		'month' => $month,
-      		'day' => $day,
-      		'year' => $year,
-      		'hour' => $hour,
-      		'minute' => $minute,
-    	);
-  	}
-	
-	$month_option = array(
-		'00','01','02','03','04','05','06','07','08','09',
-	);
-	
-	for($i = 10; $i < 13; $i++){
-		$month_option[] = $i;
-	}
-  
+    $day = date('d');
+    $month = date('n');
+    $year = date('Y');
+    $hour = date('H');
+    $minute = date('i');
+
+    $year_max = $year + 50;
+
+    $element['#tree'] = TRUE;
+
+    if (empty($element['#value'])) {
+        $element['#value'] = array(
+            'month' => $month,
+            'day' => $day,
+            'year' => $year,
+            'hour' => $hour,
+            'minute' => $minute,
+        );
+    }
+
+    $month_option = array(
+        '00', '01', '02', '03', '04', '05', '06', '07', '08', '09',
+    );
+
+    for ($i = 10; $i < 13; $i++) {
+        $month_option[] = $i;
+    }
+
     $element['month'] = array(
-      	'#type' => 'select',
-		'#default_value' => $element['#value']['month'],
-		'#options' => $month_option,
+        '#type' => 'select',
+        '#default_value' => $element['#value']['month'],
+        '#options' => $month_option,
     );
-	
-	$day_option = array(
-		'00','01','02','03','04','05','06','07','08','09',
-	);
-	
-	for($i = 10; $i < 33; $i++){
-		$day_option[] = $i;
-	}
-	
+
+    $day_option = array(
+        '00', '01', '02', '03', '04', '05', '06', '07', '08', '09',
+    );
+
+    for ($i = 10; $i < 33; $i++) {
+        $day_option[] = $i;
+    }
+
     $element['day'] = array(
-		'#prefix' => t('/'),
-      	'#type' => 'select',
-		'#default_value' => $element['#value']['day'],
-		'#options' => $day_option,
-    );	
- 
+        '#prefix' => t('/'),
+        '#type' => 'select',
+        '#default_value' => $element['#value']['day'],
+        '#options' => $day_option,
+    );
+
     $element['year'] = array(
-		'#prefix' => t('/'),
-		'#type' => 'select',
-		'#default_value' => $element['#value']['year'],
-		'#options' => drupal_map_assoc(range($year, $year_max)),
+        '#prefix' => t('/'),
+        '#type' => 'select',
+        '#default_value' => $element['#value']['year'],
+        '#options' => drupal_map_assoc(range($year, $year_max)),
     );
-	
-	$hour_option = array(
-		'00','01','02','03','04','05','06','07','08','09',
-	);
-	
-	for($i = 10; $i < 25; $i++){
-		$hour_option[] = $i;
-	}
-	
-	$minute_option = array(
-		'00','01','02','03','04','05','06','07','08','09',
-	);
-	
-	for($i = 10; $i < 60; $i++){
-		$minute_option[] = $i;
-	}
-	
-	$element['hour'] = array(
-		'#prefix' => t(' - '),
-      	'#type' => 'select',
-		'#default_value' => $element['#value']['hour'],
-		'#options' => $hour_option,
+
+    $hour_option = array(
+        '00', '01', '02', '03', '04', '05', '06', '07', '08', '09',
     );
-	
-	$element['minute'] = array(
-		'#prefix' => t(':'),
-      	'#type' => 'select',
-		'#default_value' => $element['#value']['minute'],
-		'#options' => $minute_option,
+
+    for ($i = 10; $i < 25; $i++) {
+        $hour_option[] = $i;
+    }
+
+    $minute_option = array(
+        '00', '01', '02', '03', '04', '05', '06', '07', '08', '09',
     );
- 
-	return $element;
+
+    for ($i = 10; $i < 60; $i++) {
+        $minute_option[] = $i;
+    }
+
+    $element['hour'] = array(
+        '#prefix' => t(' - '),
+        '#type' => 'select',
+        '#default_value' => $element['#value']['hour'],
+        '#options' => $hour_option,
+    );
+
+    $element['minute'] = array(
+        '#prefix' => t(':'),
+        '#type' => 'select',
+        '#default_value' => $element['#value']['minute'],
+        '#options' => $minute_option,
+    );
+
+    return $element;
 }
- 
-function theme_datetime($element) {  
-	return theme('form_element', $element, '<div class="container-inline">'. $element['#children'] .'</div>');
+
+function theme_datetime($element) {
+    return theme('form_element', $element, '<div class="container-inline">' . $element['#children'] . '</div>');
 }
 
 function efed_base_datetime_validate($element) {
 
 }
 
-function efed_base_form_alter(&$form, $form_state, $form_id){
-	switch($form_id){
-		case 'privatemsg_new':
-			
-		//print_r($form);
-		//exit;
-		break;
-	}
+function efed_base_form_alter(&$form, $form_state, $form_id) {
+    switch ($form_id) {
+        case 'privatemsg_new':
+
+            //print_r($form);
+            //exit;
+            break;
+    }
 }

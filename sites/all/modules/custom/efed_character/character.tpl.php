@@ -1,6 +1,6 @@
 <?php
 if(!$roster) {
-	$roster = efed_roster_load($character->roster->roster_id);
+    $roster = efed_roster_load($character->roster->roster_id);
 }
 
 $balance = $character->balance;
