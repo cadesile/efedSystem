@@ -146,3 +146,28 @@ ROLEPLAY ITEM
     font-size: 9px;
     padding: 2px 5px;
 }
+
+/**
+
+LATEST MATCH
+
+**/
+
+.latest-match{
+    border: solid 1px #e3e3e3;
+}
+
+.latest-match .match td,
+.latest-match .roleplays td {
+    border-bottom: solid 1px #e3e3e3;
+}
+.latest-match .roleplays td {
+    font-size: 10px;
+}
+
+
+.latest-match .roleplay-info p {
+    padding-bottom: 5px;
+    margin-bottom: 0px;
+    font-size: 11px;
+}

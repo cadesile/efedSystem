@@ -37,7 +37,7 @@ function efed_price($price) {
     }
 }
 
-function efed_base_time_between($start_date, $end_date) {
+function efed_base_time_between($start_date, $end_date, $type = 'normal') {
     $diff = $end_date - $start_date;
     $seconds = 0;
     $hours = 0;
@@ -81,7 +81,27 @@ function efed_base_time_between($start_date, $end_date) {
     }
     $seconds = $seconds . ' seconds'; // always be at least one second
 
-    return $days . '' . $hours . '' . $minutes . '' . $seconds;
+    $timeleft = $days . '' . $hours . '' . $minutes . '' . $seconds;
+
+    switch ($type) {
+        case 'normal':
+
+            return $timeleft;
+
+            break;
+
+        case 'color':
+
+            if (!$hours) {
+                return '<span style="color: red;">' . $timeleft . '</span>';
+            } elseif (!$days) {
+                return '<span style="color: orange;">' . $timeleft . '</span>';
+            } else {
+                return '<span style="color: green;">' . $timeleft . '</span>';
+            }
+
+            break;
+    }
 }
 
 function efed_base_create_node_type($obj) {
@@ -402,7 +422,8 @@ function efed_base_settings_form() {
 function efed_base_theme() {
     return array(
         'datetime' => array(
-            'arguments' => array('element' => NULL))
+            'arguments' => array('element' => NULL),
+        ),
     );
 }
 

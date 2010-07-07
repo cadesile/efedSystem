@@ -19,6 +19,12 @@ div.breadcrumb {
     text-transform:capitalize;
 }
 
+.global-note {
+    font-size: 9px;
+    color: #616161;
+    font-style:italic;
+}
+
 em{
     color: #616161;
 }

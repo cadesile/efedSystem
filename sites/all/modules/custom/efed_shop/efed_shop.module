@@ -92,7 +92,7 @@ function efed_shop_cart_form_submit($form,$form_state){
 			
 			drupal_set_message('Cart <em>confirmed</em>, your purchases will be confirmed by the efedSystem administrator','status',TRUE);
 			
-			drupal_goto('character-profiles/'.$user->uid.'/cart-history');
+			drupal_goto('character-profiles/cart-history');
 		break;
 		
 		case 'clear':
@@ -115,8 +115,6 @@ function efed_shop_buy_form($form, $shop_id){
 		$p = efed_shop_load($shop_id);
 		$c = efed_character();
 
-		$balances .= '<div class="balance" id="balance_'.$c->character_id.'">Current Balance: '.efed_price($c->balance->balance).'</div>';
-		
 		$form['nid'] = array(
 			'#type' => 'hidden',
 			'#value' => $p->nid,
@@ -126,11 +124,7 @@ function efed_shop_buy_form($form, $shop_id){
 			'#type' => 'hidden',
 			'#value' => $c->character_id,
 		);	
-		
-		$form['balances'] = array(
-			'#value' => $balances,
-		);
-		
+				
 		$form['submit'] = array(
 			'#type' => 'submit',
 			'#value' => 'Add to cart',

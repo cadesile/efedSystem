@@ -1,3 +1,7 @@
+.block-efed_card .content {
+padding:0 !important;
+}
+
 div.Card{
 	margin: 0px 0px 10px 0px;
 }
@@ -11,6 +15,7 @@ div.card div.banner a{
 	text-decoration: none;
 	color: #fff;
 }
+
 
 div.card div.banner .info {
 	font-size: 10px;

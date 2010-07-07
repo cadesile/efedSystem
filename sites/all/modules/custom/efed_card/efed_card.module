@@ -97,7 +97,7 @@ function efed_card_block_0($amount) {
     }
 
     if (count($items) > 0) {
-        return theme('item_list', $items);
+        return '<div class="jcarousel-skin-efedsystem_right_block">' . theme('item_list', $items) . '</div>';
     } else {
         return '<em>Coming soon.</em>';
     }
@@ -1023,7 +1023,7 @@ function efed_card_delete($card_id) {
     }
 
     node_delete($card->nid);
-    
+
     foreach ($card->matches as $match) {
         efed_match_delete($match->match_id);
     }
